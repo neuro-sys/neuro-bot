@@ -58,8 +58,9 @@ void network_auth(struct network_t * network, char * nick, char * user, char * n
   int read;
   GError * error = NULL;
 
-  sprintf(message, "NICK %s\r\n"
-                   "USER %s 8 * : %s\r\n\r\n", nick, user, name);
+  sprintf(message, "PASS *\r\n"
+                   "NICK %s\r\n"
+                   "USER %s localhost * :%s\r\n\r\n", nick, user, name);
 
   g_io_channel_write_chars(network->giochannel, message, strlen(message), &read, &error);
 

@@ -14,9 +14,22 @@ struct session_t {
   char * nickname;
 };
 
-struct session_t * session_create(void)
+void session_run(struct session_t * session)
+{
+  char * line;
+
+  while (network_read_line(session->network, &line) != 0) {
+    printf("%s", line);
+    g_free(line);
+  }
+
+}
+
+struct session_t * session_create(char * host, int port, char * nick, char * pass)
 {
   struct session_t * session = malloc(sizeof * session);
+  session->network = network_connect(host, port);
+  network_auth(session->network, nick, "localhost", "ircbot");
   return session;
 }
 

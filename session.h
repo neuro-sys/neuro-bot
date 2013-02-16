@@ -3,7 +3,7 @@
 
 extern struct session_t;
 
-extern struct session_t *   session_create                  (void);
+extern struct session_t *   session_create                  (char * host, int port, char * nick, char * pass);
 extern void                 session_destroy                 (struct session_t * session);
 extern struct channel_t *   session_channel_remove_by_name  (struct session_t * session, char * name);
 extern struct channel_t *   session_channel_find_by_name    (struct session_t * session, char * name);

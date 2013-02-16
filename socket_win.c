@@ -1,7 +1,6 @@
 #include <ws2tcpip.h>
 #include <stdio.h>
 
-
 static void initWinSock(void)
 {
   WSADATA wsa_data;
