@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <glib.h>
+#include <string.h>
 
 struct network_t {
   char * host_name;
@@ -33,3 +34,35 @@ struct network_t * network_connect(char * host_name, int port)
 
   return network;
 }
+
+int network_read_line(struct network_t * network, char ** buf)
+{
+  int len;
+  GError * error = NULL;
+
+  g_io_channel_read_line (network->giochannel, buf, &len, NULL, &error);
+
+  return len;
+}
+
+int network_read(struct network_t * network, char * str)
+{
+  int len;
+  g_io_channel_read_to_end(network->giochannel, &str, &len, NULL);
+  return len;
+}
+
+void network_auth(struct network_t * network, char * nick, char * user, char * name)
+{
+  char message[255];
+  int read;
+  GError * error = NULL;
+
+  sprintf(message, "NICK %s\r\n"
+                   "USER %s 8 * : %s\r\n\r\n", nick, user, name);
+
+  g_io_channel_write_chars(network->giochannel, message, strlen(message), &read, &error);
+
+}
+
+

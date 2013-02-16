@@ -1,7 +1,6 @@
 ﻿#include <stdio.h>
 #include <glib.h>
 #include <string.h>
-#include <ws2tcpip.h>
 #include "session.h"
 #include "channel.h"
 #include "user.h"
@@ -27,6 +26,19 @@ int main(int argc, char *argv[])
   session_channel_print(session);
 
   network = network_connect("irc.freenode.net", 6667);
+
+  network_auth(network, "sabribeyler", "localhost", "ve sabribeyler");
+
+  while (1) {
+    char * msg;
+    int len;
+  
+    len = network_read_line(network, &msg);
+
+    printf("%s", msg);
+
+    g_free(msg);
+  }
 
   session_destroy(session);
 
