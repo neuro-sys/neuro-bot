@@ -28,7 +28,7 @@ void user_print(GSList * user_list, FILE * fd)
 
 	for (i = 0; i < g_slist_length(user_list); i++) {
 		struct user_t * user = g_slist_nth_data(user_list, i);
-		fprintf(fd, "%s\n", user->name);
+		fprintf(fd, "%d: %s\n", i, user->name);
 	}
 }
 

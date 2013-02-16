@@ -74,8 +74,8 @@ void channels_print(GSList * list, FILE * fd)
 	for (i = 0; i < g_slist_length(list); i++) {
 		struct channel_t * channel_p = g_slist_nth_data(list, i);
 
-		fprintf(fd, "Channel Name:\n");
-		fprintf(fd, "\t%s\n", channel_get_name(channel_p));
+		fprintf(fd, "Channel Name: ");
+		fprintf(fd, "%s\n", channel_get_name(channel_p));
 
 		user_print(channel_p->user_list, fd);
 	}

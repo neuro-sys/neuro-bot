@@ -5,7 +5,7 @@
 
 extern struct user_t;
 
-extern void 			user_destroy	(struct user_t * user);
-extern struct user_t * 	user_create		(char * name);
-extern void 			user_print		(GSList * user_list, FILE * fd);
+extern void 			      user_destroy	(struct user_t * user);
+extern struct user_t *  user_create		(char * name);
+extern void 			      user_print		(GSList * user_list, FILE * fd);
 #endif
