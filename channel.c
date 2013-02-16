@@ -10,12 +10,12 @@ struct channel_t {
   GSList * user_list;
 };
 
-void channel_user_add(struct channel_t * channel, struct user_t * user)
+void channel_add_user(struct channel_t * channel, struct user_t * user)
 {
   channel->user_list = g_slist_append(channel->user_list, user);
 }
 
-struct user_t * channel_user_find_by_name(struct channel_t * channel, char * name)
+struct user_t * channel_find_user_by_name(struct channel_t * channel, char * name)
 {
   GSList * user = g_slist_find_custom(channel->user_list, name, (int (*)(const void *, const void*)) &strcmp);
   if (user) {
@@ -24,9 +24,9 @@ struct user_t * channel_user_find_by_name(struct channel_t * channel, char * nam
   return NULL;
 }
 
-struct user_t * channel_user_remove_by_name(struct channel_t * channel, char * name)
+struct user_t * channel_remove_user_by_name(struct channel_t * channel, char * name)
 {
-  struct user_t * user = channel_user_find_by_name(channel, name);
+  struct user_t * user = channel_find_user_by_name(channel, name);
   channel->user_list = g_slist_remove(channel->user_list, user);
   return user;
 }

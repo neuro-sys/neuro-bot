@@ -1,6 +1,7 @@
 #include "session.h"
 #include "channel.h"
 #include "user.h"
+#include "network.h"
 
 #include <glib.h>
 #include <stdio.h>
@@ -8,7 +9,9 @@
 #include <string.h>
 
 struct session_t {
+  struct network_t * network;
   GSList * channel_list;
+  char * nickname;
 };
 
 struct session_t * session_create(void)
@@ -17,7 +20,7 @@ struct session_t * session_create(void)
   return session;
 }
 
-void session_channel_add(struct session_t * session, char * name)
+void session_add_channel(struct session_t * session, char * name)
 {
   session->channel_list = g_slist_append(session->channel_list, channel_create(name));
 }
@@ -49,7 +52,7 @@ void session_destroy(struct session_t * session)
   free(session);
 }
 
-void session_channel_print(struct session_t * session)
+void session_print_channels(struct session_t * session)
 {
   channels_print(session->channel_list, stdout);
 }

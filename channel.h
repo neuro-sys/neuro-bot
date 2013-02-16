@@ -13,5 +13,5 @@ extern void                 channel_destroy           (struct channel_t * channe
 extern int                  channel_cmp_by_name       (const void * c1, const void * c2);
 extern void                 channels_print            (GSList * list, FILE * fd);
 extern int                  channel_cmp_by_name_real  (const void * c1, const void * c2);
-extern void                 channel_user_add          (struct channel_t * channel, struct user_t * user);
+extern void                 channel_add_user          (struct channel_t * channel, struct user_t * user);
 #endif
