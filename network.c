@@ -7,9 +7,14 @@
 struct network_t {
   char * host_name;
   int    port;
-
+  int    sockfd;
   GIOChannel * giochannel;
 };
+
+GIOChannel * network_get_giochannel(struct network_t * network)
+{
+  return network->giochannel;
+}
 
 struct network_t * network_connect(char * host_name, int port)
 {
@@ -22,7 +27,7 @@ struct network_t * network_connect(char * host_name, int port)
   if (sockfd < 0)
     return NULL;
 
-  network->giochannel = g_io_channel_win32_new_messages(sockfd);
+  network->giochannel = g_io_channel_win32_new_socket(sockfd);
   network->port = port;
   network->host_name;
 

@@ -1,15 +1,17 @@
 ﻿#include <stdio.h>
 #include <glib.h>
 #include <string.h>
-
+#include <ws2tcpip.h>
 #include "session.h"
 #include "channel.h"
 #include "user.h"
+#include "network.h"
 
 
 int main(int argc, char *argv[])
 {
   struct session_t * session = session_create();
+  struct network_t * network;
 
   session_channel_add(session, "#archlinux-tr");
   session_channel_add(session, "##penis");
@@ -23,6 +25,8 @@ int main(int argc, char *argv[])
   channel_user_add(session_channel_find_by_name(session, "##penis"), user_create("decaf"));
 
   session_channel_print(session);
+
+  network = network_connect("irc.freenode.net", 6667);
 
   session_destroy(session);
 
