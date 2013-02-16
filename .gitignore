@@ -1,0 +1,8 @@
+*.dll
+*.ppx
+*.tag
+*.map
+*.exe
+*.ppj
+ircbot
+output
