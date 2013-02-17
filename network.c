@@ -52,18 +52,35 @@ int network_read(struct network_t * network, char * str)
   return len;
 }
 
+void network_send_message(struct network_t * network, char * message)
+{
+  int read;
+  GError * error = NULL;
+  GIOStatus status;
+
+retry:
+  status = g_io_channel_write_chars(network->giochannel, message, strlen(message), &read, &error);
+
+  if (status == G_IO_STATUS_NORMAL)
+    g_io_channel_flush(network->giochannel, NULL);
+  else
+    goto retry;
+}
+
 void network_auth(struct network_t * network, char * nick, char * user, char * name)
 {
   char message[255];
   int read;
   GError * error = NULL;
+  GIOStatus status;
 
   sprintf(message, "PASS *\r\n"
                    "NICK %s\r\n"
-                   "USER %s localhost * :%s\r\n\r\n", nick, user, name);
+                   "USER %s 8 * :%s\r\n\r\n", nick, user, name);
 
-  g_io_channel_write_chars(network->giochannel, message, strlen(message), &read, &error);
+  network_send_message(network, message);
 
+  printf("%s", message);
 }
 
 

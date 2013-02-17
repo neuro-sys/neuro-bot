@@ -9,9 +9,9 @@
 
 int main(int argc, char *argv[])
 {
-  struct session_t * session = session_create("irc.freenode.net", 6667, "mybot", "mypass");
-
-  session_run(session);
+  struct session_t * session = session_create("irc.freenode.net", 6667);
+  if (!session) return -1;
+  session_run(session, "sabribey", "c3po");
 
   session_destroy(session);
 
