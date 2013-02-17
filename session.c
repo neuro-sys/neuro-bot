@@ -14,43 +14,14 @@ struct session_t {
   char *              nickname;
 };
 
-struct srv_message_t {
-  char * prefix;
-  char * command;
-  char * params;
-};
-
 void session_run(struct session_t * session, char * nick, char * pass)
 {
   char * line;
 
   network_auth(session->network, nick, "ircbot", "ircbot");
-/*
-:sdlkfjslkdjf MODE sdlkfjslkdjf :+i
-:neuro_sys!~neuro_sys@unaffiliated/neurosys/x-283974 PRIVMSG sdlkfjslkdjf :foo
-JOIN #test
-:sdlkfjslkdjf!~sdflkjsdf@188.58.66.173 JOIN #test
-*/
+
   while (network_read_line(session->network, &line) != 0) {
-    if (line[0] == ':') { /* irc server message */
-      char **tokens = g_strsplit(line, ":", 3);
-      struct srv_message_t srv_msg;
-      char **srv_msg_tokens = g_strsplit(tokens[0], " ", 3);
-      srv_msg.prefix = srv_msg_tokens[0];
-      srv_msg.prefix = srv_msg_tokens[1];
-      srv_msg.prefix = srv_msg_tokens[2];
-      printf("%s", tokens[2]);
-
-      g_strfreev (tokens);
-    } else {
-      char **tokens = g_strsplit(line, ":", 2);
-      if (!strcmp("PING", tokens[0])) {
-        char msg[255];
-        sprintf(msg, "PONG %s\r\n", tokens[1]);
-        network_send_message(session->network, msg);
-      }
-    }
-
+    irc_process_line(session->network, line);
     g_free(line);
   }
 }
