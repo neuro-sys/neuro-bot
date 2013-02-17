@@ -20,7 +20,8 @@ void session_run(struct session_t * session, char * nick, char * pass)
 
   network_auth(session->network, nick, "ircbot", "ircbot");
 
-  while (network_read_line(session->network, &line) != 0) {
+  while (1) {
+    network_read_line(session->network, &line);
     irc_process_line(session->network, line);
     g_free(line);
   }
