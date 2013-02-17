@@ -27,8 +27,8 @@ struct network_t * network_connect(char * host_name, int port)
   sockfd = t_connect(host_name, port_str);
 
   network->giochannel = g_io_channel_win32_new_socket(sockfd);
-  network->port = port;
-  network->host_name;
+  network->port       = port;
+  network->host_name  = host_name;
 
   return network;
 }
