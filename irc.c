@@ -6,6 +6,7 @@
 #include <string.h>
 
 
+static
 void proc_admin_msg(char * request, char * response)
 {
   char ** tokens = g_strsplit_set(request, " ", 2);
@@ -17,20 +18,31 @@ void proc_admin_msg(char * request, char * response)
 }
 
 static
+void proc_regular_msg(char * request, char * response)
+{
+  
+}
+
+
+static
 void proc_privmsg(struct irc_t * irc)
 {
   char ** tokens = g_strsplit(irc->srv_msg.prefix, "!", 2);
-  char *  nick   = tokens[0];
   char *  msgto  = irc->srv_msg.params;
-
+  strcpy(irc->nick_to_msg, tokens[0]);
 
   /* Admin commands */
-  if (!g_ascii_strcasecmp ("neuro_sys", nick)) {
+  if (irc->request[0] == '.') {
+    proc_regular_msg(irc->request, irc->response);
+    sprintf(irc->response, "PRIVMSG %s :Bakariz, %s.\r\n", msgto, irc->nick_to_msg);
+  } else if (g_strrstr(irc->request, "http:")) {
+    sprintf(irc->response, "PRIVMSG %s :Bir ara title'lara bakicam, %s.\r\n", msgto, irc->nick_to_msg);
+  } else if (!g_ascii_strcasecmp ("neuro_sys", irc->nick_to_msg)) {
     proc_admin_msg(irc->request, irc->response);
-  }
-
+  } 
 }
 
+static
 void irc_proc(struct irc_t * irc)
 {
   if (!strncmp("PRIVMSG", irc->srv_msg.command, 7)) {
@@ -41,11 +53,7 @@ void irc_proc(struct irc_t * irc)
  printf("%s", irc->response);
 }
 
-
-
-
-
-/* prefix     =  servername / ( nickname [ [ "!" user ] "@" host ] ) */
+/*     message    =  [ ":" prefix SPACE ] command [ params ] crlf */
 static
 void proc_msg_prefix(struct irc_t * irc, char * line)
 {
@@ -56,15 +64,17 @@ void proc_msg_prefix(struct irc_t * irc, char * line)
 
   strcpy(irc->srv_msg.prefix, srv_msg_tokens[0]);
   strcpy(irc->srv_msg.command, srv_msg_tokens[1]);
-  strcpy(irc->srv_msg.params, srv_msg_tokens[2]);
+  if (srv_msg_tokens[2] != NULL) /* Is optional as per RFC */
+    strcpy(irc->srv_msg.params, srv_msg_tokens[2]);
  
-  if (tokens[2] != NULL)
+  if (tokens[2] != NULL)  /* Is optional as per RFC */
     strcpy(irc->request, tokens[2]);
 
   g_strfreev (tokens);
   g_strfreev (srv_msg_tokens);
 }
 
+static
 void irc_process_other(struct irc_t * irc, char * line)
 {
   char **tokens = g_strsplit(line, ":", 2);

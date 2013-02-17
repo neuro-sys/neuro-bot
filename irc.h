@@ -16,6 +16,7 @@ struct irc_t {
   struct srv_message_t srv_msg;
   char                 request[MAX_MSG];
   char                 response[MAX_MSG];
+  char                 nick_to_msg[30];
   struct session_t *   session;
 };
 
