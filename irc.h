@@ -1,8 +1,24 @@
 #ifndef __IRC_H
 #define __IRC_H
 
-#include "network.h"
+#include "session.h"
 
-extern void irc_process_line(struct network_t * network, char * line);
+#define MAX_MSG 510
+
+
+struct srv_message_t {
+  char prefix[100];
+  char command[15];
+  char params[100];
+};
+
+struct irc_t {
+  struct srv_message_t srv_msg;
+  char                 request[MAX_MSG];
+  char                 response[MAX_MSG];
+  struct session_t *   session;
+};
+
+extern void irc_process_line(struct session_t * session, struct irc_t * irc, char * line);
 
 #endif

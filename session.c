@@ -2,6 +2,7 @@
 #include "channel.h"
 #include "user.h"
 #include "network.h"
+#include "irc.h"
 
 #include <glib.h>
 #include <stdio.h>
@@ -14,6 +15,11 @@ struct session_t {
   char *              nickname;
 };
 
+struct network_t * session_get_network(struct session_t * session)
+{
+  return session->network;
+}
+
 void session_run(struct session_t * session, char * nick, char * pass)
 {
   char * line;
@@ -21,8 +27,12 @@ void session_run(struct session_t * session, char * nick, char * pass)
   network_auth(session->network, nick, "ircbot", "ircbot");
 
   while (1) {
+    struct irc_t irc;
+    memset(&irc, 0, sizeof irc);
     network_read_line(session->network, &line);
-    irc_process_line(session->network, line);
+    irc_process_line(session, &irc, line);
+    if (irc.response != NULL)
+      network_send_message(session->network, irc.response);
     g_free(line);
   }
 }
