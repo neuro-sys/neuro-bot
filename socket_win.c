@@ -1,4 +1,5 @@
-#include <ws2tcpip.h>
+#include "socket_win.h"
+
 #include <stdio.h>
 
 static void initWinSock(void)
@@ -34,3 +35,4 @@ int t_connect(char *host, char *port)
 
   return sockfd;
 }
+

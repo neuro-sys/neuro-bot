@@ -17,9 +17,10 @@ struct irc_t {
   char                 request[MAX_MSG];
   char                 response[MAX_MSG];
   char                 nick_to_msg[30];
+  char                 from[30];
   struct session_t *   session;
 };
 
-extern void irc_process_line(struct session_t * session, struct irc_t * irc, char * line);
+extern void irc_process_line(struct irc_t * irc, char * line);
 
 #endif

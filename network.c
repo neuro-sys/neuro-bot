@@ -39,7 +39,7 @@ int network_read_line(struct network_t * network, char ** buf)
   GError * error = NULL;
 
   g_io_channel_read_line (network->giochannel, buf, &len, NULL, &error);
-
+  
   return len;
 }
 

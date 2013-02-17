@@ -1,13 +1,11 @@
 #include "irc.h"
-#include "network.h"
 
 #include <glib.h>
 #include <stdio.h>
 #include <string.h>
 
-
 static
-void proc_admin_msg(char * request, char * response)
+void proc_cmd_admin(char * request, char * response)
 {
   char ** tokens = g_strsplit_set(request, " ", 2);
   if (!g_ascii_strcasecmp("join", tokens[0])) {
@@ -18,28 +16,36 @@ void proc_admin_msg(char * request, char * response)
 }
 
 static
-void proc_regular_msg(char * request, char * response)
+void proc_cmd(char * request, char * response)
 {
   
 }
 
 
 static
+void proc_title(struct irc_t * irc)
+{
+
+}
+
+static
 void proc_privmsg(struct irc_t * irc)
 {
   char ** tokens = g_strsplit(irc->srv_msg.prefix, "!", 2);
-  char *  msgto  = irc->srv_msg.params;
+  strcpy(irc->from, irc->srv_msg.params);
   strcpy(irc->nick_to_msg, tokens[0]);
 
   /* Admin commands */
   if (irc->request[0] == '.') {
-    proc_regular_msg(irc->request, irc->response);
-    sprintf(irc->response, "PRIVMSG %s :Bakariz, %s.\r\n", msgto, irc->nick_to_msg);
+    proc_cmd(irc->request, irc->response);
+    sprintf(irc->response, "PRIVMSG %s :Bakariz, %s.\r\n", irc->from, irc->nick_to_msg);
   } else if (g_strrstr(irc->request, "http:")) {
-    sprintf(irc->response, "PRIVMSG %s :Bir ara title'lara bakicam, %s.\r\n", msgto, irc->nick_to_msg);
+    proc_title(irc);
   } else if (!g_ascii_strcasecmp ("neuro_sys", irc->nick_to_msg)) {
-    proc_admin_msg(irc->request, irc->response);
+    proc_cmd_admin(irc->request, irc->response);
   } 
+
+  g_strfreev(tokens);
 }
 
 static
@@ -77,19 +83,19 @@ void proc_msg_prefix(struct irc_t * irc, char * line)
 static
 void irc_process_other(struct irc_t * irc, char * line)
 {
-  char **tokens = g_strsplit(line, ":", 2);
+  char ** tokens = g_strsplit(line, ":", 2);
 
   if (!strncmp("PING", tokens[0], 4)) {
     strcpy(irc->srv_msg.command, tokens[0]);
     strcpy(irc->request, tokens[1]);
   }
+
+  g_strfreev(tokens);
 }
 
 /* message    =  [ ":" prefix SPACE ] command [ params ] crlf */
-void irc_process_line(struct session_t * session, struct irc_t * irc, char * line)
-{
-  irc->session = session;
-  
+void irc_process_line(struct irc_t * irc, char * line)
+{  
   printf("%s", line);
   if (line[0] == ':') {
     proc_msg_prefix(irc, line);
