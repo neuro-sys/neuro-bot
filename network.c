@@ -25,8 +25,6 @@ struct network_t * network_connect(char * host_name, int port)
 
   sprintf(port_str, "%d", port);
   sockfd = t_connect(host_name, port_str);
-  if (sockfd < 0)
-    return NULL;
 
   network->giochannel = g_io_channel_win32_new_socket(sockfd);
   network->port = port;

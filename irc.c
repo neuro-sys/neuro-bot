@@ -18,16 +18,27 @@ JOIN #test
 :sdlkfjslkdjf!~sdflkjsdf@188.58.66.173 JOIN #test
 */
 
+void irc_process_srv_message(struct srv_message_t * srv_msg)
+{
+  if (!strcmp ("PRIVMSG", srv_msg->command)) {
+    char ** tokens = g_strsplit(srv_msg->prefix, "!", 2);
+    char *  nick   = tokens[0];
+  }
+}
+
 void irc_process_server(char * line)
 {
-  char **tokens = g_strsplit(line, ":", 3);
-  struct srv_message_t srv_msg;
-  char **srv_msg_tokens = g_strsplit(tokens[0], " ", 3);
+  struct srv_message_t srv_msg = { NULL, NULL, NULL };
+  char ** tokens, ** srv_msg_tokens;
+  
+  tokens         = g_strsplit_set(line, ":", 3);
+  srv_msg_tokens = g_strsplit_set(tokens[1], " ", 3);
 
-  srv_msg.prefix = srv_msg_tokens[0];
+  srv_msg.prefix  = srv_msg_tokens[0];
   srv_msg.command = srv_msg_tokens[1];
-  srv_msg.params = srv_msg_tokens[2];
+  srv_msg.params  = srv_msg_tokens[2];
 
+  irc_process_srv_message(&srv_msg);
 
   g_strfreev (tokens);
 }
@@ -45,6 +56,7 @@ void irc_process_other(struct network_t * network, char * line)
 void irc_process_line(struct network_t * network, char * line)
 {
   if (line[0] == ':') { /* irc server message */
+    printf("%s", line);
     irc_process_server(line);
   } else {
     irc_process_other(network, line);   

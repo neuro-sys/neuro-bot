@@ -5,7 +5,6 @@
 
 struct user_t {
   char * name;
-
 };
 
 struct user_t * user_create(char * name)

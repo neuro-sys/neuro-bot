@@ -16,7 +16,7 @@ int t_connect(char *host, char *port)
 
   initWinSock();
   memset(&hints, 0, sizeof(hints));
-  hints.ai_family = AF_UNSPEC;
+  hints.ai_family   = AF_UNSPEC;
   hints.ai_socktype = SOCK_STREAM;
 
   if (getaddrinfo(host, port, &hints, &res) != 0) {

@@ -6,8 +6,8 @@
 #include <glib.h>
 
 struct channel_t {
-  char * name;
-  GSList * user_list;
+  char *    name;
+  GSList *  user_list;
 };
 
 void channel_add_user(struct channel_t * channel, struct user_t * user)
@@ -26,8 +26,8 @@ struct user_t * channel_find_user_by_name(struct channel_t * channel, char * nam
 
 struct user_t * channel_remove_user_by_name(struct channel_t * channel, char * name)
 {
-  struct user_t * user = channel_find_user_by_name(channel, name);
-  channel->user_list = g_slist_remove(channel->user_list, user);
+  struct user_t * user  = channel_find_user_by_name(channel, name);
+  channel->user_list    = g_slist_remove(channel->user_list, user);
   return user;
 }
 
