@@ -3,6 +3,7 @@
 #include <glib.h>
 #include <stdio.h>
 #include <string.h>
+#include <curl/curl.h>
 
 static
 void proc_cmd_admin(char * request, char * response)
@@ -21,11 +22,45 @@ void proc_cmd(char * request, char * response)
   
 }
 
+size_t write_data(void *buffer, size_t size, size_t nmemb, void *userp)
+{
+  GRegex * regex;
+  GMatchInfo * match_info;
+  struct irc_t * irc = (struct irc_t *) userp;
+  char title[255];
+
+  regex = g_regex_new("(?i)<TITLE>(.+?)</TITLE>", 0, 0, NULL);
+  g_regex_match(regex, (char *) buffer, 0, &match_info);
+  if (g_match_info_matches(match_info)) {
+    char * t = g_match_info_fetch(match_info, 0);
+    strncpy(title, t, 255);
+    g_free(t);
+    sprintf(irc->response, "PRIVMSG %s :%s\r\n", irc->from, title);
+    g_match_info_next (match_info, NULL);
+  }
+  g_match_info_free(match_info);
+  g_regex_unref(regex);
+
+  return size * nmemb;
+}
 
 static
 void proc_title(struct irc_t * irc)
 {
+	CURL *   curl;
+	CURLcode res;
+  char title[256];
+  char response[256];
+  size_t n;
 
+  curl = curl_easy_init();
+  curl_easy_setopt(curl, CURLOPT_URL, irc->request);
+  curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_data);
+  curl_easy_setopt(curl, CURLOPT_WRITEDATA, irc);
+  curl_easy_perform(curl);
+
+  curl_easy_cleanup(curl);
+  
 }
 
 static
