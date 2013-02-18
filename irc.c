@@ -90,8 +90,8 @@ char * fill_memory_url(char * url)
   CURL * curl;
   struct MemoryStruct chunk;
 
-  chunk.memory = malloc(1);
-  chunk.size = 1;
+  chunk.memory = malloc(0);
+  chunk.size = 0;
 
   curl = curl_easy_init();
   curl_easy_setopt(curl, CURLOPT_URL, url);
@@ -120,7 +120,7 @@ void proc_info_youtube(struct irc_t * irc)
   g_regex_match(regex, irc->request, 0, &match_info);
   if (g_match_info_matches(match_info)) {
     char * match = g_match_info_fetch(match_info, 0);
-    sprintf(url_path, "http://gdata.youtube.com/feeds/api/videos/%s?alt=json", match);
+    sprintf(url_path, "http://gdata.youtube.com/feeds/api/videos/%s?alt=json&ver=2", match);
     g_free(match);
   }
 
