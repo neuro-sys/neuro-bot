@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <curl/curl.h>
+#include <jansson.h>
 
 static
 void proc_cmd_admin(char * request, char * response)
@@ -22,26 +23,57 @@ void proc_cmd(char * request, char * response)
   
 }
 
-size_t write_data(void *buffer, size_t size, size_t nmemb, void *userp)
+size_t callback_title(void *buffer, size_t size, size_t nmemb, void *userp)
 {
   GRegex * regex;
   GMatchInfo * match_info;
-  struct irc_t * irc = (struct irc_t *) userp;
-  char title[255];
+  char * ret_msg = (char *) userp;
 
   regex = g_regex_new("(?i)<TITLE>(.+?)</TITLE>", 0, 0, NULL);
   g_regex_match(regex, (char *) buffer, 0, &match_info);
   if (g_match_info_matches(match_info)) {
     char * t = g_match_info_fetch(match_info, 0);
-    strncpy(title, t, 255);
+    strncpy(ret_msg, t, 255);
     g_free(t);
-    sprintf(irc->response, "PRIVMSG %s :%s\r\n", irc->from, title);
     g_match_info_next (match_info, NULL);
   }
   g_match_info_free(match_info);
   g_regex_unref(regex);
 
   return size * nmemb;
+}
+
+size_t callback_youtube_json(void *buffer, size_t size, size_t nmemb, void *userp)
+{
+  puts( (char *) buffer);
+}
+
+static
+void proc_info_youtube(struct irc_t * irc)
+{
+  CURL *   curl;
+  GRegex * regex;
+  GMatchInfo * match_info;
+  char url_path[512];
+
+  regex = g_regex_new("[^/]+$", 0, 0, NULL);
+  g_regex_match(regex, irc->request, 0, &match_info);
+  if (g_match_info_matches(match_info)) {
+    char * match = g_match_info_fetch(match_info, 0);
+    sprintf(url_path, "http://gdata.youtube.com/feeds/api/videos/%s?alt=json", match);
+    g_free(match);
+  }
+
+  g_regex_unref(regex);
+
+  curl = curl_easy_init();
+  curl_easy_setopt(curl, CURLOPT_URL, url_path);
+  curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, callback_youtube_json);
+  curl_easy_setopt(curl, CURLOPT_WRITEDATA, irc);
+  curl_easy_perform(curl);
+
+  curl_easy_cleanup(curl);
+
 }
 
 static
@@ -52,15 +84,38 @@ void proc_title(struct irc_t * irc)
   char title[256];
   char response[256];
   size_t n;
+  char *http_regex = "http:\\/\/\\S*";
+  GRegex * regex;
+  char * match;
+  GMatchInfo * match_info;
 
+  regex = g_regex_new(http_regex, 0, 0, NULL);
+  g_regex_match(regex, irc->request, 0, &match_info);
+
+  if (!g_match_info_matches(match_info))
+    return;
+
+  match = g_match_info_fetch(match_info, 0);
+  strcpy(irc->request, match);
+  g_free(match);
+  g_regex_unref(regex);
+
+  if (g_strrstr(irc->request, "youtu")) {
+    proc_info_youtube(irc);
+    return;
+  } 
+  
   curl = curl_easy_init();
   curl_easy_setopt(curl, CURLOPT_URL, irc->request);
-  curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, write_data);
-  curl_easy_setopt(curl, CURLOPT_WRITEDATA, irc);
+  curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1);
+  curl_easy_setopt(curl, CURLOPT_POSTREDIR, CURL_REDIR_POST_ALL );
+  curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, callback_title);
+  curl_easy_setopt(curl, CURLOPT_WRITEDATA, title);
   curl_easy_perform(curl);
 
   curl_easy_cleanup(curl);
-  
+
+  sprintf(irc->response, "PRIVMSG %s :%s\r\n", irc->from, title);
 }
 
 static
