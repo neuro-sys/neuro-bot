@@ -66,12 +66,14 @@ void parse_title(char * dest, char * src)
   g_regex_unref(regex);
 }
 
-size_t callback_youtube_json(void *buffer, size_t size, size_t nmemb, void *userp)
+static
+void parse_json(char * data)
 {
   json_t *root;
+  json_error_t error;
   int i = 0;
 
-  root = json_loads((char *) buffer, JSON_DECODE_ANY | JSON_DISABLE_EOF_CHECK , NULL);
+  root = json_loads(data, JSON_DECODE_ANY | JSON_DISABLE_EOF_CHECK , &error);
 
   for (i = 0; i < json_array_size(root); i++) {
     json_t *data;
@@ -83,12 +85,36 @@ size_t callback_youtube_json(void *buffer, size_t size, size_t nmemb, void *user
 }
 
 static
+char * fill_memory_url(char * url)
+{
+  CURL * curl;
+  struct MemoryStruct chunk;
+
+  chunk.memory = malloc(1);
+  chunk.size = 1;
+
+  curl = curl_easy_init();
+  curl_easy_setopt(curl, CURLOPT_URL, url);
+  curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1);
+  curl_easy_setopt(curl, CURLOPT_POSTREDIR, CURL_REDIR_POST_ALL );
+  curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteMemoryCallback);
+  curl_easy_setopt(curl, CURLOPT_WRITEDATA, &chunk);
+  curl_easy_perform(curl);
+
+  curl_easy_cleanup(curl);
+
+  return chunk.memory;
+}
+
+
+static
 void proc_info_youtube(struct irc_t * irc)
 {
   CURL *   curl;
   GRegex * regex;
   GMatchInfo * match_info;
   char url_path[512];
+  char * content;
 
   regex = g_regex_new("[^/]+$", 0, 0, NULL);
   g_regex_match(regex, irc->request, 0, &match_info);
@@ -100,15 +126,9 @@ void proc_info_youtube(struct irc_t * irc)
 
   g_regex_unref(regex);
 
-  curl = curl_easy_init();
-  curl_easy_setopt(curl, CURLOPT_URL, url_path);
-  curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, callback_youtube_json);
-  curl_easy_setopt(curl, CURLOPT_WRITEDATA, irc);
-  curl_easy_perform(curl);
-  curl_easy_cleanup(curl);
-  
-
-
+  content = fill_memory_url(url_path);
+  parse_json(content);
+  free(content);
 }
 
 static int
@@ -132,34 +152,11 @@ validate_http(char * line)
   return 1;
 }
 
-static
-char * fill_memory_url(char * url)
-{
-  CURL *   curl;
-  struct MemoryStruct chunk;
-
-  chunk.memory = malloc(1);
-
-  chunk.size = 1;
-  curl = curl_easy_init();
-  curl_easy_setopt(curl, CURLOPT_URL, url);
-  curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1);
-  curl_easy_setopt(curl, CURLOPT_POSTREDIR, CURL_REDIR_POST_ALL );
-  curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteMemoryCallback);
-  curl_easy_setopt(curl, CURLOPT_WRITEDATA, &chunk);
-  curl_easy_perform(curl);
-
-  curl_easy_cleanup(curl);
-
-  return chunk.memory;
-}
 
 static
 void proc_title(struct irc_t * irc)
 {
   char title[256];
-  char response[256];
-  size_t n;
   char * content;
 
   if ( validate_http(irc->request) < 0 )
