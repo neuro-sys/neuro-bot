@@ -29,9 +29,10 @@ void session_run(struct session_t * session, char * nick, char * pass)
 
   while (1) {
     memset(&irc, 0, sizeof irc);
-    network_read_line(session->network, &line);
+    if ( network_read_line(session->network, &line) < 0 )
+		continue;
     irc_process_line(&irc, line);
-    if (irc.response != NULL)
+    if ( irc.response != NULL )
       network_send_message(session->network, irc.response);
     g_free(line);
   }

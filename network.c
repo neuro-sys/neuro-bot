@@ -38,7 +38,8 @@ int network_read_line(struct network_t * network, char ** buf)
   int len;
   GError * error = NULL;
 
-  g_io_channel_read_line (network->giochannel, buf, &len, NULL, &error);
+  if (g_io_channel_read_line (network->giochannel, buf, &len, NULL, &error) != G_IO_STATUS_NORMAL)
+	  return -1;
   
   return len;
 }
