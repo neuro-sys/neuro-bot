@@ -23,29 +23,63 @@ void proc_cmd(char * request, char * response)
   
 }
 
-size_t callback_title(void *buffer, size_t size, size_t nmemb, void *userp)
+struct MemoryStruct {
+  char *memory;
+  size_t size;
+};
+ 
+static size_t
+WriteMemoryCallback(void *contents, size_t size, size_t nmemb, void *userp)
 {
-  GRegex * regex;
-  GMatchInfo * match_info;
-  char * ret_msg = (char *) userp;
+  size_t realsize = size * nmemb;
+  struct MemoryStruct *mem = (struct MemoryStruct *)userp;
+ 
+  mem->memory = realloc(mem->memory, mem->size + realsize + 1);
+  if (mem->memory == NULL) {
+    /* out of memory! */ 
+    printf("not enough memory (realloc returned NULL)\n");
+    exit(EXIT_FAILURE);
+  }
+ 
+  memcpy(&(mem->memory[mem->size]), contents, realsize);
+  mem->size += realsize;
+  mem->memory[mem->size] = 0;
+ 
+  return realsize;
+}
+
+
+void parse_title(char * dest, char * src)
+{
+  GRegex *      regex;
+  GMatchInfo *  match_info;
 
   regex = g_regex_new("(?i)<TITLE>(.+?)</TITLE>", 0, 0, NULL);
-  g_regex_match(regex, (char *) buffer, 0, &match_info);
+  g_regex_match(regex, src, 0, &match_info);
   if (g_match_info_matches(match_info)) {
     char * t = g_match_info_fetch(match_info, 0);
-    strncpy(ret_msg, t, 255);
+    strncpy(dest, t, 255);
     g_free(t);
-    g_match_info_next (match_info, NULL);
+    //g_match_info_next (match_info, NULL);
   }
   g_match_info_free(match_info);
   g_regex_unref(regex);
-
-  return size * nmemb;
 }
 
 size_t callback_youtube_json(void *buffer, size_t size, size_t nmemb, void *userp)
 {
-  puts( (char *) buffer);
+  json_t *root;
+  int i = 0;
+
+  root = json_loads((char *) buffer, JSON_DECODE_ANY | JSON_DISABLE_EOF_CHECK , NULL);
+
+  for (i = 0; i < json_array_size(root); i++) {
+    json_t *data;
+
+    data = json_array_get(root, i);
+
+    printf("%zu", data->type);
+  }
 }
 
 static
@@ -71,49 +105,74 @@ void proc_info_youtube(struct irc_t * irc)
   curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, callback_youtube_json);
   curl_easy_setopt(curl, CURLOPT_WRITEDATA, irc);
   curl_easy_perform(curl);
+  curl_easy_cleanup(curl);
+  
+
+
+}
+
+static int
+validate_http(char * line)
+{
+  GRegex * regex;
+  GMatchInfo * match_info;
+  char * match;
+
+  regex = g_regex_new("http:\\/\/\\S*", 0, 0, NULL);
+  g_regex_match(regex, line, 0, &match_info);
+
+  if (!g_match_info_matches(match_info))
+    return -1;
+
+  match = g_match_info_fetch(match_info, 0);
+  strcpy(line, match);
+  g_free(match);
+  g_regex_unref(regex);
+
+  return 1;
+}
+
+static
+char * fill_memory_url(char * url)
+{
+  CURL *   curl;
+  struct MemoryStruct chunk;
+
+  chunk.memory = malloc(1);
+
+  chunk.size = 1;
+  curl = curl_easy_init();
+  curl_easy_setopt(curl, CURLOPT_URL, url);
+  curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1);
+  curl_easy_setopt(curl, CURLOPT_POSTREDIR, CURL_REDIR_POST_ALL );
+  curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteMemoryCallback);
+  curl_easy_setopt(curl, CURLOPT_WRITEDATA, &chunk);
+  curl_easy_perform(curl);
 
   curl_easy_cleanup(curl);
 
+  return chunk.memory;
 }
 
 static
 void proc_title(struct irc_t * irc)
 {
-	CURL *   curl;
-	CURLcode res;
   char title[256];
   char response[256];
   size_t n;
-  char *http_regex = "http:\\/\/\\S*";
-  GRegex * regex;
-  char * match;
-  GMatchInfo * match_info;
+  char * content;
 
-  regex = g_regex_new(http_regex, 0, 0, NULL);
-  g_regex_match(regex, irc->request, 0, &match_info);
-
-  if (!g_match_info_matches(match_info))
+  if ( validate_http(irc->request) < 0 )
     return;
-
-  match = g_match_info_fetch(match_info, 0);
-  strcpy(irc->request, match);
-  g_free(match);
-  g_regex_unref(regex);
-
+  
   if (g_strrstr(irc->request, "youtu")) {
     proc_info_youtube(irc);
     return;
   } 
-  
-  curl = curl_easy_init();
-  curl_easy_setopt(curl, CURLOPT_URL, irc->request);
-  curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1);
-  curl_easy_setopt(curl, CURLOPT_POSTREDIR, CURL_REDIR_POST_ALL );
-  curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, callback_title);
-  curl_easy_setopt(curl, CURLOPT_WRITEDATA, title);
-  curl_easy_perform(curl);
 
-  curl_easy_cleanup(curl);
+  content = fill_memory_url(irc->request);
+  parse_title(title, content);
+  free(content);
 
   sprintf(irc->response, "PRIVMSG %s :%s\r\n", irc->from, title);
 }
