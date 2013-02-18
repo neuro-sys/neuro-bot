@@ -57,13 +57,11 @@ void network_send_message(struct network_t * network, char * message)
   GError * error = NULL;
   GIOStatus status;
 
-retry:
   status = g_io_channel_write_chars(network->giochannel, message, strlen(message), &read, &error);
 
   if (status == G_IO_STATUS_NORMAL)
     g_io_channel_flush(network->giochannel, NULL);
-  else
-    goto retry;
+  
 }
 
 void network_auth(struct network_t * network, char * nick, char * user, char * name)
