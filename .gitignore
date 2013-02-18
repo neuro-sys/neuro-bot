@@ -6,3 +6,12 @@
 *.ppj
 ircbot
 output
+ipch
+Debug
+Release
+*.sdf
+*.user
+*.vcxproj
+*.sln
+*.filters
+
