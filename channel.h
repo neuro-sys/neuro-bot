@@ -5,7 +5,7 @@
 #include <glib.h>
 #include <stdio.h>
 
-extern struct channel_t;
+struct channel_t;
 
 extern struct channel_t *   channel_create            (char * name);
 extern const char *         channel_get_name          (const struct channel_t * channel);

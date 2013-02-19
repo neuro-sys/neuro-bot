@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include <glib.h>
 
-extern struct user_t;
+struct user_t;
 
 extern void             user_destroy  (struct user_t * user);
 extern struct user_t *  user_create   (char * name);

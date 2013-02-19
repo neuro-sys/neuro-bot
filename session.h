@@ -1,7 +1,7 @@
 #ifndef __SESSION_H
 #define __SESSION_H
 
-extern struct session_t;
+struct session_t;
 
 extern struct session_t *   session_create                  (char * host, int port);
 extern void                 session_destroy                 (struct session_t * session);
