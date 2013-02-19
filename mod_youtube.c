@@ -45,7 +45,7 @@ void proc_info_youtube(struct irc_t * irc, struct youtube_t * youtube)
   char *           content;
 
   g_debug("%zu\t%s\t\t%s", __LINE__, __FILE__, __func__);
-  regex = g_regex_new("#(?<=v=)[a-zA-Z0-9-]+(?=&)|(?<=v\\/)[^&\\n]+(?=\\?)|(?<=v=)[^&\\n]+|(?<=youtu.be\\/)[^&\\n]+#", 0, 0, NULL);
+  regex = g_regex_new("(?<=v=)[a-zA-Z0-9-]+(?=&)|(?<=v\\/)[^&\\n]+|(?<=v=)[^&\\n]+|(?<=youtu.be/)[^&\\n]+", 0, 0, NULL);
 
   g_regex_match(regex, irc->request, 0, &match_info);
   if (g_match_info_matches(match_info)) {
