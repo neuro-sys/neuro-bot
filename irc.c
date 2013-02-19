@@ -179,11 +179,12 @@ void proc_title(struct irc_t * irc)
   g_debug("%zu\t%s\t\t%s", __LINE__, __FILE__, __func__);
   if (validate_http(irc->request) < 0 )
     return;
-  
+#if 0
   if (g_strrstr(irc->request, "youtu")) {
     proc_info_youtube(irc);
     return;
   } 
+#endif
 
   content = fill_memory_url(irc->request);
   
