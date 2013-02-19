@@ -45,15 +45,15 @@ void proc_info_youtube(struct irc_t * irc, struct youtube_t * youtube)
   char *           content;
 
   g_debug("%zu\t%s\t\t%s", __LINE__, __FILE__, __func__);
-  if (g_strrstr(irc->request, "watch"))
-    regex = g_regex_new("[?&]v=(\\S{11})",0, 0, NULL);
-  else 
-    regex = g_regex_new("[^/]+$", 0, 0, NULL);
+  regex = g_regex_new("#(?<=v=)[a-zA-Z0-9-]+(?=&)|(?<=v\\/)[^&\\n]+(?=\\?)|(?<=v=)[^&\\n]+|(?<=youtu.be\\/)[^&\\n]+#", 0, 0, NULL);
 
   g_regex_match(regex, irc->request, 0, &match_info);
   if (g_match_info_matches(match_info)) {
-    char * match = g_match_info_fetch(match_info, 1);
-    sprintf(url_path, "http://gdata.youtube.com/feeds/api/videos/%s?alt=json&ver=2", match);
+    char * match = g_match_info_fetch(match_info, 0);
+    char nasty_escape[12];
+
+    snprintf(nasty_escape, 12, match);
+    sprintf(url_path, "http://gdata.youtube.com/feeds/api/videos/%s?alt=json&ver=2", nasty_escape);
     g_free(match);
   }
 
