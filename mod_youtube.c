@@ -52,7 +52,7 @@ void proc_info_youtube(struct irc_t * irc, struct youtube_t * youtube)
 
   g_regex_match(regex, irc->request, 0, &match_info);
   if (g_match_info_matches(match_info)) {
-    char * match = g_match_info_fetch(match_info, 0);
+    char * match = g_match_info_fetch(match_info, 1);
     sprintf(url_path, "http://gdata.youtube.com/feeds/api/videos/%s?alt=json&ver=2", match);
     g_free(match);
   }
