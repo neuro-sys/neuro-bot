@@ -31,21 +31,30 @@ struct network_t * network_connect(char * host_name, int port)
   sprintf(port_str, "%d", port);
   sockfd = t_connect(host_name, port_str);
 
+#if defined(WIN32)
   network->giochannel = g_io_channel_win32_new_socket(sockfd);
+#elif defined(linux)
+  network->giochannel = g_io_channel_unix_new(sockfd);
+#endif
   network->port       = port;
   network->host_name  = host_name;
 
+  g_io_channel_set_encoding(network->giochannel, NULL, NULL);
   return network;
 }
 
 int network_read_line(struct network_t * network, char ** buf)
 {
   int len;
+  int giostatus;
   GError * error = NULL;
   
   g_debug("%zu\t%s\t%s", __LINE__, __FILE__, __func__);
-  if (g_io_channel_read_line (network->giochannel, buf, &len, NULL, &error) != G_IO_STATUS_NORMAL)
-	  return -1;
+  if ( (giostatus = g_io_channel_read_line (network->giochannel, buf, &len, NULL, &error)) != G_IO_STATUS_NORMAL) {
+    printf("%d\n", giostatus);
+    if (giostatus == 0) printf("%s\n", error->message);
+    return -1;
+  }
   
   return len;
 }

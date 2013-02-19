@@ -5,7 +5,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <curl/curl.h>
-#include <jansson.h>
 
 static
 void proc_cmd_admin(char * request, char * response)
@@ -44,7 +43,7 @@ WriteMemoryCallback(void * contents, size_t size, size_t nmemb, void * userp)
   mem->memory = realloc(mem->memory, mem->size + realsize + 1);
   if (mem->memory == NULL) {
     printf("not enough memory (realloc returned NULL)\n");
-    exit(EXIT_FAILURE);
+    exit(-1);
   }
  
   memcpy(&(mem->memory[mem->size]), contents, realsize);
@@ -85,20 +84,6 @@ int parse_title(char * dest, char * src)
 static
 void parse_json(char * data)
 {
-  json_t *      root;
-  json_error_t  error;
-  int i;
-
-  g_debug("%zu\t%s\t\t%s", __LINE__, __FILE__, __func__);
-  root = json_loads(data, JSON_DECODE_ANY | JSON_DISABLE_EOF_CHECK , &error);
-
-  for (i = 0; i < json_array_size(root); i++) {
-    json_t * data;
-
-    data = json_array_get(root, i);
-
-    printf("%zu", data->type);
-  }
 }
 
 static
@@ -115,7 +100,7 @@ char * fill_memory_url(char * url)
   curl_easy_setopt(curl, CURLOPT_URL, url);
   curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1);
   curl_easy_setopt(curl, CURLOPT_POSTREDIR, CURL_REDIR_POST_ALL );
-  curl_easy_setopt(curl, CURLOPT_VERBOSE);
+  curl_easy_setopt(curl, CURLOPT_VERBOSE, 1);
   curl_easy_setopt(curl, CURLOPT_HEADER, 1);
   curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteMemoryCallback);
   curl_easy_setopt(curl, CURLOPT_WRITEDATA, &chunk);
@@ -239,22 +224,19 @@ void irc_proc(struct irc_t * irc)
 static
 void proc_msg_prefix(struct irc_t * irc, char * line)
 {
-  char ** tokens, ** srv_msg_tokens;
+  char ** tokens;
   
-  g_debug("%zu\t%s\t\t%s", __LINE__, __FILE__, __func__);
-  tokens         = g_strsplit(line, ":", 3);
-  srv_msg_tokens = g_strsplit(tokens[1], " ", 3);
+  tokens = g_strsplit(line, " ", 3); 
 
-  strcpy(irc->srv_msg.prefix, srv_msg_tokens[0]);
-  strcpy(irc->srv_msg.command, srv_msg_tokens[1]);
-  if (srv_msg_tokens[2] != NULL) /* Is optional as per RFC */
-    strcpy(irc->srv_msg.params, srv_msg_tokens[2]);
+  strcpy(irc->srv_msg.prefix, tokens[0]+1); /* skip ':' from the prefix */
+  strcpy(irc->srv_msg.command, tokens[1]);
+  if (tokens[2][0] != ':') { /* if the 3rd token does not start with a ':', there are params */
+    strcpy(irc->srv_msg.params, tokens[2]); /* this copies only the first param */
+  } else {
+    strcpy(irc->request, tokens[2][0]+1);
+  }
  
-  if (tokens[2] != NULL)  /* Is optional as per RFC */
-    strcpy(irc->request, tokens[2]);
-
   g_strfreev (tokens);
-  g_strfreev (srv_msg_tokens);
 }
 
 static
