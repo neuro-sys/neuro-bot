@@ -51,6 +51,10 @@ WriteMemoryCallback(void * contents, size_t size, size_t nmemb, void * userp)
   mem->size += realsize;
   mem->memory[mem->size] = 0;
   g_debug("Memory chunking: %zu bytes.", mem->size);
+  if (mem->size > 16*1024) {
+    g_debug("Passed chunking limit\n");
+    return -1;
+  }
   return realsize;
 }
 
