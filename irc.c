@@ -85,6 +85,7 @@ int parse_title(char * dest, char * src)
 struct youtube_t {
   double          rating;
   char            view_count[20];
+  int             was_read; 
 };
 
 static
@@ -102,7 +103,7 @@ void parse_json_youtube(char * data, struct youtube_t * youtube)
   statistics  = json_object_get(entry, "yt$statistics"); 
   json_unpack(json_object_get(rating, "average"), "F", &youtube->rating);
   strcpy(youtube->view_count, json_string_value(json_object_get(statistics, "viewCount")));
-
+  youtube->was_read = 1;
   json_decref(root);
 }
 
@@ -189,6 +190,9 @@ void proc_title(struct irc_t * irc)
   char title[256];
   char * content = NULL;
   struct youtube_t youtube;
+  char youtube_api[100];
+
+  memset(&youtube, 0, sizeof (struct youtube_t));
 
   g_debug("%zu\t%s\t\t%s", __LINE__, __FILE__, __func__);
   if (validate_http(irc->request) < 0 )
@@ -197,13 +201,19 @@ void proc_title(struct irc_t * irc)
   if (g_strrstr(irc->request, "youtu")) {
     proc_info_youtube(irc, &youtube);
   } 
-
+  if (youtube.was_read) {
+    sprintf(youtube_api, " [rating: %.2f, viewed: %s]", youtube.rating, youtube.view_count);
+  }
   content = fill_memory_url(irc->request);
   
   if (!content) return;
   
   if ( parse_title(title, content) > 0 ) {
-    sprintf(irc->response, "PRIVMSG %s :%s [rating: %.2f, viewed: %s]\r\n", irc->from, title, youtube.rating, youtube.view_count);
+    sprintf(irc->response, "PRIVMSG %s :%s", irc->from, title);
+    if (youtube.was_read) {
+      strcat(irc->response, youtube_api);
+    }   
+    strcat(irc->response, "\r\n");
   }
 
   free(content);
