@@ -5,10 +5,9 @@
 
 #define MAX_MSG 510
 
-
 struct srv_message_t {
   char prefix[100];
-  char command[15];
+  char command[20];
   char params[100];
 };
 
