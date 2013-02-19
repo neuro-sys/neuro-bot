@@ -4,14 +4,17 @@
 #include "session.h"
 #include "channel.h"
 #include "user.h"
-
-#define IRCDEBUG
+#include "global.h"
 
 int main(int argc, char *argv[])
 {
-  struct session_t * session = session_create("irc.freenode.net", 6667);
+  struct session_t * session;
+  
+  log_init(G_LOG_LEVEL_DEBUG);
 
-  session_run(session, "sabribey", "c3po");
+  session = session_create("irc.freenode.net", 6667);
+
+  session_run(session, "sabribey", "");
 
   session_destroy(session);
 
