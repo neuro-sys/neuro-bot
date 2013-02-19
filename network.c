@@ -1,6 +1,6 @@
 #include "global.h"
 #include "network.h"
-#include "socket_win.h"
+#include "socket.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <glib.h>

@@ -1,5 +1,5 @@
-#include "socket_win.h"
-
+#include "socket.h"
+#if defined (WIN32)
 #include <stdio.h>
 
 static void initWinSock(void)
@@ -10,7 +10,7 @@ static void initWinSock(void)
     return;
 }
 
-int t_connect(char *host, char *port)
+int t_connect_win(char *host, char *port)
 {
   struct addrinfo hints, *res;
   int sockfd;
@@ -36,3 +36,4 @@ int t_connect(char *host, char *port)
   return sockfd;
 }
 
+#endif
