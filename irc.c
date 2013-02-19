@@ -5,7 +5,9 @@
 #include <stdio.h>
 #include <string.h>
 #include <curl/curl.h>
-
+#if defined(WIN32)
+#include <jansson.h>
+#endif
 static
 void proc_cmd_admin(char * request, char * response)
 {
@@ -81,21 +83,27 @@ int parse_title(char * dest, char * src)
   return -1;
 }
 
+struct youtube_t {
+  double rating;
+  int    view_count;
+};
+
 static
-void parse_json(char * data)
+void parse_json_youtube(char * data, struct youtube_t * youtube)
 {
-#if 0
+#if defined (WIN32)
   json_t *      root;
   json_error_t  error;
   int i;
+  json_t * entry, * rating, * statistics;
 
   g_debug("%zu\t%s\t\t%s", __LINE__, __FILE__, __func__);
-  root = json_loads(data, JSON_DECODE_ANY | JSON_DISABLE_EOF_CHECK , &error);
-  for (i = 0; i < json_array_size(root); i++) {
-    json_t * data;
-    data = json_array_get(root, i);
-    printf("%zu", data->type);
-  }
+  root        = json_loads(data, JSON_DECODE_ANY | JSON_DISABLE_EOF_CHECK , &error);
+  entry       = json_object_get(root, "entry");
+  rating      = json_object_get(entry, "gd$rating");
+  statistics  = json_object_get(entry, "yt$statistics"); 
+  json_unpack(json_object_get(rating, "average"), "F", &youtube->rating);
+  json_unpack(json_object_get(statistics, "viewCount"), "i", &youtube->view_count);
 #endif
 }
 
@@ -114,7 +122,7 @@ char * fill_memory_url(char * url)
   curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1);
   curl_easy_setopt(curl, CURLOPT_POSTREDIR, CURL_REDIR_POST_ALL );
   curl_easy_setopt(curl, CURLOPT_VERBOSE, 1);
-  curl_easy_setopt(curl, CURLOPT_HEADER, 1);
+  //curl_easy_setopt(curl, CURLOPT_HEADER, 1);
   curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteMemoryCallback);
   curl_easy_setopt(curl, CURLOPT_WRITEDATA, &chunk);
   curl_easy_perform(curl);
@@ -127,11 +135,12 @@ char * fill_memory_url(char * url)
 static
 void proc_info_youtube(struct irc_t * irc)
 {
-  CURL *          curl;
-  GRegex *        regex;
-  GMatchInfo *    match_info;
-  char            url_path[512];
-  char *          content;
+  CURL *           curl;
+  GRegex *         regex;
+  GMatchInfo *     match_info;
+  char             url_path[512];
+  char *           content;
+  struct youtube_t youtube;
 
   g_debug("%zu\t%s\t\t%s", __LINE__, __FILE__, __func__);
   regex = g_regex_new("[^/]+$", 0, 0, NULL);
@@ -145,8 +154,10 @@ void proc_info_youtube(struct irc_t * irc)
   g_regex_unref(regex);
 
   content = fill_memory_url(url_path);
-  parse_json(content);
+  parse_json_youtube(content, &youtube);
   free(content);
+
+  sprintf(irc->response, "PRIVMSG %s : Rating: %f, Viewed: %d\r\n", irc->from, youtube.rating, youtube.rating);
 }
 
 static int
@@ -181,7 +192,7 @@ void proc_title(struct irc_t * irc)
   g_debug("%zu\t%s\t\t%s", __LINE__, __FILE__, __func__);
   if (validate_http(irc->request) < 0 )
     return;
-#if 0
+#if defined(WIN32)
   if (g_strrstr(irc->request, "youtu")) {
     proc_info_youtube(irc);
     return;
