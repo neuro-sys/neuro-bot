@@ -84,6 +84,19 @@ int parse_title(char * dest, char * src)
 static
 void parse_json(char * data)
 {
+#if 0
+  json_t *      root;
+  json_error_t  error;
+  int i;
+
+  g_debug("%zu\t%s\t\t%s", __LINE__, __FILE__, __func__);
+  root = json_loads(data, JSON_DECODE_ANY | JSON_DISABLE_EOF_CHECK , &error);
+  for (i = 0; i < json_array_size(root); i++) {
+    json_t * data;
+    data = json_array_get(root, i);
+    printf("%zu", data->type);
+  }
+#endif
 }
 
 static
@@ -226,16 +239,18 @@ void proc_msg_prefix(struct irc_t * irc, char * line)
 {
   char ** tokens;
   
-  tokens = g_strsplit(line, " ", 3); 
+  tokens = g_strsplit(line, " ", 4); 
 
   strcpy(irc->srv_msg.prefix, tokens[0]+1); /* skip ':' from the prefix */
   strcpy(irc->srv_msg.command, tokens[1]);
   if (tokens[2][0] != ':') { /* if the 3rd token does not start with a ':', there are params */
     strcpy(irc->srv_msg.params, tokens[2]); /* this copies only the first param */
+    if (tokens[3] != NULL) /* the rest is optional */
+      strcpy(irc->request, tokens[3]+1);
   } else {
-    strcpy(irc->request, tokens[2][0]+1);
+    strcpy(irc->request, tokens[2]+1);
   }
- 
+
   g_strfreev (tokens);
 }
 
