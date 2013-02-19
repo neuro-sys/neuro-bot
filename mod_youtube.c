@@ -12,6 +12,7 @@ struct youtube_t {
   double          rating;
   char            view_count[20];
   char            title[100];
+  int             valid;
 };
 
 static
@@ -24,6 +25,8 @@ void parse_json_youtube(char * data, struct youtube_t * youtube)
 
   g_debug("%zu\t%s\t\t%s", __LINE__, __FILE__, __func__);
   root        = json_loads(data, JSON_DECODE_ANY | JSON_DISABLE_EOF_CHECK , &error);
+  if (!root)
+    return;
   entry       = json_object_get(root, "entry");
   rating      = json_object_get(entry, "gd$rating");
   statistics  = json_object_get(entry, "yt$statistics"); 
@@ -33,6 +36,7 @@ void parse_json_youtube(char * data, struct youtube_t * youtube)
   strcpy(youtube->title, json_string_value(json_object_get(title, "$t")));
 
   json_decref(root);
+  youtube->valid = 1;
 }
 
 static
@@ -72,7 +76,8 @@ void proc_youtube(struct irc_t * irc)
   youtube = malloc(sizeof (struct youtube_t));
   proc_info_youtube(irc, youtube);
 
-  sprintf(irc->response, "PRIVMSG %s :[%s] - [rating: %f, viewed: %s\r\n", 
+  if (youtube->valid)
+    sprintf(irc->response, "PRIVMSG %s :[%s] - [rating: %f, viewed: %s\r\n", 
                                 irc->from, youtube->title, youtube->rating, youtube->view_count);
   free(youtube);
 }
