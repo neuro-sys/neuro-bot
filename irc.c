@@ -5,9 +5,8 @@
 #include <stdio.h>
 #include <string.h>
 #include <curl/curl.h>
-#if defined(WIN32)
 #include <jansson.h>
-#endif
+
 static
 void proc_cmd_admin(char * request, char * response)
 {
@@ -84,14 +83,13 @@ int parse_title(char * dest, char * src)
 }
 
 struct youtube_t {
-  double rating;
-  int    view_count;
+  double          rating;
+  char            view_count[20];
 };
 
 static
 void parse_json_youtube(char * data, struct youtube_t * youtube)
 {
-#if defined (WIN32)
   json_t *      root;
   json_error_t  error;
   int i;
@@ -103,8 +101,9 @@ void parse_json_youtube(char * data, struct youtube_t * youtube)
   rating      = json_object_get(entry, "gd$rating");
   statistics  = json_object_get(entry, "yt$statistics"); 
   json_unpack(json_object_get(rating, "average"), "F", &youtube->rating);
-  json_unpack(json_object_get(statistics, "viewCount"), "i", &youtube->view_count);
-#endif
+  strcpy(youtube->view_count, json_string_value(json_object_get(statistics, "viewCount")));
+
+  json_decref(root);
 }
 
 static
@@ -133,17 +132,20 @@ char * fill_memory_url(char * url)
 
 
 static
-void proc_info_youtube(struct irc_t * irc)
+void proc_info_youtube(struct irc_t * irc, struct youtube_t * youtube)
 {
   CURL *           curl;
   GRegex *         regex;
   GMatchInfo *     match_info;
   char             url_path[512];
   char *           content;
-  struct youtube_t youtube;
 
   g_debug("%zu\t%s\t\t%s", __LINE__, __FILE__, __func__);
-  regex = g_regex_new("[^/]+$", 0, 0, NULL);
+  if (g_strrstr(irc->request, "watch"))
+    regex = g_regex_new("[^?(v=)]+$", 0, 0, NULL);
+  else 
+    regex = g_regex_new("[^/]+$", 0, 0, NULL);
+
   g_regex_match(regex, irc->request, 0, &match_info);
   if (g_match_info_matches(match_info)) {
     char * match = g_match_info_fetch(match_info, 0);
@@ -154,10 +156,8 @@ void proc_info_youtube(struct irc_t * irc)
   g_regex_unref(regex);
 
   content = fill_memory_url(url_path);
-  parse_json_youtube(content, &youtube);
+  parse_json_youtube(content, youtube);
   free(content);
-
-  sprintf(irc->response, "PRIVMSG %s : Rating: %f, Viewed: %d\r\n", irc->from, youtube.rating, youtube.rating);
 }
 
 static int
@@ -188,23 +188,22 @@ void proc_title(struct irc_t * irc)
 {
   char title[256];
   char * content = NULL;
+  struct youtube_t youtube;
 
   g_debug("%zu\t%s\t\t%s", __LINE__, __FILE__, __func__);
   if (validate_http(irc->request) < 0 )
     return;
-#if defined(WIN32)
+
   if (g_strrstr(irc->request, "youtu")) {
-    proc_info_youtube(irc);
-    return;
+    proc_info_youtube(irc, &youtube);
   } 
-#endif
 
   content = fill_memory_url(irc->request);
   
   if (!content) return;
   
   if ( parse_title(title, content) > 0 ) {
-    sprintf(irc->response, "PRIVMSG %s :%s\r\n", irc->from, title);
+    sprintf(irc->response, "PRIVMSG %s :%s [rating: %.2f, viewed: %s]\r\n", irc->from, title, youtube.rating, youtube.view_count);
   }
 
   free(content);
