@@ -14,7 +14,7 @@ int main(int argc, char *argv[])
 
   session = session_create("irc.freenode.net", 6667);
 
-  session_run(session, "bey2", "");
+  session_run(session, "\\0x00", "");
 
   session_destroy(session);
 

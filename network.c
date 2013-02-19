@@ -81,7 +81,7 @@ void network_send_message(struct network_t * network, char * message)
   
 }
 
-void network_auth(struct network_t * network, char * nick, char * user, char * name)
+void network_auth(struct network_t * network, char * nick, char * user, char * pass)
 {
   char message[255];
   int read;
@@ -90,8 +90,10 @@ void network_auth(struct network_t * network, char * nick, char * user, char * n
 
   sprintf(message, "PASS *\r\n"
                    "NICK %s\r\n"
-                   "USER %s 8 * :%s\r\n\r\n", nick, user, name);
+                   "USER %s 8 * :%s\r\n\r\n", nick, user, user);
 
+  network_send_message(network, message);
+  sprintf(message, "PRIVMSG NickServ :identify %s\r\n", pass);
   network_send_message(network, message);
 
   printf("%s", message);

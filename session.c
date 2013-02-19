@@ -26,7 +26,7 @@ void session_run(struct session_t * session, char * nick, char * pass)
   char * line;
   struct irc_t irc;
 
-  network_auth(session->network, nick, "ircbot", "ircbot");
+  network_auth(session->network, nick, "ircbot", pass);
 
   while (1) {
     memset(&irc, 0, sizeof irc);
