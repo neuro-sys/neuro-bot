@@ -6,6 +6,7 @@
 #include <netdb.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 int t_connect_unix(char *host, char *port)
 {

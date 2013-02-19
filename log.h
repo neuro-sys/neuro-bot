@@ -3,7 +3,6 @@
 
 #include <glib.h>
 
-
 extern void log_init(GLogLevelFlags level);
 
 #endif
