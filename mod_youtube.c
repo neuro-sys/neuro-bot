@@ -74,6 +74,7 @@ void proc_youtube(struct irc_t * irc)
   struct youtube_t * youtube;
 
   youtube = malloc(sizeof (struct youtube_t));
+  memset(youtube, 0, sizeof (struct youtube_t));
   proc_info_youtube(irc, youtube);
 
   if (youtube->valid)
