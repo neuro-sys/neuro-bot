@@ -59,13 +59,15 @@ void proc_info_youtube(struct irc_t * irc, struct youtube_t * youtube)
     nasty_escape[11] = '\0';
     sprintf(url_path, "http://gdata.youtube.com/feeds/api/videos/%s?alt=json&ver=2", nasty_escape);
     g_free(match);
-  }
+
+    content = curl_perform(url_path);
+    parse_json_youtube(content, youtube);
+    free(content);
+  } 
 
   g_regex_unref(regex);
 
-  content = curl_perform(url_path);
-  parse_json_youtube(content, youtube);
-  free(content);
+  
 }
 
 
