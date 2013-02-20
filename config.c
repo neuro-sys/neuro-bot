@@ -32,8 +32,8 @@ void config_init(void)
     } else {
       g_printerr("No config file, will use defaults.\n");
     }
+    g_free(dirs[1]);
   }
-  g_free(dirs[1]);
 
   return;
 }
