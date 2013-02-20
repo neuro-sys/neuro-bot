@@ -1,4 +1,5 @@
 #include "irc.h"
+#include "global.h"
 
 #include <stdio.h>
 #include <time.h>
