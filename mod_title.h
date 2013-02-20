@@ -3,7 +3,7 @@
 
 #include "irc.h"
 
-extern void proc_title(struct irc_t * irc)
+extern void proc_title(struct irc_t * irc);
 
 #endif
 

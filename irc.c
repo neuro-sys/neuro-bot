@@ -6,6 +6,9 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+#include "mod_title.h"
+#include "mod_youtube.h"
+
 static
 void proc_cmd_admin(char * request, char * response)
 {
