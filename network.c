@@ -33,7 +33,7 @@ struct network_t * network_connect(char * host_name, int port)
 
 #if defined(WIN32)
   network->giochannel = g_io_channel_win32_new_socket(sockfd);
-#elif defined(linux)
+#elif defined(unix)
   network->giochannel = g_io_channel_unix_new(sockfd);
 #endif
   network->port       = port;

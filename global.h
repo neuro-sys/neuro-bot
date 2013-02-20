@@ -7,4 +7,8 @@
   #define __func__ __FUNCTION__
 #endif
 
+#if defined (__APPLE__) || defined (__MACH__)
+  #define unix 1
+#endif
+
 #endif

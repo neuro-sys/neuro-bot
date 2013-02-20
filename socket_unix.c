@@ -1,6 +1,7 @@
 #include "socket.h"
+#include "global.h"
 
-#if defined (linux) || defined (__APPLE__)
+#if defined (unix)
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netdb.h>
