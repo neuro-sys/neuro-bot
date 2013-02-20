@@ -84,7 +84,6 @@ void network_send_message(struct network_t * network, char * message)
 void network_auth(struct network_t * network, char * nick, char * user, char * pass)
 {
   char message[255];
-  int read;
 
   sprintf(message, "PASS *\r\n"
                    "NICK %s\r\n"
@@ -96,5 +95,3 @@ void network_auth(struct network_t * network, char * nick, char * user, char * p
 
   printf("%s", message);
 }
-
-
