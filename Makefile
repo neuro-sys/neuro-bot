@@ -14,8 +14,8 @@ SOURCES = channel.c \
 	  network.c \
 	  session.c \
 	  user.c \
-      mod_time.c
-
+          mod_time.c \
+	  config.c
 ifeq ($(OS),Windows_NT)
 SOURCES += socket_win.c
 else

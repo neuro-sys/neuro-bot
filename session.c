@@ -4,6 +4,7 @@
 #include "network.h"
 #include "irc.h"
 #include "global.h"
+#include "config.h"
 
 #include <glib.h>
 #include <stdio.h>
@@ -26,17 +27,26 @@ void session_run(struct session_t * session, char * nick, char * pass)
   char * line;
   struct irc_t irc;
 
+  gchar *admin = config_get_string(GROUP_CLIENT, KEY_ADMIN);
+  if (!admin) {
+    admin = g_strdup(""); /* wut? */
+    g_warning("No admin in config file?");
+  }
+
   network_auth(session->network, nick, "ircbot", pass);
 
   while (1) {
     memset(&irc, 0, sizeof irc);
+    irc.admin = admin;
     if ( network_read_line(session->network, &line) < 0 )
 		continue;
     irc_process_line(&irc, line);
     if ( irc.response != NULL )
       network_send_message(session->network, irc.response);
-    g_free(line);
+      g_free(line);
   }
+
+  g_free(admin);
 }
 
 struct session_t * session_create(char * host, int port)
