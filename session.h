@@ -1,6 +1,9 @@
 #ifndef __SESSION_H
 #define __SESSION_H
 
+#include "network.h"
+#include "channel.h"
+
 struct session_t;
 
 extern struct session_t *   session_create                  (char * host, int port);
