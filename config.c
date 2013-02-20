@@ -12,14 +12,17 @@ static struct config_t *config = NULL;
 void config_init(void)
 {
   if (!config) {
-    config = (struct config_t*) calloc(1, sizeof(struct config_t));
     static const char *dirs[2];
+    gchar * full_path;
+    gboolean success;
+
+    config = (struct config_t*) calloc(1, sizeof(struct config_t));
     dirs[0] = g_get_home_dir();
     dirs[1] = g_get_current_dir();
-    gchar *full_path = NULL;
+    full_path = NULL;
 
     config->key_file = g_key_file_new();
-    gboolean success = g_key_file_load_from_dirs (config->key_file,
+    success = g_key_file_load_from_dirs (config->key_file,
         CONFIG_FILE,
         dirs,
         &full_path,
@@ -40,12 +43,14 @@ void config_init(void)
 
 gchar* config_get_string(const gchar *group, const gchar *key)
 {
+  gchar * str;
+
   if (!config) {
     g_debug("config_init not called yet :/");
     return NULL;
   }
 
-  gchar *str = g_key_file_get_string(config->key_file,
+  str = g_key_file_get_string(config->key_file,
       group,
       key,
       NULL);
@@ -54,12 +59,14 @@ gchar* config_get_string(const gchar *group, const gchar *key)
 
 gint config_get_integer(const gchar *group, const gchar *key)
 {
+  gint i;
+
   if (!config) {
     g_debug("config_init not called yet :/");
     return 0;
   }
 
-  gint i = g_key_file_get_integer(config->key_file,
+  i = g_key_file_get_integer(config->key_file,
       group,
       key,
       NULL);

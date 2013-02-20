@@ -10,25 +10,27 @@
   int main(int argc, char *argv[])
   {
     struct session_t * session;
+    gchar * server, * nick, * pass;
+    gint port;
 
     config_init();
 
     log_init(G_LOG_LEVEL_DEBUG);
 
-    gchar *server = config_get_string(GROUP_CLIENT, KEY_SERVER);
+    server = config_get_string(GROUP_CLIENT, KEY_SERVER);
     if (!server)
       server = g_strdup("irc.freenode.net");
 
-    gint port = config_get_integer(GROUP_CLIENT, KEY_PORT);
+    port = config_get_integer(GROUP_CLIENT, KEY_PORT);
     if (!port)
       port = 6667;
 
     session = session_create(server, port);
 
-    gchar *nick = config_get_string(GROUP_CLIENT, KEY_NICK);
+    nick = config_get_string(GROUP_CLIENT, KEY_NICK);
     if (!nick)
       nick = g_strdup("cafer");
-    gchar *pass = config_get_string(GROUP_CLIENT, KEY_PASS);
+    pass = config_get_string(GROUP_CLIENT, KEY_PASS);
     if (!pass)
       pass = g_strdup("");
 
