@@ -17,3 +17,6 @@ Release
 *.suo
 *.swp
 *.opensdf
+*.o
+irc-client
+
