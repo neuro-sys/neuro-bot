@@ -35,4 +35,4 @@ irc-client: $(OBJECTS)
 	$(CC) -c $(DEBUGFLAG) $(CFLAGS) $< -o $@
 
 clean:
-	rm irc-client $(OBJECTS)
+	rm -f irc-client $(OBJECTS)
