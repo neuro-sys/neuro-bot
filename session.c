@@ -79,7 +79,7 @@ struct channel_t * session_channel_remove_by_name(struct session_t * session, ch
 void session_destroy(struct session_t * session)
 {
   g_debug("%zu\t%s\t\t%s", __LINE__, __FILE__, __func__);
-  //g_slist_free_full(session->channel_list, (void (*)(void *)) &channel_destroy);
+  g_slist_free_full(session->channel_list, (void (*)(void *)) &channel_destroy);
   free(session);
 }
 
