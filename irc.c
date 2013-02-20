@@ -10,6 +10,22 @@
 #include "mod_youtube.h"
 
 
+/*
+  Every function name is prefixed with either a `irc_proc' or `irc_parse'.
+  
+    irc_parse_* family of functions are for parsing the raw irc massages 
+  into a struct srv_msg_t type.
+
+    irc_proc_* family of functions are for processing the struct srv_msg_t
+  type previously obtained by irc_parse_*, and responding the server with
+  the appropriate reply.
+
+    irc_proc_cmd_* family of functions are for processing the 
+  srv_msg_t.command message (e.g. PRIVMSG, PING, CTCP). Depending on the srv
+  command, irc_proc_cmd_{privmsg,ping,ctcp} functions are called respectively.
+
+*/
+
 static
 void irc_proc_cmd_privmsg_user_cmd_admin(struct irc_t * irc)
 {
@@ -71,7 +87,7 @@ void irc_proc_cmd(struct irc_t * irc)
 
 /*     message    =  [ ":" prefix SPACE ] command [ params ] crlf */
 static
-void proc_msg_prefix(struct irc_t * irc, char * line)
+void irc_parse_prefix(struct irc_t * irc, char * line)
 {
   char ** tokens;
   
@@ -91,7 +107,7 @@ void proc_msg_prefix(struct irc_t * irc, char * line)
 }
 
 static
-void irc_process_other(struct irc_t * irc, char * line)
+void irc_parse_other(struct irc_t * irc, char * line)
 {
   char ** tokens;
 
@@ -111,9 +127,9 @@ void irc_process_line(struct irc_t * irc, char * line)
   g_debug("%u\t%s\t\t%s", __LINE__, __FILE__, __func__);
   printf("%s", line);
   if (line[0] == ':') {
-    proc_msg_prefix(irc, line);
+    irc_parse_prefix(irc, line);
   } else {
-    irc_process_other(irc, line);   
+    irc_parse_other(irc, line);   
   }
 
   irc_proc_cmd(irc);
