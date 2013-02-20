@@ -9,24 +9,27 @@
 #include "mod_title.h"
 #include "mod_youtube.h"
 
+
 static
-void proc_cmd_admin(char * request, char * response)
+void proc_cmd_admin(struct irc_t * irc)
 {
   char ** tokens;
   
   g_debug("%u\t%s\t\t%s", __LINE__, __FILE__, __func__);
-  tokens = g_strsplit_set(request, " ", 2);
-  if (!g_ascii_strcasecmp("join", tokens[0])) {
-    sprintf(response, "JOIN %s\r\n", tokens[1]);
-  } else if (!g_ascii_strcasecmp("part", tokens[0])) {
-    sprintf(response, "PART %s\r\n", tokens[1]);
+  tokens = g_strsplit_set(irc->request, " ", 2);
+  if (!g_ascii_strcasecmp(".join", tokens[0])) {
+    sprintf(irc->response, "JOIN %s\r\n", tokens[1]);
+  } else if (!g_ascii_strcasecmp(".part", tokens[0])) {
+    sprintf(irc->response, "PART %s\r\n", tokens[1]);
   } 
 }
 
 static
-void proc_cmd(char * request, char * response)
+void proc_cmd(struct irc_t * irc)
 {
-  
+  if (!g_strcasecmp("neuro_sys", irc->nick_to_msg)) {
+    proc_cmd_admin(irc);
+  }
 }
 
 static
@@ -40,16 +43,13 @@ void proc_privmsg(struct irc_t * irc)
   strcpy(irc->nick_to_msg, tokens[0]);
 
   if (irc->request[0] == '.') {
-    proc_cmd(irc->request, irc->response);
-    sprintf(irc->response, "PRIVMSG %s :Bakariz, %s.\r\n", irc->from, irc->nick_to_msg);
-  } else if (g_strrstr(irc->request, "http:")) {
+    proc_cmd(irc);
+  } else if (g_strrstr(irc->request, "http:") || g_strrstr(irc->request, "https:")) {
     if (g_strrstr(irc->request, "youtube.com") || g_strrstr(irc->request, "youtu.be"))
       proc_youtube(irc); 
     else  
       proc_title(irc);
-  } else if (!g_ascii_strcasecmp ("neuro_sys", irc->nick_to_msg)) {
-    proc_cmd_admin(irc->request, irc->response);
-  } 
+  }  
 
   g_strfreev(tokens);
 }
