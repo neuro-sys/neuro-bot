@@ -24,6 +24,8 @@ ifdef DEBUG
 	DEBUGFLAG = -g
 endif
 
+WARNINGFLAGS = -Wall
+
 OBJECTS    = $(SOURCES:.c=.o)
 
 all: irc-client
@@ -32,7 +34,7 @@ irc-client: $(OBJECTS)
 	$(CC) $(DEBUGFLAG) $(LDFLAGS) $(OBJECTS) -o irc-client
 
 .c.o:
-	$(CC) -c $(DEBUGFLAG) $(CFLAGS) $< -o $@
+	$(CC) -c $(DEBUGFLAG) $(WARNINGFLAGS) $(CFLAGS) $< -o $@
 
 clean:
 	rm -f irc-client $(OBJECTS)

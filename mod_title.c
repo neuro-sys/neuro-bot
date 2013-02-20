@@ -13,8 +13,8 @@ validate_http(char * line)
   GMatchInfo * match_info;
   char * match;
 
-  g_debug("%zu\t%s\t\t%s", __LINE__, __FILE__, __func__);
-  regex = g_regex_new("http:\\/\/\\S*", 0, 0, NULL);
+  g_debug("%u\t%s\t\t%s", __LINE__, __FILE__, __func__);
+  regex = g_regex_new("http:\\/\\/\\S*", 0, 0, NULL);
   g_regex_match(regex, line, 0, &match_info);
 
   if (!g_match_info_matches(match_info))
@@ -57,7 +57,7 @@ void proc_title(struct irc_t * irc)
   char title[256];
   char * content = NULL;
 
-  g_debug("%zu\t%s\t\t%s", __LINE__, __FILE__, __func__);
+  g_debug("%u\t%s\t\t%s", __LINE__, __FILE__, __func__);
   if (validate_http(irc->request) < 0 )
     return;
 

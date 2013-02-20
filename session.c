@@ -42,7 +42,7 @@ void session_run(struct session_t * session, char * nick, char * pass)
 struct session_t * session_create(char * host, int port)
 { 
   struct session_t * session = malloc(sizeof * session);
-  g_debug("%zu\t%s\t\t%s", __LINE__, __FILE__, __func__);
+  g_debug("%u\t%s\t\t%s", __LINE__, __FILE__, __func__);
   if (!session) return NULL;
   session->network = network_connect(host, port);
   if (!session->network) return NULL;
@@ -51,14 +51,14 @@ struct session_t * session_create(char * host, int port)
 
 void session_add_channel(struct session_t * session, char * name)
 { 
-  g_debug("%zu\t%s\t\t%s", __LINE__, __FILE__, __func__);
+  g_debug("%u\t%s\t\t%s", __LINE__, __FILE__, __func__);
   session->channel_list = g_slist_append(session->channel_list, channel_create(name));
 }
 
 struct channel_t * session_channel_find_by_name(struct session_t * session, char * name)
 {
   int i;
-  g_debug("%zu\t%s\t\t%s", __LINE__, __FILE__, __func__);
+  g_debug("%u\t%s\t\t%s", __LINE__, __FILE__, __func__);
   for (i = 0; i < g_slist_length(session->channel_list); i++) {
     struct channel_t * channel = g_slist_nth_data(session->channel_list, i);
 
@@ -78,14 +78,14 @@ struct channel_t * session_channel_remove_by_name(struct session_t * session, ch
 
 void session_destroy(struct session_t * session)
 {
-  g_debug("%zu\t%s\t\t%s", __LINE__, __FILE__, __func__);
+  g_debug("%u\t%s\t\t%s", __LINE__, __FILE__, __func__);
   g_slist_free_full(session->channel_list, (void (*)(void *)) &channel_destroy);
   free(session);
 }
 
 void session_print_channels(struct session_t * session)
 {
-  g_debug("%zu\t%s\t\t%s", __LINE__, __FILE__, __func__);
+  g_debug("%u\t%s\t\t%s", __LINE__, __FILE__, __func__);
   channels_print(session->channel_list, stdout);
 }
 
