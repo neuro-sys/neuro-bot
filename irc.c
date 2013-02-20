@@ -6,9 +6,9 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-#include "mod_title.h"
-#include "mod_youtube.h"
-#include "mod_time.h"
+#include "modules/mod_title.h"
+#include "modules/mod_youtube.h"
+#include "modules/mod_time.h"
 
 
 /*
