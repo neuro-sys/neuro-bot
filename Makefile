@@ -16,7 +16,8 @@ SOURCES = channel.c \
 	  config.c
 
 
-MODULE_SRC = modules
+MOD_DIR = ./modules
+MOD_OBJ = $(MOD_DIR)/*.o
 
 ifeq ($(OS),Windows_NT)
 SOURCES += socket_win.c
@@ -34,16 +35,16 @@ OBJECTS    = $(SOURCES:.c=.o)
 
 all: irc-client 
 
-irc-client : $(OBJECTS) mods
-	$(CC) $(DEBUGFLAG) $(LDFLAGS) $(OBJECTS) $(MODULE_SRC)/*.o -o irc-client
+irc-client : $(OBJECTS) modules
+	$(CC) $(DEBUGFLAG) $(LDFLAGS) $(OBJECTS) $(MOD_OBJ) -o irc-client
 
 .c.o:
 	$(CC) -c $(DEBUGFLAG) $(WARNINGFLAGS) $(CFLAGS) $< -o $@
 
 clean:
-	rm -f irc-client $(OBJECTS) $(MODULE_SRC)/*.o
+	rm -f irc-client $(OBJECTS) $(MOD_OBJ)
 
-.PHONY: mods
+.PHONY: modules
 
-mods:
-		$(MAKE) --directory=$(MODULE_SRC)
+modules:	
+		$(MAKE) --directory=$(MOD_DIR)
