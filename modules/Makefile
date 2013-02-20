@@ -22,5 +22,5 @@ all: $(OBJECTS)
 	$(CC) -c $(DEBUGFLAG) $(WARNINGFLAGS) $(CFLAGS) $< -o $@
 
 clean:
-	rm $(OBJECTS)
+	rm -f $(OBJECTS)
 
