@@ -19,4 +19,4 @@ OBJECTS    = $(SOURCES:.c=.o)
 all: $(OBJECTS)
 
 .c.o:
-	$(CC) -c $(DEBUGFLAG) $(WARNINGFLAGS) $(CFLAGS) $< -o ../$@
+	$(CC) -c $(DEBUGFLAG) $(WARNINGFLAGS) $(CFLAGS) $< -o $@
