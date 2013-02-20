@@ -57,7 +57,8 @@ void session_add_channel(struct session_t * session, char * name)
 
 struct channel_t * session_channel_find_by_name(struct session_t * session, char * name)
 {
-  int i;
+  guint i;
+
   g_debug("%u\t%s\t\t%s", __LINE__, __FILE__, __func__);
   for (i = 0; i < g_slist_length(session->channel_list); i++) {
     struct channel_t * channel = g_slist_nth_data(session->channel_list, i);
