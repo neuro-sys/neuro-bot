@@ -47,7 +47,7 @@ void proc_privmsg(struct irc_t * irc)
       proc_youtube(irc); 
     else  
       proc_title(irc);
-  } else if (!g_ascii_strcasecmp ("neuro_sys", irc->nick_to_msg)) {
+  } else if (!g_ascii_strcasecmp ("rgngl", irc->nick_to_msg)) {
     proc_cmd_admin(irc->request, irc->response);
   } 
 
