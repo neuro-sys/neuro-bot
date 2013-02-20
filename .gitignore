@@ -11,9 +11,7 @@ Debug
 Release
 *.sdf
 *.user
-*.vcxproj
 *.sln
-*.filters
 *.suo
 *.swp
 *.opensdf
