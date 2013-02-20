@@ -11,7 +11,7 @@
 
 
 static
-void proc_cmd_admin(struct irc_t * irc)
+void irc_proc_cmd_privmsg_user_cmd_admin(struct irc_t * irc)
 {
   char ** tokens;
   
@@ -28,7 +28,7 @@ static
 void irc_proc_cmd_privmsg_user_cmd(struct irc_t * irc)
 {
   if (!g_strcasecmp("neuro_sys", irc->nick_to_msg)) {
-    proc_cmd_admin(irc);
+    irc_proc_cmd_privmsg_user_cmd_admin(irc);
   }
 }
 
