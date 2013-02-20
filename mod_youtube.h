@@ -3,7 +3,7 @@
 
 #include "irc.h"
 
-void proc_youtube(struct irc_t * irc);
+void mod_line_youtube(struct irc_t * irc);
 
 #endif
 

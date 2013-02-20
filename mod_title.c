@@ -52,7 +52,7 @@ int parse_title(char * dest, char * src)
   return -1;
 }
 
-void proc_title(struct irc_t * irc)
+void mod_line_title(struct irc_t * irc)
 {
   char title[256];
   char * content = NULL;

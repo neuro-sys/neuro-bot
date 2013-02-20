@@ -5,10 +5,10 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include <time.h>
 
 #include "mod_title.h"
 #include "mod_youtube.h"
+#include "mod_time.h"
 
 
 /*
@@ -52,10 +52,7 @@ void irc_proc_cmd_privmsg_user_cmd(struct irc_t * irc)
   tokens = g_strsplit_set(irc->request, " ", 2);
 
   if (!strncmp(".time", tokens[0], strlen(".time"))) {
-    time_t now;
-    
-    time(&now);
-    sprintf(irc->response, "PRIVMSG %s :%s\r\n", irc->from, ctime(&now));
+    mod_cmd_time(irc);
   } 
   
   if (!strncmp("neuro_sys", irc->nick_to_msg, strlen("neuro_sys"))) {
@@ -79,9 +76,9 @@ void irc_proc_cmd_privmsg(struct irc_t * irc)
     irc_proc_cmd_privmsg_user_cmd(irc);
   } else if (g_strrstr(irc->request, "http:") || g_strrstr(irc->request, "https:")) {
     if (g_strrstr(irc->request, "youtube.com") || g_strrstr(irc->request, "youtu.be"))
-      proc_youtube(irc); 
+      mod_line_youtube(irc); 
     else  
-      proc_title(irc);
+      mod_line_title(irc);
   }  
 
   g_strfreev(tokens);

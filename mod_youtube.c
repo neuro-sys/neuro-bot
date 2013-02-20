@@ -71,7 +71,7 @@ void proc_info_youtube(struct irc_t * irc, struct youtube_t * youtube)
 }
 
 
-void proc_youtube(struct irc_t * irc)
+void mod_line_youtube(struct irc_t * irc)
 {
   struct youtube_t * youtube;
 

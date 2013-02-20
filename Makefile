@@ -13,7 +13,9 @@ SOURCES = channel.c \
 	  mod_youtube.c \
 	  network.c \
 	  session.c \
-	  user.c
+	  user.c \
+      mod_time.c
+
 ifeq ($(OS),Windows_NT)
 SOURCES += socket_win.c
 else
