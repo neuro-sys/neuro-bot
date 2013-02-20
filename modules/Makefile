@@ -20,3 +20,7 @@ all: $(OBJECTS)
 
 .c.o:
 	$(CC) -c $(DEBUGFLAG) $(WARNINGFLAGS) $(CFLAGS) $< -o $@
+
+clean:
+	rm $(OBJECTS)
+

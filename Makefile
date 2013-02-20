@@ -42,7 +42,7 @@ irc-client : $(OBJECTS) modules
 	$(CC) -c $(DEBUGFLAG) $(WARNINGFLAGS) $(CFLAGS) $< -o $@
 
 clean:
-	rm -f irc-client $(OBJECTS) $(MOD_OBJ)
+	rm -f irc-client $(OBJECTS); $(MAKE) --directory=$(MOD_DIR) clean
 
 .PHONY: modules
 
