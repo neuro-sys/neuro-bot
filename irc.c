@@ -25,7 +25,7 @@ void proc_cmd_admin(struct irc_t * irc)
 }
 
 static
-void proc_cmd(struct irc_t * irc)
+void irc_proc_cmd_privmsg_user_cmd(struct irc_t * irc)
 {
   if (!g_strcasecmp("neuro_sys", irc->nick_to_msg)) {
     proc_cmd_admin(irc);
@@ -33,7 +33,7 @@ void proc_cmd(struct irc_t * irc)
 }
 
 static
-void proc_privmsg(struct irc_t * irc)
+void irc_proc_cmd_privmsg(struct irc_t * irc)
 {
   char ** tokens;
 
@@ -43,7 +43,7 @@ void proc_privmsg(struct irc_t * irc)
   strcpy(irc->nick_to_msg, tokens[0]);
 
   if (irc->request[0] == '.') {
-    proc_cmd(irc);
+    irc_proc_cmd_privmsg_user_cmd(irc);
   } else if (g_strrstr(irc->request, "http:") || g_strrstr(irc->request, "https:")) {
     if (g_strrstr(irc->request, "youtube.com") || g_strrstr(irc->request, "youtu.be"))
       proc_youtube(irc); 
@@ -55,12 +55,15 @@ void proc_privmsg(struct irc_t * irc)
 }
 
 static
-void irc_proc(struct irc_t * irc)
+void irc_proc_cmd(struct irc_t * irc)
 {
+  char * cmd;
+
+  cmd = irc->srv_msg.command;
   g_debug("%u\t%s\t\t%s", __LINE__, __FILE__, __func__);
-  if (!strncmp("PRIVMSG", irc->srv_msg.command, 7)) {
-    proc_privmsg(irc);
-  } else if (!strncmp("PING", irc->srv_msg.command, 4)) {
+  if        (!strncmp("PRIVMSG", cmd, 7)) {
+    irc_proc_cmd_privmsg(irc);
+  } else if (!strncmp("PING", cmd, 4)) {
     sprintf(irc->response, "PONG %s\r\n", irc->request);
   }
  printf("%s", irc->response);
@@ -113,6 +116,6 @@ void irc_process_line(struct irc_t * irc, char * line)
     irc_process_other(irc, line);   
   }
 
-  irc_proc(irc);
+  irc_proc_cmd(irc);
 }
 
