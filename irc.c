@@ -55,7 +55,7 @@ void irc_proc_cmd_privmsg_user_cmd(struct irc_t * irc)
     mod_cmd_time(irc);
   } 
   
-  if (!strncmp("neuro_sys", irc->nick_to_msg, strlen("neuro_sys"))) {
+  if (!strncmp(irc->admin, irc->nick_to_msg, strlen(irc->admin))) {
     irc_proc_cmd_privmsg_user_cmd_admin(irc);
   }
 

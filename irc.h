@@ -18,6 +18,7 @@ struct irc_t {
   char                 nick_to_msg[30];
   char                 from[30];
   struct session_t *   session;
+  char*                admin;
 };
 
 extern void irc_process_line(struct irc_t * irc, char * line);
