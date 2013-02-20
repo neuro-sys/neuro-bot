@@ -5,6 +5,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <time.h>
 
 #include "mod_title.h"
 #include "mod_youtube.h"
@@ -33,19 +34,35 @@ void irc_proc_cmd_privmsg_user_cmd_admin(struct irc_t * irc)
   
   g_debug("%u\t%s\t\t%s", __LINE__, __FILE__, __func__);
   tokens = g_strsplit_set(irc->request, " ", 2);
-  if (!g_ascii_strcasecmp(".join", tokens[0])) {
+  if        (!g_ascii_strcasecmp(".join", tokens[0])) {
     sprintf(irc->response, "JOIN %s\r\n", tokens[1]);
   } else if (!g_ascii_strcasecmp(".part", tokens[0])) {
     sprintf(irc->response, "PART %s\r\n", tokens[1]);
   } 
+
+  g_strfreev(tokens);
 }
 
 static
 void irc_proc_cmd_privmsg_user_cmd(struct irc_t * irc)
 {
-  if (!g_strcasecmp("neuro_sys", irc->nick_to_msg)) {
+  char ** tokens;
+
+  g_debug("%u\t%s\t\t%s", __LINE__, __FILE__, __func__);
+  tokens = g_strsplit_set(irc->request, " ", 2);
+
+  if (!strncmp(".time", tokens[0], strlen(".time"))) {
+    time_t now;
+    
+    time(&now);
+    sprintf(irc->response, "PRIVMSG %s :%s\r\n", irc->from, ctime(&now));
+  } 
+  
+  if (!strncmp("neuro_sys", irc->nick_to_msg, strlen("neuro_sys"))) {
     irc_proc_cmd_privmsg_user_cmd_admin(irc);
   }
+
+  g_strfreev(tokens);
 }
 
 static
@@ -58,7 +75,7 @@ void irc_proc_cmd_privmsg(struct irc_t * irc)
   strcpy(irc->from, irc->srv_msg.params);
   strcpy(irc->nick_to_msg, tokens[0]);
 
-  if (irc->request[0] == '.') {
+  if        (irc->request[0] == '.') {
     irc_proc_cmd_privmsg_user_cmd(irc);
   } else if (g_strrstr(irc->request, "http:") || g_strrstr(irc->request, "https:")) {
     if (g_strrstr(irc->request, "youtube.com") || g_strrstr(irc->request, "youtu.be"))
@@ -77,9 +94,9 @@ void irc_proc_cmd(struct irc_t * irc)
 
   cmd = irc->srv_msg.command;
   g_debug("%u\t%s\t\t%s", __LINE__, __FILE__, __func__);
-  if        (!strncmp("PRIVMSG", cmd, 7)) {
+  if        (!strncmp("PRIVMSG", cmd, strlen("PRIVMSG"))) {
     irc_proc_cmd_privmsg(irc);
-  } else if (!strncmp("PING", cmd, 4)) {
+  } else if (!strncmp("PING", cmd, strlen("PING"))) {
     sprintf(irc->response, "PONG %s\r\n", irc->request);
   }
  printf("%s", irc->response);
