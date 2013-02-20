@@ -15,7 +15,7 @@ struct network_t {
 
 GIOChannel * network_get_giochannel(struct network_t * network)
 {
-  g_debug("%zu\t%s\t%s", __LINE__, __FILE__, __func__);
+  g_debug("%u\t%s\t%s", __LINE__, __FILE__, __func__);
   return network->giochannel;
 }
 
@@ -25,7 +25,7 @@ struct network_t * network_connect(char * host_name, int port)
   int sockfd;
   struct network_t * network;
   
-  g_debug("%zu\t%s\t%s", __LINE__, __FILE__, __func__);
+  g_debug("%u\t%s\t%s", __LINE__, __FILE__, __func__);
   network = malloc(sizeof * network);
 
   sprintf(port_str, "%d", port);
@@ -45,11 +45,11 @@ struct network_t * network_connect(char * host_name, int port)
 
 int network_read_line(struct network_t * network, char ** buf)
 {
-  int len;
-  int giostatus;
+  gsize len;
+  GIOStatus giostatus;
   GError * error = NULL;
   
-  g_debug("%zu\t%s\t%s", __LINE__, __FILE__, __func__);
+  g_debug("%u\t%s\t%s", __LINE__, __FILE__, __func__);
   if ( (giostatus = g_io_channel_read_line (network->giochannel, buf, &len, NULL, &error)) != G_IO_STATUS_NORMAL) {
     printf("%d\n", giostatus);
     if (giostatus == 0) printf("%s\n", error->message);
@@ -61,18 +61,18 @@ int network_read_line(struct network_t * network, char ** buf)
 
 int network_read(struct network_t * network, char * str)
 {
-  int len;
+  gsize len;
   g_io_channel_read_to_end(network->giochannel, &str, &len, NULL);
   return len;
 }
 
 void network_send_message(struct network_t * network, char * message)
 {
-  int read;
+  gsize read;
   GError * error = NULL;
   GIOStatus status;
 
-  g_debug("%zu\t%s\t%s", __LINE__, __FILE__, __func__);
+  g_debug("%u\t%s\t%s", __LINE__, __FILE__, __func__);
 
   status = g_io_channel_write_chars(network->giochannel, message, strlen(message), &read, &error);
 
