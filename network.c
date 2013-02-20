@@ -85,8 +85,6 @@ void network_auth(struct network_t * network, char * nick, char * user, char * p
 {
   char message[255];
   int read;
-  GError * error = NULL;
-  GIOStatus status;
 
   sprintf(message, "PASS *\r\n"
                    "NICK %s\r\n"

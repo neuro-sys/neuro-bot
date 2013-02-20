@@ -7,6 +7,7 @@
 #include <jansson.h>
 #include <curl/curl.h>
 #include <glib.h>
+#include <stdio.h>
 
 struct youtube_t {
   double          rating;
@@ -20,7 +21,6 @@ void parse_json_youtube(char * data, struct youtube_t * youtube)
 {
   json_t *      root;
   json_error_t  error;
-  int i;
   json_t * entry, * rating, * statistics, * title;
 
   g_debug("%zu\t%s\t\t%s", __LINE__, __FILE__, __func__);
@@ -42,7 +42,6 @@ void parse_json_youtube(char * data, struct youtube_t * youtube)
 static
 void proc_info_youtube(struct irc_t * irc, struct youtube_t * youtube)
 {
-  CURL *           curl;
   GRegex *         regex;
   GMatchInfo *     match_info;
   char             url_path[512];
@@ -54,9 +53,10 @@ void proc_info_youtube(struct irc_t * irc, struct youtube_t * youtube)
   g_regex_match(regex, irc->request, 0, &match_info);
   if (g_match_info_matches(match_info)) {
     char * match = g_match_info_fetch(match_info, 0);
-    char nasty_escape[12];
+    char nasty_escape[20];
 
-    snprintf(nasty_escape, 12, match);
+    strcpy(nasty_escape, match);
+    nasty_escape[11] = '\0';
     sprintf(url_path, "http://gdata.youtube.com/feeds/api/videos/%s?alt=json&ver=2", nasty_escape);
     g_free(match);
   }

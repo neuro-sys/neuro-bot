@@ -1,5 +1,6 @@
 #include "irc.h"
 #include "curl_wrap.h"
+#include "global.h"
 
 #include <glib.h>
 #include <stdlib.h>
@@ -33,7 +34,7 @@ int parse_title(char * dest, char * src)
   GRegex *      regex;
   GMatchInfo *  match_info;
 
-  g_debug("%zu\t%s\t\t%s", __LINE__, __FILE__, __func__);
+
   regex = g_regex_new("(?i)<TITLE>(.+?)</TITLE>", 0, 0, NULL);
   g_regex_match(regex, src, 0, &match_info);
   if (g_match_info_matches(match_info)) {
