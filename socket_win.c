@@ -1,6 +1,7 @@
-#include "socket.h"
-#if defined (WIN32)
+#include "aconfig.h"
+#if defined(HAVE_WINDOWS)
 #include <stdio.h>
+#include "socket.h"
 
 static void initWinSock(void)
 {
@@ -35,5 +36,4 @@ int t_connect_win(char *host, char *port)
 
   return sockfd;
 }
-
 #endif
