@@ -13,34 +13,34 @@ GHashTable * mod_hash_map;
 
 char * py_call_module(char * name)
 {
-  struct py_module_t * mod = g_hash_table_lookup(mod_hash_map, name);
-  PyObject * pRet = PyObject_CallObject(mod->pFunc, NULL); 
-  return strdup(PyString_AsString(pRet));
+  struct py_module_t * mod   = g_hash_table_lookup(mod_hash_map, name);
+  PyObject           * p_ret = PyObject_CallObject(mod->pFunc, NULL); 
+  return strdup(PyString_AsString(p_ret));
 }
 
 static
 void set_pymodule_path(char * py_path)
 {
-  PyObject *sys_path = PySys_GetObject("path");
-  PyObject *path = PyString_FromString(py_path);
+  PyObject * sys_path = PySys_GetObject("path");
+  PyObject * path     = PyString_FromString(py_path);
   PyList_Append(sys_path, path);
 }
 
 int py_load_modules()
 {
-  char *            cur_dir = g_get_current_dir();
+  char            * cur_dir = g_get_current_dir();
   char              mod_dir[50];
   GFileEnumerator * enum_children;
-  GFile *           mod_path_file;
-  GError *          error;
-  GFileInfo *       fileInfo;
+  GFile           * mod_path_file;
+  GError          * error;
+  GFileInfo       * fileInfo;
 
   g_type_init();
   Py_Initialize();
 
   sprintf(mod_dir, "%s%c%s", cur_dir, G_DIR_SEPARATOR, mod_path);
   g_free(cur_dir);
-  g_printerr("Scanning pythong modules in: %s\n", mod_dir); 
+  g_printerr("Scanning python modules in: %s\n", mod_dir); 
 
   set_pymodule_path(mod_dir);
   
@@ -86,14 +86,14 @@ int py_load_modules()
     mod->pFunc = PyObject_GetAttrString(mod->pModule, mod_name);
 
     if (!mod->pFunc || !PyCallable_Check(mod->pFunc)) {
-      g_printerr("Error in method of the module.\n");
+      g_printerr("Error python call method check.\n");
       free(mod);
       if (PyErr_Occurred()) PyErr_Print();
       continue;
     }
 
     g_hash_table_insert(mod_hash_map, strdup(mod_name), mod);
-    g_printerr("Module loaded: %s\n", mod_name);
+    g_printerr("Module loaded: [%s]\n", mod_name);
   }
 
   if (!g_file_enumerator_close(enum_children, NULL, NULL))
