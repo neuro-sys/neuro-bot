@@ -31,11 +31,16 @@ AC_SUBST(IRCCLIENT_CFLAGS)
 # Checks for header files.
 AC_CHECK_HEADERS([netdb.h stdlib.h string.h sys/socket.h])
 
-PKG_CHECK_MODULES([GLIB], [glib-2.0],,
+PKG_CHECK_MODULES([GLIB], [glib-2.0 gio-2.0],,
 		[AC_MSG_ERROR([GLib is required])])
 PKG_CHECK_MODULES([JANSSON], [jansson],,
                   [AC_MSG_ERROR([Jansson is required])])
 AC_CHECK_CURL([7], [], [ AC_MSG_ERROR([No curl library found.  You can get it at http://curl.haxx.se]) ])
+PYTHON_CFLAGS="`python-config --cflags`"
+PYTHON_LIBS="`python-config --libs`"
+AC_SUBST(PYTHON_CFLAGS)
+AC_SUBST(PYTHON_LIBS)
+
 
 # Checks for typedefs, structures, and compiler characteristics.
 AC_TYPE_SIZE_T
