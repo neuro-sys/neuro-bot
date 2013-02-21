@@ -8,15 +8,17 @@ struct py_module_t {
   PyObject * pName, * pModule, * pFunc;
 };
 
-GHashTable * hash_table;
+GHashTable * mod_hash_map;
+
 
 char * py_call_module(char * name)
 {
-  struct py_module_t * mod = g_hash_table_lookup(hash_table, name);
+  struct py_module_t * mod = g_hash_table_lookup(mod_hash_map, name);
   PyObject * pRet = PyObject_CallObject(mod->pFunc, NULL); 
   return strdup(PyString_AsString(pRet));
 }
 
+static
 void set_pymodule_path(char * py_path)
 {
   PyObject *sys_path = PySys_GetObject("path");
@@ -26,18 +28,19 @@ void set_pymodule_path(char * py_path)
 
 int py_load_modules()
 {
-  char * cur_dir = g_get_current_dir();
-  GFile * mod_path_file;
-  char mod_dir[50];
-  GError * error;
+  char *            cur_dir = g_get_current_dir();
+  char              mod_dir[50];
   GFileEnumerator * enum_children;
-  GFileInfo * fileInfo;
+  GFile *           mod_path_file;
+  GError *          error;
+  GFileInfo *       fileInfo;
 
   g_type_init();
   Py_Initialize();
 
   sprintf(mod_dir, "%s%c%s", cur_dir, G_DIR_SEPARATOR, mod_path);
-  g_printerr("Enumerating modules... %s\n", mod_dir); 
+  g_free(cur_dir);
+  g_printerr("Scanning pythong modules in: %s\n", mod_dir); 
 
   set_pymodule_path(mod_dir);
   
@@ -49,12 +52,16 @@ int py_load_modules()
     return -1;
   }
 
-  hash_table = g_hash_table_new(g_int_hash, g_int_equal);
+  mod_hash_map = g_hash_table_new(g_int_hash, g_int_equal);
 
   while ( (fileInfo = g_file_enumerator_next_file(enum_children, NULL, NULL)) != NULL) {
     struct py_module_t * mod;
     char * file_name_temp = (g_file_info_get_attribute_as_string(fileInfo, G_FILE_ATTRIBUTE_STANDARD_NAME));
     char mod_name[50];
+
+    if (!file_name_temp) {
+      continue;
+    }
  
     if (!g_strrstr(file_name_temp, ".py")) 
       continue;
@@ -69,7 +76,6 @@ int py_load_modules()
     mod->pName = PyString_FromString(mod_name);
     mod->pModule = PyImport_ImportModule(mod_name);
 
-    g_printerr("mod name: %s\n", mod_name);
     if (!mod->pModule) {
       g_printerr("Can't load module: %s\n", mod_name);
       free(mod);
@@ -86,9 +92,12 @@ int py_load_modules()
       continue;
     }
 
-    g_hash_table_insert(hash_table, strdup(mod_name), mod);
+    g_hash_table_insert(mod_hash_map, strdup(mod_name), mod);
     g_printerr("Module loaded: %s\n", mod_name);
   }
+
+  if (!g_file_enumerator_close(enum_children, NULL, NULL))
+    g_printerr("The file handle resource cannot be freed.\n");
 
   return 1;
 }
