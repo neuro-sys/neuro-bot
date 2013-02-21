@@ -21,7 +21,8 @@ void parse_json_youtube(char * data, struct youtube_t * youtube)
 {
   json_t *      root;
   json_error_t  error;
-  json_t * entry, * rating, * statistics, * title;
+  json_t * entry, * rating, * statistics, * title, * average, * viewCount, * title_t;
+  const char * temp;
 
   g_debug("%u\t%s\t\t%s", __LINE__, __FILE__, __func__);
   root        = json_loads(data, JSON_DECODE_ANY | JSON_DISABLE_EOF_CHECK , &error);
@@ -31,11 +32,27 @@ void parse_json_youtube(char * data, struct youtube_t * youtube)
   rating      = json_object_get(entry, "gd$rating");
   statistics  = json_object_get(entry, "yt$statistics"); 
   title       = json_object_get(entry, "title");
-  json_unpack(json_object_get(rating, "average"), "F", &youtube->rating);
-  strcpy(youtube->view_count, json_string_value(json_object_get(statistics, "viewCount")));
-  strcpy(youtube->title, json_string_value(json_object_get(title, "$t")));
+  average     = json_object_get(rating, "average");
 
+  json_unpack(average, "F", &youtube->rating);
+  json_decref(average);
+  json_decref(rating);
+
+  viewCount = json_object_get(statistics, "viewCount");
+  temp = strdup(json_string_value(viewCount));
+  strcpy(youtube->view_count, temp);
+  json_decref(viewCount);
+  json_decref(statistics);
+
+  title_t = json_object_get(title, "$t");
+  temp = json_string_value(title_t); 
+  strcpy(youtube->title, temp);
+  json_decref(title_t);
+  json_decref(title);
+
+  json_decref(entry);
   json_decref(root);
+
   youtube->valid = 1;
 }
 
