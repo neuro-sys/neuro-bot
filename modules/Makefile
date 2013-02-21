@@ -1,4 +1,4 @@
-CFLAGS += -I$(shell pwd)/..
+CFLAGS += -I..
 
 SOURCES = \
 	  mod_title.c \
