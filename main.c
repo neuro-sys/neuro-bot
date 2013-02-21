@@ -1,19 +1,24 @@
-﻿#include <stdio.h>
-#include <glib.h>
-#include <string.h>
-#include "session.h"
+﻿#include "session.h"
 #include "channel.h"
 #include "user.h"
 #include "global.h"
 #include "config.h"
+#include "py_wrap.h"
 
-  int main(int argc, char *argv[])
+#include <stdio.h>
+#include <glib.h>
+#include <string.h>
+
+int main(int argc, char *argv[])
   {
     struct session_t * session;
     gchar * server, * nick, * pass;
     gint port;
 
     config_init();
+    
+    if ( py_load_modules() < 0 )
+      return 0;
 
     log_init(G_LOG_LEVEL_DEBUG);
 

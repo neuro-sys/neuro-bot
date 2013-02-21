@@ -1,5 +1,6 @@
 #include "irc.h"
 #include "global.h"
+#include "py_wrap.h"
 
 #include <glib.h>
 #include <string.h>
@@ -55,6 +56,12 @@ void irc_proc_cmd_privmsg_user_cmd(struct irc_t * irc)
     mod_cmd_time(irc);
   } 
   
+  if (!strncmp(".test", tokens[0], strlen(".test"))) {
+    char * ret = py_call_module("");
+    sprintf(irc->response, "PRIVMSG %s :%s\r\n", irc->from, ret);
+    free(ret);
+  } 
+
   if (!strncmp(irc->admin, irc->nick_to_msg, strlen(irc->admin))) {
     irc_proc_cmd_privmsg_user_cmd_admin(irc);
   }
