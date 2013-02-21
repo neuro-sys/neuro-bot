@@ -3,7 +3,7 @@
 
 extern GHashTable * mod_hash_map;
 
-extern int    py_load_modules();
+extern int    py_load_modules(void);
 extern char * py_call_module(char * name);
 
 #endif

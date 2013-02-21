@@ -57,7 +57,7 @@ void irc_proc_cmd_privmsg_user_cmd(struct irc_t * irc)
   } 
   
   if (!strncmp(".test", tokens[0], strlen(".test"))) {
-    char * ret = py_call_module("testfoo");
+    char * ret = py_call_module("mod_test");
     sprintf(irc->response, "PRIVMSG %s :%s\r\n", irc->from, ret);
     free(ret);
   } 

@@ -17,8 +17,6 @@ Release
 *.opensdf
 *.o
 irc-client
-*.py
-*.pyc
 Makefile
 Makefile.in
 aconfig.h*
