@@ -17,4 +17,5 @@ Release
 *.opensdf
 *.o
 irc-client
-
+*.py
+*.pyc

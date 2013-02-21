@@ -1,8 +1,9 @@
 CC = gcc
-CFLAGS += $(shell pkg-config --cflags glib-2.0 jansson)
+CFLAGS += $(shell pkg-config --cflags gio-2.0 jansson)
 CFLAGS += $(shell curl-config --cflags)
 export CFLAGS += -I. # all includes relative to base in subfolders
-LDFLAGS += $(shell pkg-config --libs glib-2.0 jansson) 
+LDFLAGS += $(shell pkg-config --libs gio-2.0 jansson) 
+LDFLAGS += $(shell python-config --libs)
 export LDFLAGS += $(shell curl-config --libs)
 
 SOURCES = channel.c \
@@ -13,7 +14,8 @@ SOURCES = channel.c \
 	  network.c \
 	  session.c \
 	  user.c \
-	  config.c
+	  config.c \
+    py_wrap.c
 
 
 MOD_DIR = ./modules
