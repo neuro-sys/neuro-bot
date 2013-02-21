@@ -1,9 +1,9 @@
 CC = gcc
 CFLAGS += $(shell pkg-config --cflags glib-2.0 jansson)
 CFLAGS += $(shell curl-config --cflags)
-CFLAGS += -I. # all includes relative to base in subfolders
+export CFLAGS += -I. # all includes relative to base in subfolders
 LDFLAGS += $(shell pkg-config --libs glib-2.0 jansson) 
-LDFLAGS += $(shell curl-config --libs)
+export LDFLAGS += $(shell curl-config --libs)
 
 SOURCES = channel.c \
 	  curl_wrap.c \
@@ -26,10 +26,10 @@ SOURCES += socket_unix.c
 endif
 
 ifdef DEBUG
-	DEBUGFLAG = -g
+	export DEBUGFLAG = -g
 endif
 
-WARNINGFLAGS = -Wall
+export WARNINGFLAGS = -Wall
 
 OBJECTS    = $(SOURCES:.c=.o)
 

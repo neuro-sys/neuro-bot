@@ -1,18 +1,9 @@
-CC = gcc
-CFLAGS += $(shell pkg-config --cflags glib-2.0 jansson)
-CFLAGS += $(shell curl-config --cflags)
 CFLAGS += -I$(shell pwd)/..
 
 SOURCES = \
 	  mod_title.c \
 	  mod_youtube.c \
-    mod_time.c \
-
-ifdef DEBUG
-	DEBUGFLAG = -g
-endif
-
-WARNINGFLAGS = -Wall
+          mod_time.c \
 
 OBJECTS    = $(SOURCES:.c=.o)
 
