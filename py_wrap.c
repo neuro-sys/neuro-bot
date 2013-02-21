@@ -10,14 +10,10 @@ struct py_module_t {
 
 GHashTable * hash_table;
 
-static struct py_module_t mod_test;
-
 char * py_call_module(char * name)
 {
-  PyObject * pRet;
-
-  pRet = PyObject_CallObject(mod_test.pFunc, NULL);
-
+  struct py_module_t * mod = g_hash_table_lookup(hash_table, name);
+  PyObject * pRet = PyObject_CallObject(mod->pFunc, NULL); 
   return strdup(PyString_AsString(pRet));
 }
 
