@@ -1,6 +1,7 @@
 #include "global.h"
 #include "network.h"
 #include "socket.h"
+#include "aconfig.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <glib.h>
@@ -31,10 +32,12 @@ struct network_t * network_connect(char * host_name, int port)
   sprintf(port_str, "%d", port);
   sockfd = t_connect(host_name, port_str);
 
-#if defined(WIN32)
+#if defined(HAVE_WINDOWS)
   network->giochannel = g_io_channel_win32_new_socket(sockfd);
-#elif defined(unix)
+#elif defined(HAVE_UNIX)
   network->giochannel = g_io_channel_unix_new(sockfd);
+#else
+#error WUT?
 #endif
   network->port       = port;
   network->host_name  = host_name;

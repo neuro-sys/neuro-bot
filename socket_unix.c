@@ -1,7 +1,8 @@
+#include "aconfig.h"
+#if defined(HAVE_UNIX)
 #include "socket.h"
 #include "global.h"
 
-#if defined (unix)
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netdb.h>
@@ -31,5 +32,4 @@ int t_connect_unix(char *host, char *port)
 
   return sockfd;
 }
-
 #endif
