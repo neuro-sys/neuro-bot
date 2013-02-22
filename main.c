@@ -10,34 +10,34 @@
 #include <string.h>
 
 int main(int argc, char *argv[])
-  {
-    struct session_t * session;
-    gchar * server, * nick, * pass;
-    gint port;
+{
+  struct session_t * session;
+  gchar  * server, * nick, * pass;
+  gint   port;
 
-    config_init();
-    
-    if ( py_load_modules() < 0 )
-      return 0;
+  config_init();
+  
+  if ( py_load_modules() < 0 )
+    return 0;
 
-    log_init(G_LOG_LEVEL_DEBUG);
+  log_init(G_LOG_LEVEL_DEBUG);
 
-    server = config_get_string(GROUP_CLIENT, KEY_SERVER);
-    if (!server)
-      server = g_strdup("irc.freenode.net");
+  server = config_get_string(GROUP_CLIENT, KEY_SERVER);
+  if (!server)
+    server = g_strdup("irc.freenode.net");
 
-    port = config_get_integer(GROUP_CLIENT, KEY_PORT);
-    if (!port)
-      port = 6667;
+  port = config_get_integer(GROUP_CLIENT, KEY_PORT);
+  if (!port)
+    port = 6667;
 
-    session = session_create(server, port);
+  session = session_create(server, port);
 
-    nick = config_get_string(GROUP_CLIENT, KEY_NICK);
-    if (!nick)
-      nick = g_strdup("cafer");
-    pass = config_get_string(GROUP_CLIENT, KEY_PASS);
-    if (!pass)
-      pass = g_strdup("");
+  nick = config_get_string(GROUP_CLIENT, KEY_NICK);
+  if (!nick)
+    nick = g_strdup("cafer");
+  pass = config_get_string(GROUP_CLIENT, KEY_PASS);
+  if (!pass)
+    pass = g_strdup("");
 
   session_run(session, nick, pass);
 
