@@ -57,6 +57,9 @@
     <ClCompile Include="..\..\modules\mod_youtube.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\py_wrap.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\channel.h">
@@ -101,5 +104,13 @@
     <ClInclude Include="..\..\user.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\py_wrap.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\irc-client.conf">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
 </Project>

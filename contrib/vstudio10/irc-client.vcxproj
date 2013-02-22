@@ -21,6 +21,7 @@
     <ClCompile Include="..\..\modules\mod_title.c" />
     <ClCompile Include="..\..\modules\mod_youtube.c" />
     <ClCompile Include="..\..\network.c" />
+    <ClCompile Include="..\..\py_wrap.c" />
     <ClCompile Include="..\..\session.c" />
     <ClCompile Include="..\..\socket_unix.c" />
     <ClCompile Include="..\..\socket_win.c" />
@@ -38,9 +39,13 @@
     <ClInclude Include="..\..\modules\mod_title.h" />
     <ClInclude Include="..\..\modules\mod_youtube.h" />
     <ClInclude Include="..\..\network.h" />
+    <ClInclude Include="..\..\py_wrap.h" />
     <ClInclude Include="..\..\session.h" />
     <ClInclude Include="..\..\socket.h" />
     <ClInclude Include="..\..\user.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\irc-client.conf" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <Keyword>Win32Proj</Keyword>
