@@ -18,7 +18,7 @@ int main(int argc, char *argv[])
   config_init();
   
   if ( py_load_modules() < 0 )
-    return 0;
+    g_printerr("Could not load python modules, going on without them.\n");
 
   log_init(G_LOG_LEVEL_DEBUG);
 
