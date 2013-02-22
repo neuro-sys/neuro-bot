@@ -46,8 +46,6 @@ void parse_json_youtube(char * data, struct youtube_t * youtube)
   temp = json_string_value(title_t); 
   strcpy(youtube->title, temp);
 
-  json_decref(root);
-
   youtube->valid = 1;
 }
 
