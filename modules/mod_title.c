@@ -6,8 +6,27 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+
 static int
 validate_http(char * line)
+{
+  char * ret, * t, * p;
+
+  ret = strstr(line, "http");
+
+  t = (p = strchr(ret, ' '))  ? p 
+    : (p = strchr(ret, '\r')) ? p
+    : (p = strchr(ret, '\n')) ? p
+    : 0;
+
+  if (t) *t = '\0';
+
+  memmove(line, ret, strlen(ret) + 1);
+}
+
+
+static int
+validate_http2(char * line)
 {
   GRegex * regex;
   GMatchInfo * match_info;
