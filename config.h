@@ -5,12 +5,15 @@
 #include <glib.h>
 
 #define GROUP_CLIENT "client"
+#define GROUP_MODULES "modules"
 
 #define KEY_NICK "nick"
 #define KEY_PASS "pass"
 #define KEY_SERVER "server"
 #define KEY_PORT "port"
 #define KEY_ADMIN "admin"
+
+#define KEY_PYPATH "pypath"
 
 void config_init(void);
 void config_uninit(void);

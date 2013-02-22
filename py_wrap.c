@@ -3,6 +3,8 @@
 #include <gio/gio.h>
 #include <glib-object.h>
 
+#include "config.h"
+
 static const char * mod_path = "modules";
 
 struct py_module_t {
@@ -27,29 +29,43 @@ void set_pymodule_path(char * py_path)
   PyList_Append(sys_path, path);
 }
 
-int py_load_modules()
+int py_load_modules(void)
 {
   char            * cur_dir = g_get_current_dir();
-  char              mod_dir[50];
+  char            * mod_dir;
   GFileEnumerator * enum_children;
   GFile           * mod_path_file;
-  GError          * error;
+  GError          * error = NULL;
   GFileInfo       * fileInfo;
+  char            * modules_path;
+
+  modules_path = config_get_string(GROUP_MODULES, KEY_PYPATH);
+  if (!modules_path)
+    modules_path = g_strdup(mod_path);
 
   g_type_init();
   Py_Initialize();
 
-  sprintf(mod_dir, "%s%c%s", cur_dir, G_DIR_SEPARATOR, mod_path);
+  if (modules_path[0] == '/')
+    mod_dir = g_strdup(modules_path);
+  else
+    mod_dir = g_strdup_printf("%s%c%s", cur_dir, G_DIR_SEPARATOR, modules_path);
   g_free(cur_dir);
+  g_free(modules_path);
   g_printerr("Scanning python modules in: %s\n", mod_dir); 
 
   set_pymodule_path(mod_dir);
   
   mod_path_file = g_file_new_for_path(mod_dir);
+  g_free(mod_dir);
 
   enum_children = g_file_enumerate_children(mod_path_file, NULL, 0, NULL, &error);
-  if (!enum_children) {
+  if (!enum_children || error) {
     g_printerr("Can't open the specified path: %s\n", mod_dir);
+    if (error) {
+      g_error_free(error);
+      error = NULL;
+    }
     return -1;
   }
 
