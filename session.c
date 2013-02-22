@@ -12,9 +12,9 @@
 #include <string.h>
 
 struct session_t {
-  struct network_t *  network;
-  GSList *            channel_list;
-  char *              nickname;
+  struct network_t  * network;
+  GSList            * channel_list;
+  char              * nickname;
 };
 
 struct network_t * session_get_network(struct session_t * session)
@@ -24,8 +24,8 @@ struct network_t * session_get_network(struct session_t * session)
 
 void session_run(struct session_t * session, char * nick, char * pass)
 { 
-  char * line;
-  struct irc_t irc;
+  char          * line;
+  struct irc_t  irc;
 
   gchar *admin = config_get_string(GROUP_CLIENT, KEY_ADMIN);
   if (!admin) {

@@ -28,9 +28,9 @@ validate_http(char * line)
 static int
 validate_http2(char * line)
 {
-  GRegex * regex;
-  GMatchInfo * match_info;
-  char * match;
+  GRegex      * regex;
+  GMatchInfo  * match_info;
+  char        * match;
 
   g_debug("%u\t%s\t\t%s", __LINE__, __FILE__, __func__);
   regex = g_regex_new("http:\\/\\/\\S*", 0, 0, NULL);
@@ -50,9 +50,8 @@ validate_http2(char * line)
 static
 int parse_title(char * dest, char * src)
 {
-  GRegex *      regex;
-  GMatchInfo *  match_info;
-
+  GRegex     * regex;
+  GMatchInfo * match_info;
 
   regex = g_regex_new("(?i)<TITLE>(.+?)</TITLE>", 0, 0, NULL);
   g_regex_match(regex, src, 0, &match_info);
@@ -73,8 +72,8 @@ int parse_title(char * dest, char * src)
 
 void mod_line_title(struct irc_t * irc)
 {
-  char title[256];
-  char * content = NULL;
+  char  title[256];
+  char  * content = NULL;
 
   g_debug("%u\t%s\t\t%s", __LINE__, __FILE__, __func__);
   if (validate_http(irc->request) < 0 )

@@ -7,8 +7,8 @@
 #include <glib.h>
 
 struct channel_t {
-  char *    name;
-  GSList *  user_list;
+  char      * name;
+  GSList    * user_list;
 };
 
 void channel_add_user(struct channel_t * channel, struct user_t * user)
