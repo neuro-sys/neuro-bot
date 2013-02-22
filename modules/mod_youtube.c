@@ -19,10 +19,10 @@ struct youtube_t {
 static
 void parse_json_youtube(char * data, struct youtube_t * youtube)
 {
-  json_t *      root;
+  json_t        * root;
   json_error_t  error;
-  json_t * entry, * rating, * statistics, * title, * average, * viewCount, * title_t;
-  const char * temp;
+  json_t        * entry, * rating, * statistics, * title, * average, * viewCount, * title_t;
+  const char    * temp;
 
   g_debug("%u\t%s\t\t%s", __LINE__, __FILE__, __func__);
   root        = json_loads(data, JSON_DECODE_ANY | JSON_DISABLE_EOF_CHECK , &error);
@@ -59,10 +59,10 @@ void parse_json_youtube(char * data, struct youtube_t * youtube)
 static
 void proc_info_youtube(struct irc_t * irc, struct youtube_t * youtube)
 {
-  GRegex *         regex;
-  GMatchInfo *     match_info;
-  char             url_path[512];
-  char *           content;
+  GRegex      * regex;
+  GMatchInfo  * match_info;
+  char        url_path[512];
+  char        * content;
 
   g_debug("%u\t%s\t\t%s", __LINE__, __FILE__, __func__);
   regex = g_regex_new("(?<=v=)[a-zA-Z0-9-]+(?=&)|(?<=v\\/)[^&\\n]+|(?<=v=)[^&\\n]+|(?<=youtu.be/)[^&\\n]+", 0, 0, NULL);

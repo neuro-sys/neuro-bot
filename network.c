@@ -8,10 +8,10 @@
 #include <string.h>
 
 struct network_t {
-  char * host_name;
-  int    port;
-  int    sockfd;
-  GIOChannel * giochannel;
+  char        * host_name;
+  int         port;
+  int         sockfd;
+  GIOChannel  * giochannel;
 };
 
 GIOChannel * network_get_giochannel(struct network_t * network)
@@ -71,8 +71,8 @@ int network_read(struct network_t * network, char * str)
 
 void network_send_message(struct network_t * network, char * message)
 {
-  gsize read;
-  GError * error = NULL;
+  gsize     read;
+  GError    * error = NULL;
   GIOStatus status;
 
   g_debug("%u\t%s\t%s", __LINE__, __FILE__, __func__);
