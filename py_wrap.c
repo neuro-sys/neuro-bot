@@ -1,6 +1,7 @@
 #include <python2.7/Python.h>
 #include <glib.h>
 #include <gio/gio.h>
+#include <glib-object.h>
 
 static const char * mod_path = "modules";
 

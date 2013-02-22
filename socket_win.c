@@ -1,6 +1,7 @@
 #include "aconfig.h"
-#if defined(HAVE_WINDOWS)
+#if defined(HAVE_WINDOWS) || defined(WIN32)
 #include <stdio.h>
+#include <WS2tcpip.h>
 #include "socket.h"
 
 static void initWinSock(void)
