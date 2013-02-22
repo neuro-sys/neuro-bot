@@ -41,16 +41,11 @@ void parse_json_youtube(char * data, struct youtube_t * youtube)
   viewCount = json_object_get(statistics, "viewCount");
   temp = strdup(json_string_value(viewCount));
   strcpy(youtube->view_count, temp);
-  json_decref(viewCount);
-  json_decref(statistics);
 
   title_t = json_object_get(title, "$t");
   temp = json_string_value(title_t); 
   strcpy(youtube->title, temp);
-  json_decref(title_t);
-  json_decref(title);
 
-  json_decref(entry);
   json_decref(root);
 
   youtube->valid = 1;
