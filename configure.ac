@@ -36,8 +36,8 @@ PKG_CHECK_MODULES([GLIB], [glib-2.0 gio-2.0],,
 PKG_CHECK_MODULES([JANSSON], [jansson],,
                   [AC_MSG_ERROR([Jansson is required])])
 AC_CHECK_CURL([7], [], [ AC_MSG_ERROR([No curl library found.  You can get it at http://curl.haxx.se]) ])
-PYTHON_CFLAGS="`python-config --cflags`"
-PYTHON_LIBS="`python-config --libs`"
+PYTHON_CFLAGS="`python2.7-config --cflags`"
+PYTHON_LIBS="`python2.7-config --libs`"
 AC_SUBST(PYTHON_CFLAGS)
 AC_SUBST(PYTHON_LIBS)
 
