@@ -2,6 +2,7 @@
 #include <glib.h>
 #include <gio/gio.h>
 #include <glib-object.h>
+#include <signal.h>
 
 #include "config.h"
 
@@ -13,6 +14,11 @@ struct py_module_t {
 
 GHashTable * mod_hash_map;
 
+static
+void signal_handler(int signum)
+{
+  exit(signum);
+}
 
 char * py_call_module(char * name)
 {
@@ -43,6 +49,7 @@ int py_load_modules(void)
   if (!modules_path)
     modules_path = g_strdup(mod_path);
 
+  signal(SIGINT, signal_handler);
   g_type_init();
   Py_Initialize();
 
