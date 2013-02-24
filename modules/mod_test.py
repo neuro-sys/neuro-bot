@@ -1,2 +1,3 @@
-def mod_test():
-  return "python test"
+def mod_test(a, b):
+  print("test")
+  return "python test: " % a % " ve " % b

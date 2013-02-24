@@ -5,6 +5,8 @@
 #include <signal.h>
 
 #include "config.h"
+#include "global.h"
+#include "irc.h"
 
 static const char * mod_path = "modules";
 
@@ -20,11 +22,20 @@ void signal_handler(int signum)
   exit(signum);
 }
 
-char * py_call_module(char * name)
+char * py_call_module(char * name, struct irc_t * irc)
 {
-  struct py_module_t * mod   = g_hash_table_lookup(mod_hash_map, name);
-  PyObject           * p_ret = PyObject_CallObject(mod->pFunc, NULL); 
-  return strdup(PyString_AsString(p_ret));
+  struct py_module_t * mod    = g_hash_table_lookup(mod_hash_map, name);
+  PyObject           * p_args = PyTuple_New(2);
+  PyObject           * p_val;
+
+  p_val = PyString_FromString(irc->from);
+  PyTuple_SetItem(p_args, 0, p_val);
+  p_val = PyString_FromString(irc->request);
+  PyTuple_SetItem(p_args, 1, p_val);
+
+  p_val = PyObject_CallObject(mod->pFunc, p_args); 
+
+  return strdup(PyString_AsString(p_val));
 }
 
 static

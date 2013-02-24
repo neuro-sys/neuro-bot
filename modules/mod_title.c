@@ -19,9 +19,11 @@ validate_http(char * line)
     : (p = strchr(ret, '\n')) ? p
     : 0;
 
-  if (t) *t = '\0';
+  if (t) *t = '\0'; else return -1;
 
   memmove(line, ret, strlen(ret) + 1);
+
+  return 1;
 }
 
 
