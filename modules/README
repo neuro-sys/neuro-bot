@@ -14,7 +14,7 @@ mod_mycommand.count = 0
 
 
 00:12 <n00b> .mycommand
-00:12 <\0x00> Hello from python to n00b for saying .mycommand
+00:12 <\0x00> Hello from python to n00b for saying .mycommand 42 times
 
 Just note that the module file and method name should be the same,
 taking two parameters as string, `from' and `line' respectively,
