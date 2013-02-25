@@ -19,7 +19,7 @@ taking two parameters as string, `from' and `line' respectively,
 and returning a string as the reply message.
 
 `from' is the channel (or private message) from which the message was sent.
-`line' is the whole line the user has sent -- including the but command,
+`line' is the whole line the user has sent -- including the bot command,
 so it's up to you to parse it the way you want.
 
 For writing new bot commands in C, see ~/irc-client/modules/mod_example.h
