@@ -14,3 +14,6 @@ For MS Windows Cygwin, it's all the same.
 If autotools does not work, you may use ~/irc-client/build_simple.sh
 
 
+For writing command modules see ~/irc-client/modules/README
+
+
