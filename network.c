@@ -88,13 +88,14 @@ void network_auth(struct network_t * network, char * nick, char * user, char * p
 {
   char message[255];
 
-  sprintf(message, "PASS *\r\n"
-                   "NICK %s\r\n"
+  sprintf(message, "NICK %s\r\n"
                    "USER %s 8 * :%s\r\n\r\n", nick, user, user);
 
   network_send_message(network, message);
-  sprintf(message, "PRIVMSG NickServ :identify %s\r\n", pass);
-  network_send_message(network, message);
+  if (pass && *pass != '\0') {
+    sprintf(message, "PRIVMSG NickServ :identify %s\r\n", pass);
+    network_send_message(network, message);
+  }
 
   printf("%s", message);
 }
