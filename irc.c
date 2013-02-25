@@ -54,14 +54,20 @@ void irc_proc_cmd_privmsg_user_cmd(struct irc_t * irc)
 
   if (!strncmp(".time", tokens[0], strlen(".time"))) {
     mod_cmd_time(irc);
-  } 
-  
-  if (!strncmp(".test", tokens[0], strlen(".test"))) {
-    char * ret = py_call_module("mod_test", irc);
-    sprintf(irc->response, "PRIVMSG %s :%s\r\n", irc->from, ret);
-    free(ret);
-  } 
 
+  } else { /* check if a python module matches the command name */
+    char * ret;
+    struct py_module_t * mod = find_module_from_command(tokens[0]); 
+      
+    if (!mod)
+      goto SKIP;
+
+    ret = py_call_module(mod, irc);
+    sprintf(irc->response, "PRIVMSG %s :%s\r\n", irc->from, ret);
+
+    free(ret);
+  }
+SKIP:
   if (!strncmp(irc->admin, irc->nick_to_msg, strlen(irc->admin))) {
     irc_proc_cmd_privmsg_user_cmd_admin(irc);
   }

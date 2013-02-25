@@ -23,15 +23,33 @@ void signal_handler(int signum)
   exit(signum);
 }
 
-char * py_call_module(char * name, struct irc_t * irc)
+struct py_module_t * find_module_from_command(char * cmd)
 {
-  struct py_module_t * mod;
+  struct py_module_t * mod; 
+  char t[50];
+
+  cmd++; /* skip the '.' prefix */
+
+  strcat(t, "mod_");
+  strcat(t, cmd);
+
+  mod = g_hash_table_lookup(mod_hash_map, t);
+
+  if (!mod)
+    return NULL;
+
+  return mod;
+
+}
+
+char * py_call_module(struct py_module_t * mod, struct irc_t * irc)
+{
   PyObject           * p_args;
   PyObject           * p_val;
   char  * t;
+  int n;
                                                     assert(irc->from);
                                                     assert(irc->request);
-  mod = g_hash_table_lookup(mod_hash_map, name);    assert(mod);
   p_args = PyTuple_New(2);                          assert(p_args);
   t = strchr(irc->request, '\r');                   assert(t);
   *t = '\0';
@@ -108,7 +126,7 @@ int py_load_modules(void)
       continue;
     }
  
-    if (!g_strrstr(file_name_temp, ".py")) 
+    if (!g_strrstr(file_name_temp, ".py") || file_name_temp[strlen(file_name_temp)-1] != 'c') 
       continue;
 
     strcpy(mod_name, file_name_temp);
