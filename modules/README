@@ -10,6 +10,10 @@ def mod_mycommand(_from, _line):
   # from and line.
   return "Hello from python to " + _from + " for saying " + _line"
 
+
+00:12 <n00b> .mycommand
+00:12 <\0x00> Hello from python to noob for saying .mycommand
+
 Just note that the module file and method name should be the same,
 taking two parameters as string, `from' and `line' respectively,
 and returning a string as the reply message.
