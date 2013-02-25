@@ -20,7 +20,7 @@ int main(int argc, char *argv[])
   if ( py_load_modules() < 0 )
     g_printerr("Could not load python modules, going on without them.\n");
 
-  log_init(G_LOG_LEVEL_DEBUG);
+  log_init(G_LOG_LEVEL_ERROR);
 
   server = config_get_string(GROUP_CLIENT, KEY_SERVER);
   if (!server)
