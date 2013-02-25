@@ -8,11 +8,13 @@ $ cat mod_mycommand.py
 def mod_mycommand(_from, _line):
   # do something with the parameters 
   # from and line.
-  return "Hello from python to " + _from + " for saying " + _line"
+  mod_mycommand.count += 1
+  return "Hello from python to " + _from + " for saying " + _line + " %d times" % mod_mycommand.count
+mod_mycommand.count = 0
 
 
 00:12 <n00b> .mycommand
-00:12 <\0x00> Hello from python to noob for saying .mycommand
+00:12 <\0x00> Hello from python to n00b for saying .mycommand
 
 Just note that the module file and method name should be the same,
 taking two parameters as string, `from' and `line' respectively,
