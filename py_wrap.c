@@ -28,7 +28,6 @@ char * py_call_module(char * name, struct irc_t * irc)
   struct py_module_t * mod;
   PyObject           * p_args;
   PyObject           * p_val;
-  int   n;
   char  * t;
                                                     assert(irc->from);
                                                     assert(irc->request);
@@ -43,6 +42,8 @@ char * py_call_module(char * name, struct irc_t * irc)
 
   p_val = PyObject_CallObject(mod->pFunc, p_args);  assert(p_val); 
   t = PyString_AsString(p_val);                     assert(t);
+
+  Py_DECREF(p_args);
 
   return strdup(t);
 }
