@@ -3,6 +3,7 @@
 #include <gio/gio.h>
 #include <glib-object.h>
 #include <signal.h>
+#include <assert.h>
 
 #include "config.h"
 #include "global.h"
@@ -24,25 +25,33 @@ void signal_handler(int signum)
 
 char * py_call_module(char * name, struct irc_t * irc)
 {
-  struct py_module_t * mod    = g_hash_table_lookup(mod_hash_map, name);
-  PyObject           * p_args = PyTuple_New(2);
+  struct py_module_t * mod;
+  PyObject           * p_args;
   PyObject           * p_val;
+  int   n;
+  char  * t;
+                                                    assert(irc->from);
+                                                    assert(irc->request);
+  mod = g_hash_table_lookup(mod_hash_map, name);    assert(mod);
+  p_args = PyTuple_New(2);                          assert(p_args);
+  t = strchr(irc->request, '\r');                   assert(t);
+  *t = '\0';
+  p_val = PyString_FromString(irc->from);           assert(p_val);
+  n = PyTuple_SetItem(p_args, 0, p_val);            assert(n);
+  p_val = PyString_FromString(irc->request);        assert(p_val);
+  n = PyTuple_SetItem(p_args, 1, p_val);            assert(n);
 
-  p_val = PyString_FromString(irc->from);
-  PyTuple_SetItem(p_args, 0, p_val);
-  p_val = PyString_FromString(irc->request);
-  PyTuple_SetItem(p_args, 1, p_val);
+  p_val = PyObject_CallObject(mod->pFunc, p_args);  assert(p_val); 
+  t = PyString_AsString(p_val);                     assert(t);
 
-  p_val = PyObject_CallObject(mod->pFunc, p_args); 
-
-  return strdup(PyString_AsString(p_val));
+  return strdup(t);
 }
 
 static
 void set_pymodule_path(char * py_path)
 {
-  PyObject * sys_path = PySys_GetObject("path");
-  PyObject * path     = PyString_FromString(py_path);
+  PyObject * sys_path = PySys_GetObject("path");        assert(sys_path);
+  PyObject * path     = PyString_FromString(py_path);   assert(path);
   PyList_Append(sys_path, path);
 }
 
