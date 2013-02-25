@@ -126,7 +126,7 @@ int py_load_modules(void)
       continue;
     }
  
-    if (!g_strrstr(file_name_temp, ".py") || file_name_temp[strlen(file_name_temp)-1] != 'c') 
+    if (!g_strrstr(file_name_temp, ".py") || file_name_temp[strlen(file_name_temp)-1] == 'c') 
       continue;
 
     strcpy(mod_name, file_name_temp);
