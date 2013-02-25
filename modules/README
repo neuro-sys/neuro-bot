@@ -1,4 +1,3 @@
-
 In order to write modules in Python (2.7)
 What you need is below, if you speak Unix.
 
@@ -6,10 +5,10 @@ Example:
 
 user@host ~/irc-client/modules
 $ cat mod_mycommand.py
-def mod_mycommand(from, line):
+def mod_mycommand(_from, _line):
   # do something with the parameters 
   # from and line.
-  return "Hello from python"
+  return "Hello from python to " + _from + " for saying " + _line"
 
 Just note that the module file and method name should be the same,
 taking two parameters as string, `from' and `line' respectively,
