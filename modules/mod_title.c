@@ -55,10 +55,10 @@ int parse_title(char * dest, char * src)
   GRegex     * regex;
   GMatchInfo * match_info;
 
-  regex = g_regex_new("(?i)<TITLE>(.+?)</TITLE>", 0, 0, NULL);
+  regex = g_regex_new("(?i)<title.*>([\\s\\S]*)</title>", 0, 0, NULL);
   g_regex_match(regex, src, 0, &match_info);
   if (g_match_info_matches(match_info)) {
-    char * t = g_match_info_fetch(match_info, 0);
+    char * t = g_match_info_fetch(match_info, 1);
     strncpy(dest, t, 255);
     g_free(t);
     g_match_info_free(match_info);
@@ -86,7 +86,7 @@ void mod_line_title(struct irc_t * irc)
   if (!content) return;
   
   if ( parse_title(title, content) > 0 ) {
-    sprintf(irc->response, "PRIVMSG %s :%s\r\n", irc->from, title);
+    sprintf(irc->response, "PRIVMSG %s :[TITLE]: %s\r\n", irc->from, title);
   }
 
   free(content);
