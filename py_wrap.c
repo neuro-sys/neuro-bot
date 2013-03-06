@@ -115,7 +115,7 @@ int py_load_modules(void)
     return -1;
   }
 
-  mod_hash_map = g_hash_table_new(g_int_hash, g_int_equal);
+  mod_hash_map = g_hash_table_new(g_int_hash, g_str_equal);
 
   while ( (fileInfo = g_file_enumerator_next_file(enum_children, NULL, NULL)) != NULL) {
     struct py_module_t * mod;
