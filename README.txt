@@ -1,4 +1,4 @@
-In order to build, you need autotools, pkg-config, libcurl, libglib-2.0 (with libgio-2.0), jansson and python2.7
+In order to build, you need libcurl, libglib-2.0 (with libgio-2.0), jansson and python2.7
 
 Basically pkg-config --list-all | grep 'libcurl\|glib\|gio\|jansson\|python' should list each.
 
