@@ -1,5 +1,4 @@
-#include "aconfig.h"
-#if defined(HAVE_UNIX) && !defined(WIN32)
+#if defined(unix) && !defined(WIN32)
 #include "socket.h"
 #include "global.h"
 

@@ -1,4 +1,3 @@
-#include "aconfig.h"
 #if defined(HAVE_WINDOWS) || defined(WIN32)
 #include <stdio.h>
 #include <WS2tcpip.h>

@@ -2,7 +2,6 @@
 #define __GLOBAL_H
 
 #include "log.h"
-#include "aconfig.h"
 
 #if defined (HAVE_WINDOWS) || defined (WIN32)
   #define __func__ __FUNCTION__
