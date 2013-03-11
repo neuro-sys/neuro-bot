@@ -35,9 +35,9 @@ void irc_proc_cmd_privmsg_user_cmd_admin(struct irc_t * irc)
   
   g_debug("%u\t%s\t\t%s", __LINE__, __FILE__, __func__);
   tokens = g_strsplit_set(irc->request, " ", 2);
-  if        (!g_ascii_strcasecmp(".join", tokens[0])) {
+  if        (!strncmp(".join", tokens[0], strlen(".join"))) {
     sprintf(irc->response, "JOIN %s\r\n", tokens[1]);
-  } else if (!g_ascii_strcasecmp(".part", tokens[0])) {
+  } else if (!strncmp(".part", tokens[0], strlen(".part"))) {
     sprintf(irc->response, "PART %s\r\n", tokens[1]);
   } 
 
@@ -90,10 +90,12 @@ void irc_proc_cmd_privmsg(struct irc_t * irc)
   } else if (g_strrstr(irc->request, "http:") || g_strrstr(irc->request, "https:")) {
     if (g_strrstr(irc->request, "youtube.com") || g_strrstr(irc->request, "youtu.be"))
       mod_line_youtube(irc); 
-    else  
-      mod_line_title(irc);
-  }  
+    else if (g_strrstr(irc->request, "eksisozluk.com"))
+      goto SKIP;
 
+    mod_line_title(irc);
+  }  
+SKIP:
   g_strfreev(tokens);
 }
 

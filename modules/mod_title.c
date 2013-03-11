@@ -55,7 +55,7 @@ int parse_title(char * dest, char * src)
   GRegex     * regex;
   GMatchInfo * match_info;
 
-  regex = g_regex_new("(?i)<title.*>([\\s\\S]*)</title>", 0, 0, NULL);
+  regex = g_regex_new("<title.*>(.*?)<\\/title>(?i)", 0, 0, NULL);
   g_regex_match(regex, src, 0, &match_info);
   if (g_match_info_matches(match_info)) {
     char * t = g_match_info_fetch(match_info, 1);

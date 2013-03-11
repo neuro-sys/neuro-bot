@@ -1,4 +1,4 @@
-#include <python2.7/Python.h>
+#include <python2.6/Python.h>
 #include <glib.h>
 #include <gio/gio.h>
 #include <glib-object.h>
@@ -27,15 +27,15 @@ struct py_module_t * find_module_from_command(char * cmd)
 {
   struct py_module_t * mod; 
   char t[50];
+  gboolean is_found = FALSE;
 
   cmd++; /* skip the '.' prefix */
 
   strcat(t, "mod_");
   strcat(t, cmd);
 
-  mod = g_hash_table_lookup(mod_hash_map, t);
-
-  if (!mod)
+  is_found = g_hash_table_lookup_extended (mod_hash_map, t, NULL, &mod);
+  if (is_found == FALSE)
     return NULL;
 
   return mod;
@@ -48,18 +48,19 @@ char * py_call_module(struct py_module_t * mod, struct irc_t * irc)
   PyObject           * p_val;
   char  * t;
   int n;
-                                                    assert(irc->from);
-                                                    assert(irc->request);
-  p_args = PyTuple_New(2);                          assert(p_args);
-  t = strchr(irc->request, '\r');                   assert(t);
+       
+  printf("Calling PY module: %s\n", mod->pName);
+                                                    
+  p_args = PyTuple_New(2);                          
+  t = strchr(irc->request, '\r');                   
   *t = '\0';
-  p_val = PyString_FromString(irc->from);           assert(p_val);
-  n = PyTuple_SetItem(p_args, 0, p_val);            assert(n);
-  p_val = PyString_FromString(irc->request);        assert(p_val);
-  n = PyTuple_SetItem(p_args, 1, p_val);            assert(n);
+  p_val = PyString_FromString(irc->from);           
+  n = PyTuple_SetItem(p_args, 0, p_val);            
+  p_val = PyString_FromString(irc->request);        
+  n = PyTuple_SetItem(p_args, 1, p_val);            
 
-  p_val = PyObject_CallObject(mod->pFunc, p_args);  assert(p_val); 
-  t = PyString_AsString(p_val);                     assert(t);
+  p_val = PyObject_CallObject(mod->pFunc, p_args);  
+  t = PyString_AsString(p_val);                     
 
   Py_DECREF(p_args);
 
@@ -115,7 +116,7 @@ int py_load_modules(void)
     return -1;
   }
 
-  mod_hash_map = g_hash_table_new(g_int_hash, g_int_equal);
+  mod_hash_map = g_hash_table_new(g_str_hash, g_str_equal);
 
   while ( (fileInfo = g_file_enumerator_next_file(enum_children, NULL, NULL)) != NULL) {
     struct py_module_t * mod;
