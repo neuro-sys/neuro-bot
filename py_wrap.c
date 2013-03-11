@@ -34,7 +34,7 @@ struct py_module_t * find_module_from_command(char * cmd)
   strcat(t, "mod_");
   strcat(t, cmd);
 
-  is_found = g_hash_table_lookup_extended (mod_hash_map, t, NULL, &mod);
+  is_found = g_hash_table_lookup_extended (mod_hash_map, t, NULL, (void **) &mod);
   if (is_found == FALSE)
     return NULL;
 
