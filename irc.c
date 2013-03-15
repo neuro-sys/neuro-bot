@@ -28,139 +28,151 @@
 
 */
 
-static
-void irc_proc_cmd_privmsg_user_cmd_admin(struct irc_t * irc)
+static void irc_proc_cmd_privmsg_user_cmd_admin (struct irc_t * irc)
 {
-  char ** tokens;
-  
-  g_debug("%u\t%s\t\t%s", __LINE__, __FILE__, __func__);
-  tokens = g_strsplit_set(irc->request, " ", 2);
-  if        (!strncmp(".join", tokens[0], strlen(".join"))) {
-    sprintf(irc->response, "JOIN %s\r\n", tokens[1]);
-  } else if (!strncmp(".part", tokens[0], strlen(".part"))) {
-    sprintf(irc->response, "PART %s\r\n", tokens[1]);
-  } 
+    char ** tokens;
 
-  g_strfreev(tokens);
+    tokens = g_strsplit_set (irc->request, " ", 2);
+
+    if ( !strncmp (".join", tokens[0], strlen(".join")) )
+    {
+        sprintf( irc->response, "JOIN %s\r\n", tokens[1] );
+    } 
+    else if ( !strncmp(".part", tokens[0], strlen(".part")) )
+    {
+        sprintf( irc->response, "PART %s\r\n", tokens[1] );
+    } 
+
+    g_strfreev (tokens);
 }
 
-static
-void irc_proc_cmd_privmsg_user_cmd(struct irc_t * irc)
+static void irc_proc_cmd_privmsg_user_cmd (struct irc_t * irc)
 {
-  char ** tokens;
+    char ** tokens;
 
-  g_debug("%u\t%s\t\t%s", __LINE__, __FILE__, __func__);
-  tokens = g_strsplit_set(irc->request, " ", 2);
+    tokens = g_strsplit_set (irc->request, " ", 2);
 
-  if (!strncmp(".time", tokens[0], strlen(".time"))) {
-    mod_cmd_time(irc);
+    if ( !strncmp (".time", tokens[0], strlen(".time")) ) 
+    {
+        mod_cmd_time (irc);
 
-  } else { /* check if a python module matches the command name */
-    char * ret;
-    struct py_module_t * mod = find_module_from_command(tokens[0]); 
-      
-    if (!mod)
-      goto SKIP;
+    } else { 
+        /* check if a python module matches the command name */
+        char * ret;
+        struct py_module_t * mod = find_module_from_command (tokens[0]); 
 
-    ret = py_call_module(mod, irc);
-    sprintf(irc->response, "PRIVMSG %s :%s\r\n", irc->from, ret);
+        if ( !mod )
+            goto SKIP;
 
-    free(ret);
-  }
+        ret = py_call_module ( mod, irc );
+        sprintf( irc->response, "PRIVMSG %s :%s\r\n", irc->from, ret );
+
+        free(ret);
+    }
 SKIP:
-  if (!strncmp(irc->admin, irc->nick_to_msg, strlen(irc->admin))) {
-    irc_proc_cmd_privmsg_user_cmd_admin(irc);
-  }
+    if ( !strncmp (irc->admin, irc->nick_to_msg, strlen(irc->admin)) ) {
+        irc_proc_cmd_privmsg_user_cmd_admin (irc);
+    }
 
-  g_strfreev(tokens);
+    g_strfreev(tokens);
 }
 
-static
-void irc_proc_cmd_privmsg(struct irc_t * irc)
+static void irc_proc_cmd_privmsg (struct irc_t * irc)
 {
-  char ** tokens;
+    char ** tokens;
 
-  g_debug("%u\t%s\t\t%s", __LINE__, __FILE__, __func__);
-  tokens = g_strsplit(irc->srv_msg.prefix, "!", 2);
-  strcpy(irc->from, irc->srv_msg.params);
-  strcpy(irc->nick_to_msg, tokens[0]);
+    tokens = g_strsplit (irc->srv_msg.prefix, "!", 2);
+    strcpy (irc->from, irc->srv_msg.params);
+    strcpy (irc->nick_to_msg, tokens[0]);
 
-  if        (irc->request[0] == '.') {
-    irc_proc_cmd_privmsg_user_cmd(irc);
-  } else if (g_strrstr(irc->request, "http:") || g_strrstr(irc->request, "https:")) {
-    if (g_strrstr(irc->request, "youtube.com") || g_strrstr(irc->request, "youtu.be"))
-      mod_line_youtube(irc); 
-    else if (g_strrstr(irc->request, "eksisozluk.com"))
-      goto SKIP;
+    if ( irc->request[0] == '.' ) 
+    {
+        irc_proc_cmd_privmsg_user_cmd (irc);
+    } 
+    else if ( g_strrstr (irc->request, "http:") || g_strrstr(irc->request, "https:") )
+    {
+        if ( g_strrstr (irc->request, "youtube.com") || g_strrstr(irc->request, "youtu.be") )
+            mod_line_youtube (irc); 
+        else if ( g_strrstr (irc->request, "eksisozluk.com") )
+            goto SKIP;
+        else
+            mod_line_title (irc);
+    }  
 
-    mod_line_title(irc);
-  }  
 SKIP:
-  g_strfreev(tokens);
+    g_strfreev (tokens);
 }
 
-static
-void irc_proc_cmd(struct irc_t * irc)
+static void irc_proc_cmd (struct irc_t * irc)
 {
-  char * cmd;
+    char * cmd;
 
-  cmd = irc->srv_msg.command;
-  g_debug("%u\t%s\t\t%s", __LINE__, __FILE__, __func__);
-  if        (!strncmp("PRIVMSG", cmd, strlen("PRIVMSG"))) {
-    irc_proc_cmd_privmsg(irc);
-  } else if (!strncmp("PING", cmd, strlen("PING"))) {
-    sprintf(irc->response, "PONG %s\r\n", irc->request);
-  }
- printf("%s", irc->response);
+    cmd = irc->srv_msg.command;
+
+    if ( !strncmp ("PRIVMSG", cmd, strlen("PRIVMSG")) ) 
+    {
+        irc_proc_cmd_privmsg (irc);
+    } 
+    else if ( !strncmp ("PING", cmd, strlen("PING")) )
+    {
+        sprintf (irc->response, "PONG %s\r\n", irc->request);
+    }
 }
 
 /*     message    =  [ ":" prefix SPACE ] command [ params ] crlf */
-static
-void irc_parse_prefix(struct irc_t * irc, char * line)
+static void irc_parse_prefix (struct irc_t * irc, char * line)
 {
-  char ** tokens;
-  
-  tokens = g_strsplit(line, " ", 4); 
+    char ** tokens;
 
-  strcpy(irc->srv_msg.prefix, tokens[0]+1); /* skip ':' from the prefix */
-  strcpy(irc->srv_msg.command, tokens[1]);
-  if (tokens[2][0] != ':') { /* if the 3rd token does not start with a ':', there are params */
-    strcpy(irc->srv_msg.params, tokens[2]); /* this copies only the first param */
-    if (tokens[3] != NULL) /* the rest is optional */
-      strcpy(irc->request, tokens[3]+1);
-  } else {
-    strcpy(irc->request, tokens[2]+1);
-  }
+    tokens = g_strsplit (line, " ", 4); 
 
-  g_strfreev (tokens);
+    strcpy (irc->srv_msg.prefix, tokens[0]+1); /* skip ':' from the prefix */
+    strcpy (irc->srv_msg.command, tokens[1]);
+
+    /* if the 3rd token does not start with a ':', there are params */
+    if ( tokens[2][0] != ':' ) 
+    { 
+
+        /* this copies only the first param */
+        strcpy(irc->srv_msg.params, tokens[2]);         
+
+        /* the rest is request and optional */
+        if ( tokens[3] != NULL ) 
+            strcpy (irc->request, tokens[3]+1);
+
+    } else {
+        strcpy (irc->request, tokens[2]+1);
+    }
+
+    g_strfreev (tokens);
 }
 
-static
-void irc_parse_other(struct irc_t * irc, char * line)
+static void irc_parse_other (struct irc_t * irc, char * line)
 {
-  char ** tokens;
+    char ** tokens;
 
-  g_debug("%u\t%s\t\t%s", __LINE__, __FILE__, __func__);
-  tokens = g_strsplit(line, ":", 2);
-  if (!strncmp("PING", tokens[0], 4)) {
-    strcpy(irc->srv_msg.command, tokens[0]);
-    strcpy(irc->request, tokens[1]);
-  }
+    tokens = g_strsplit (line, ":", 2);
+    if ( !strncmp("PING", tokens[0], 4) ) 
+    {
+        strcpy (irc->srv_msg.command, tokens[0]);
+        strcpy (irc->request, tokens[1]);
+    }
 
-  g_strfreev(tokens);
+    g_strfreev(tokens);
 }
 
 /* message    =  [ ":" prefix SPACE ] command [ params ] crlf */
 void irc_process_line(struct irc_t * irc, char * line)
 {  
-  g_debug("%u\t%s\t\t%s", __LINE__, __FILE__, __func__);
-  printf("%s", line);
-  if (line[0] == ':') {
-    irc_parse_prefix(irc, line);
-  } else {
-    irc_parse_other(irc, line);   
-  }
+    g_printerr(line);
 
-  irc_proc_cmd(irc);
+    if ( line[0] == ':' ) 
+    {
+        irc_parse_prefix(irc, line);
+    } else {
+        irc_parse_other(irc, line);   
+    }
+
+    irc_proc_cmd(irc);
 }
 

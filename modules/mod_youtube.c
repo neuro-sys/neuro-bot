@@ -90,7 +90,7 @@ void mod_line_youtube(struct irc_t * irc)
   proc_info_youtube(irc, youtube);
 
   if (youtube->valid)
-    sprintf(irc->response, "PRIVMSG %s :[%s] - [rating: %f, viewed: %s\r\n", 
+    sprintf(irc->response, "PRIVMSG %s :[%s] - [rating: %f, viewed: [%s\r\n", 
                                 irc->from, youtube->title, youtube->rating, youtube->view_count);
   free(youtube);
 }
