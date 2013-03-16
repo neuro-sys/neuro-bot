@@ -41,7 +41,11 @@ static void irc_proc_cmd_privmsg_user_cmd_admin (struct irc_t * irc)
     else if (!strncmp(".part", tokens[0], strlen(".part")))
     {
         sprintf(irc->response, "PART %s\r\n", tokens[1] );
-    } 
+    }
+    else if ( !strncmp(".privmsg", tokens[0], strlen(".privmsg")) )
+    {
+        sprintf(irc->response, "%s", tokens[1]);
+    }
 
     g_strfreev (tokens);
 }
