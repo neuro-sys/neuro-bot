@@ -8,10 +8,4 @@ def mod_eksi(_from, _line):
     m = re.search('content">(.*?)<', f.read())
     return nltk.clean_html(m.group(1))
 
-def main():
-    print(mod_eksi("#python",sys.argv[1])) 
-
-if __name__ == '__main__':
-    main()
-
 
