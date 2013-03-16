@@ -7,94 +7,94 @@
 #include <string.h>
 
 struct network_t {
-  char        * host_name;
-  int         port;
-  int         sockfd;
-  GIOChannel  * giochannel;
+    char        * host_name;
+    int         port;
+    int         sockfd;
+    GIOChannel  * giochannel;
 };
 
 GIOChannel * network_get_giochannel(struct network_t * network)
 {
-  g_debug("%u\t%s\t%s", __LINE__, __FILE__, __func__);
-  return network->giochannel;
+    g_debug("%u\t%s\t%s", __LINE__, __FILE__, __func__);
+    return network->giochannel;
 }
 
 struct network_t * network_connect(char * host_name, int port)
 {
-  char port_str[10];
-  int sockfd;
-  struct network_t * network;
-  
-  g_debug("%u\t%s\t%s", __LINE__, __FILE__, __func__);
-  network = malloc(sizeof * network);
+    char port_str[10];
+    int sockfd;
+    struct network_t * network;
 
-  sprintf(port_str, "%d", port);
-  sockfd = t_connect(host_name, port_str);
+    g_debug("%u\t%s\t%s", __LINE__, __FILE__, __func__);
+    network = malloc(sizeof * network);
+
+    sprintf(port_str, "%d", port);
+    sockfd = t_connect(host_name, port_str);
 
 #if defined(HAVE_WINDOWS) || defined(WIN32)
-  network->giochannel = g_io_channel_win32_new_socket(sockfd);
+    network->giochannel = g_io_channel_win32_new_socket(sockfd);
 #elif defined(unix)
-  network->giochannel = g_io_channel_unix_new(sockfd);
+    network->giochannel = g_io_channel_unix_new(sockfd);
 #else
 #error WUT?
 #endif
-  network->port       = port;
-  network->host_name  = host_name;
+    network->port       = port;
+    network->host_name  = host_name;
 
-  g_io_channel_set_encoding(network->giochannel, NULL, NULL);
-  return network;
+    g_io_channel_set_encoding(network->giochannel, NULL, NULL);
+    return network;
 }
 
 int network_read_line(struct network_t * network, char ** buf)
 {
-  gsize len;
-  GIOStatus giostatus;
-  GError * error = NULL;
-  
-  g_debug("%u\t%s\t%s", __LINE__, __FILE__, __func__);
-  if ( (giostatus = g_io_channel_read_line (network->giochannel, buf, &len, NULL, &error)) != G_IO_STATUS_NORMAL) {
-    printf("%d\n", giostatus);
-    if (giostatus == 0) printf("%s\n", error->message);
-    return -1;
-  }
-  
-  return len;
+    gsize len;
+    GIOStatus giostatus;
+    GError * error = NULL;
+
+    g_debug("%u\t%s\t%s", __LINE__, __FILE__, __func__);
+    if ( (giostatus = g_io_channel_read_line (network->giochannel, buf, &len, NULL, &error)) != G_IO_STATUS_NORMAL) {
+        printf("%d\n", giostatus);
+        if (giostatus == 0) printf("%s\n", error->message);
+        return -1;
+    }
+
+    return len;
 }
 
 int network_read(struct network_t * network, char * str)
 {
-  gsize len;
-  g_io_channel_read_to_end(network->giochannel, &str, &len, NULL);
-  return len;
+    gsize len;
+    g_io_channel_read_to_end(network->giochannel, &str, &len, NULL);
+    return len;
 }
 
 void network_send_message(struct network_t * network, char * message)
 {
-  gsize     read;
-  GError    * error = NULL;
-  GIOStatus status;
+    gsize     read;
+    GError    * error = NULL;
+    GIOStatus status;
 
-  g_debug("%u\t%s\t%s", __LINE__, __FILE__, __func__);
+    g_debug("%u\t%s\t%s", __LINE__, __FILE__, __func__);
 
-  status = g_io_channel_write_chars(network->giochannel, message, strlen(message), &read, &error);
+    status = g_io_channel_write_chars(network->giochannel, message, strlen(message), &read, &error);
 
-  if (status == G_IO_STATUS_NORMAL)
-    g_io_channel_flush(network->giochannel, NULL);
-  
+    if (status == G_IO_STATUS_NORMAL)
+        g_io_channel_flush(network->giochannel, NULL);
+
 }
 
 void network_auth(struct network_t * network, char * nick, char * user, char * pass)
 {
-  char message[255];
+    char message[255];
 
-  sprintf(message, "NICK %s\r\n"
-                   "USER %s 8 * :%s\r\n\r\n", nick, user, user);
+    sprintf(message, "NICK %s\r\n"
+            "USER %s 8 * :%s\r\n\r\n", nick, user, user);
 
-  network_send_message(network, message);
-  if (pass && *pass != '\0') {
-    sprintf(message, "PRIVMSG NickServ :identify %s\r\n", pass);
     network_send_message(network, message);
-  }
+    if (pass && *pass != '\0') {
+        sprintf(message, "PRIVMSG NickServ :identify %s\r\n", pass);
+        network_send_message(network, message);
+    }
 
-  printf("%s", message);
+    printf("%s", message);
 }

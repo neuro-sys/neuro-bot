@@ -13,18 +13,18 @@
 
 
 /*
-  Every function name is prefixed with either a `irc_proc' or `irc_parse'.
-  
-    irc_parse_* family of functions are for parsing the raw irc massages 
-  into a struct srv_msg_t type.
+   Every function name is prefixed with either a `irc_proc' or `irc_parse'.
 
-    irc_proc_* family of functions are for processing the struct srv_msg_t
-  type previously obtained by irc_parse_*, and responding the server with
-  the appropriate reply.
+   irc_parse_* family of functions are for parsing the raw irc massages 
+   into a struct srv_msg_t type.
 
-    irc_proc_cmd_* family of functions are for processing the 
-  srv_msg_t.command message (e.g. PRIVMSG, PING, CTCP). Depending on the srv
-  command, irc_proc_cmd_{privmsg,ping,ctcp} functions are called respectively.
+   irc_proc_* family of functions are for processing the struct srv_msg_t
+   type previously obtained by irc_parse_*, and responding the server with
+   the appropriate reply.
+
+   irc_proc_cmd_* family of functions are for processing the 
+   srv_msg_t.command message (e.g. PRIVMSG, PING, CTCP). Depending on the srv
+   command, irc_proc_cmd_{privmsg,ping,ctcp} functions are called respectively.
 
 */
 
@@ -34,13 +34,13 @@ static void irc_proc_cmd_privmsg_user_cmd_admin (struct irc_t * irc)
 
     tokens = g_strsplit_set (irc->request, " ", 2);
 
-    if ( !strncmp (".join", tokens[0], strlen(".join")) )
+    if ( !strncmp(".join", tokens[0], strlen(".join")) )
     {
-        sprintf( irc->response, "JOIN %s\r\n", tokens[1] );
+        sprintf(irc->response, "JOIN %s\r\n", tokens[1]);
     } 
-    else if ( !strncmp(".part", tokens[0], strlen(".part")) )
+    else if (!strncmp(".part", tokens[0], strlen(".part")))
     {
-        sprintf( irc->response, "PART %s\r\n", tokens[1] );
+        sprintf(irc->response, "PART %s\r\n", tokens[1] );
     } 
 
     g_strfreev (tokens);

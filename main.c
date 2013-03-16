@@ -11,41 +11,41 @@
 
 int main(int argc, char *argv[])
 {
-  struct session_t * session;
-  gchar  * server, * nick, * pass;
-  gint   port;
+    struct session_t * session;
+    gchar  * server, * nick, * pass;
+    gint   port;
 
-  config_init();
-  
-  if ( py_load_modules() < 0 )
-    g_printerr("Could not load python modules, going on without them.\n");
+    config_init();
 
-  log_init(G_LOG_LEVEL_ERROR);
+    if ( py_load_modules() < 0 )
+        g_printerr("Could not load python modules, going on without them.\n");
 
-  server = config_get_string(GROUP_CLIENT, KEY_SERVER);
-  if (!server)
-    server = g_strdup("irc.freenode.net");
+    log_init(G_LOG_LEVEL_ERROR);
 
-  port = config_get_integer(GROUP_CLIENT, KEY_PORT);
-  if (!port)
-    port = 6667;
+    server = config_get_string(GROUP_CLIENT, KEY_SERVER);
+    if (!server)
+        server = g_strdup("irc.freenode.net");
 
-  session = session_create(server, port);
+    port = config_get_integer(GROUP_CLIENT, KEY_PORT);
+    if (!port)
+        port = 6667;
 
-  nick = config_get_string(GROUP_CLIENT, KEY_NICK);
-  if (!nick)
-    nick = g_strdup("cafer");
-  pass = config_get_string(GROUP_CLIENT, KEY_PASS);
-  if (!pass)
-    pass = g_strdup("");
+    session = session_create(server, port);
 
-  session_run(session, nick, pass);
+    nick = config_get_string(GROUP_CLIENT, KEY_NICK);
+    if (!nick)
+        nick = g_strdup("cafer");
+    pass = config_get_string(GROUP_CLIENT, KEY_PASS);
+    if (!pass)
+        pass = g_strdup("");
 
-  g_free(nick);
-  g_free(pass);
-  g_free(server);
+    session_run(session, nick, pass);
 
-  session_destroy(session);
+    g_free(nick);
+    g_free(pass);
+    g_free(server);
 
-  return 0;
+    session_destroy(session);
+
+    return 0;
 }
