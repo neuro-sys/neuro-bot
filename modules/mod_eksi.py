@@ -1,4 +1,4 @@
-import re, sys, urllib, urllib2, nltk
+import re, urllib2, nltk
 
 def mod_eksi(_from, _line):
     entry = _line.split()[1]
