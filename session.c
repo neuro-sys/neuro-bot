@@ -26,6 +26,7 @@ void session_run(struct session_t * session, char * nick, char * pass)
 { 
     char          * line;
     struct irc_t  irc;
+    int run = 1;
 
     gchar *admin = config_get_string(GROUP_CLIENT, KEY_ADMIN);
     if (!admin) {
@@ -35,14 +36,19 @@ void session_run(struct session_t * session, char * nick, char * pass)
 
     network_auth(session->network, nick, "ircbot", pass);
 
-    while (1) {
+    while (run) {
         memset(&irc, 0, sizeof irc);
+        
         irc.admin = admin;
+        
         if ( network_read_line(session->network, &line) < 0 )
-            continue;
+            run = 0;
+
         irc_process_line(&irc, line);
+        
         if ( irc.response != NULL )
             network_send_message(session->network, irc.response);
+        
         g_free(line);
     }
 
@@ -52,9 +58,15 @@ void session_run(struct session_t * session, char * nick, char * pass)
 struct session_t * session_create(char * host, int port)
 { 
     struct session_t * session = malloc(sizeof * session);
-    if (!session) return NULL;
+    
+    if (!session) 
+        return NULL;
+    
     session->network = network_connect(host, port);
-    if (!session->network) return NULL;
+    
+    if (!session->network) 
+        return NULL;
+    
     return session;
 }
 
