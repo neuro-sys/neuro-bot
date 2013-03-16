@@ -97,8 +97,6 @@ static void irc_proc_cmd_privmsg (struct irc_t * irc)
     {
         if ( g_strrstr (irc->request, "youtube.com") || g_strrstr(irc->request, "youtu.be") )
             mod_line_youtube (irc); 
-        else if ( g_strrstr (irc->request, "eksisozluk.com") )
-            goto SKIP;
         else
             mod_line_title (irc);
     }  
