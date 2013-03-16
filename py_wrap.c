@@ -1,3 +1,7 @@
+#include "global.h"
+#include "config.h"
+#include "irc.h"
+
 #include <python2.7/Python.h>
 #include <glib.h>
 #include <gio/gio.h>
@@ -5,9 +9,6 @@
 #include <signal.h>
 #include <assert.h>
 
-#include "config.h"
-#include "global.h"
-#include "irc.h"
 
 static const char * mod_path = "modules";
 
@@ -17,15 +18,14 @@ struct py_module_t {
 
 GHashTable * mod_hash_map;
 
-    static
-void signal_handler(int signum)
+static void signal_handler(int signum)
 {
     exit(signum);
 }
 
 struct py_module_t * find_module_from_command(char * cmd)
 {
-    struct py_module_t * mod; 
+    struct py_module_t * mod = NULL;
     char t[50];
     gboolean is_found = FALSE;
 
@@ -44,12 +44,10 @@ struct py_module_t * find_module_from_command(char * cmd)
 
 char * py_call_module(struct py_module_t * mod, struct irc_t * irc)
 {
-    PyObject           * p_args;
-    PyObject           * p_val;
-    char  * t;
+    PyObject    * p_args;
+    PyObject    * p_val;
+    char        * t;
     int n;
-
-    printf("Calling PY module: %s\n", mod->pName);
 
     p_args = PyTuple_New(2);                          
     t = strchr(irc->request, '\r');                   
@@ -67,8 +65,7 @@ char * py_call_module(struct py_module_t * mod, struct irc_t * irc)
     return strdup(t);
 }
 
-    static
-void set_pymodule_path(char * py_path)
+static void set_pymodule_path(char * py_path)
 {
     PyObject * sys_path = PySys_GetObject("path");        assert(sys_path);
     PyObject * path     = PyString_FromString(py_path);   assert(path);

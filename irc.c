@@ -50,26 +50,26 @@ static void irc_proc_cmd_privmsg_user_cmd (struct irc_t * irc)
 {
     char ** tokens;
 
-    tokens = g_strsplit_set (irc->request, " ", 2);
+    tokens = g_strsplit_set (irc->request, " \r\n", 2);
 
     if ( !strncmp (".time", tokens[0], strlen(".time")) ) 
     {
         mod_cmd_time (irc);
 
-    } else { 
-        /* check if a python module matches the command name */
+    } 
+    else 
+    { 
         char * ret;
         struct py_module_t * mod = find_module_from_command (tokens[0]); 
 
-        if ( !mod )
-            goto SKIP;
+        if (mod) {
+            ret = py_call_module ( mod, irc );
+            sprintf( irc->response, "PRIVMSG %s :%s\r\n", irc->from, ret );
 
-        ret = py_call_module ( mod, irc );
-        sprintf( irc->response, "PRIVMSG %s :%s\r\n", irc->from, ret );
-
-        free(ret);
+            free(ret);
+        }
     }
-SKIP:
+
     if ( !strncmp (irc->admin, irc->nick_to_msg, strlen(irc->admin)) ) {
         irc_proc_cmd_privmsg_user_cmd_admin (irc);
     }
@@ -169,7 +169,9 @@ void irc_process_line(struct irc_t * irc, char * line)
     if ( line[0] == ':' ) 
     {
         irc_parse_prefix(irc, line);
-    } else {
+    } 
+    else 
+    {
         irc_parse_other(irc, line);   
     }
 
