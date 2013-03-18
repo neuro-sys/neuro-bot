@@ -10,6 +10,7 @@
 #include "modules/mod_title.h"
 #include "modules/mod_youtube.h"
 #include "modules/mod_time.h"
+#include "modules/mod_wiki.h"
 
 
 /*
@@ -60,7 +61,11 @@ static void irc_proc_cmd_privmsg_user_cmd (struct irc_t * irc)
     {
         mod_cmd_time (irc);
 
-    } 
+    }
+    else if ( !strncmp(".wiki", tokens[0], strlen(".wiki")) )
+    {
+        mod_line_wiki (irc);
+    }
     else 
     { 
         char * ret;
@@ -142,7 +147,9 @@ static void irc_parse_prefix (struct irc_t * irc, char * line)
         if ( tokens[3] != NULL ) 
             strcpy (irc->request, tokens[3]+1);
 
-    } else {
+    } 
+    else 
+    {
         strcpy (irc->request, tokens[2]+1);
     }
 
