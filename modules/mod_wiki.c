@@ -9,6 +9,26 @@
 #include <glib.h>
 #include <stdio.h>
 
+void strip_html_tags(char * dest, char * src)
+{
+    int inside = 0;
+
+    while (*src != '\0')
+    {
+
+        if (*src == '>') {
+            inside = 0;
+            src++;
+        } else if (*src == '<' || inside) {
+            inside = 1;
+            src++;
+            continue;
+        }
+
+        *dest++ = *src++;
+    }
+}
+
 static char * parse_json_wiki(char * data)
 {
     json_t        * root;
@@ -66,9 +86,14 @@ void mod_line_wiki(struct irc_t * irc)
    
     if (!p)
         return;
-  
-    sprintf(irc->response, "PRIVMSG %s :%s\r\n", irc->from, p);
+
+    t = malloc(strlen(p));
+
+    strip_html_tags(t, p);
+
+    sprintf(irc->response, "PRIVMSG %s :%s\r\n", irc->from, t);
 
     free(p);
+    free(t);
     free(content);
 }
