@@ -37,11 +37,12 @@ static char * parse_json_wiki(char * data)
 
 void mod_line_wiki(struct irc_t * irc)
 {
-    char * p;
+    char * p, * t;
     char * content;
     char url_path[512];
     int i;
 
+    /* strip the leading command prefix (.wiki) */
     p = strchr(irc->request, ' ');
 
     if (!p++)
@@ -49,7 +50,13 @@ void mod_line_wiki(struct irc_t * irc)
     
     i = strlen(p);
 
+    /* strip the trailing cr-lf */
     p[i-2] = '\0';
+
+    t = p;
+
+    while ((t = strchr(t, ' ')) != NULL)
+        *t = '_';
 
     sprintf(url_path, "http://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=%s&format=json", p);
 
