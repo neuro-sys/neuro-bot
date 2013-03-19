@@ -5,8 +5,7 @@ def mod_eksi(_from, _line):
     o = urllib2.build_opener()
     o.addheaders.append(('Cookie', 'zero-intro-skipped=1'))
     try: f = o.open("http://www.eksisozluk.com/?q=" + e) 
-    finally: return "Yok boyle bisi"
-    print f.read()
+    except: return "Yok boyle bisi"
     m = re.search('content">(.*?)<', f.read().replace("\\n", ""))
     return nltk.clean_html(m.group(1))
     
