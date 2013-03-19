@@ -31,7 +31,7 @@ struct py_module_t * find_module_from_command(char * cmd)
 
     cmd++; /* skip the '.' prefix */
 
-    strcat(t, "mod_");
+    strcpy(t, "mod_");
     strcat(t, cmd);
 
     is_found = g_hash_table_lookup_extended (mod_hash_map, t, NULL, (void **) &mod);
@@ -67,8 +67,8 @@ char * py_call_module(struct py_module_t * mod, struct irc_t * irc)
 
 static void set_pymodule_path(char * py_path)
 {
-    PyObject * sys_path = PySys_GetObject("path");        assert(sys_path);
-    PyObject * path     = PyString_FromString(py_path);   assert(path);
+    PyObject * sys_path = PySys_GetObject("path");        
+    PyObject * path     = PyString_FromString(py_path);   
     PyList_Append(sys_path, path);
 }
 
