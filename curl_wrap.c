@@ -9,8 +9,7 @@ struct mem_block_t {
     size_t size;
 };
 
-    static size_t
-WriteMemoryCallback(void * contents, size_t size, size_t nmemb, void * userp)
+static size_t WriteMemoryCallback(void * contents, size_t size, size_t nmemb, void * userp)
 {
     size_t realsize; 
     struct mem_block_t * mem;
@@ -49,7 +48,6 @@ char * curl_perform(char * url)
     curl_easy_setopt(curl, CURLOPT_POSTREDIR, CURL_REDIR_POST_ALL );
     curl_easy_setopt(curl, CURLOPT_VERBOSE, 1);
     curl_easy_setopt(curl, CURLOPT_USERAGENT, "neuro_irc_bot");
-    //curl_easy_setopt(curl, CURLOPT_HEADER, 1);
     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteMemoryCallback);
     curl_easy_setopt(curl, CURLOPT_WRITEDATA, &chunk);
     curl_easy_perform(curl);

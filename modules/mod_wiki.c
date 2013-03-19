@@ -19,7 +19,9 @@ void strip_html_tags(char * dest, char * src)
         if (*src == '>') {
             inside = 0;
             src++;
-        } else if (*src == '<' || inside) {
+        } 
+        
+        if (*src == '<' || inside) {
             inside = 1;
             src++;
             continue;
@@ -27,7 +29,6 @@ void strip_html_tags(char * dest, char * src)
 
         *dest++ = *src++;
     }
-
     *dest = '\0';
 }
 
@@ -35,21 +36,33 @@ static char * parse_json_wiki(char * data)
 {
     json_t        * root;
     json_error_t  error;
-    json_t        * query, * search, * search_el, * snippet;
+    json_t        * query, * pages, * page_id, * extract;
     char          * temp;
+    void          * iter;
 
-    root = json_loads(data, JSON_DECODE_ANY | JSON_DISABLE_EOF_CHECK , &error);
+    root        = json_loads(data, JSON_DECODE_ANY | JSON_DISABLE_EOF_CHECK , &error);
     if (!root)
         return NULL;
 
-    query     = json_object_get(root, "query");
-    search    = json_object_get(query, "search");
-    search_el = json_array_get(search, 0);
-    snippet   = json_object_get(search_el, "snippet");
+    query      = json_object_get(root, "query");
+    pages      = json_object_get(query, "pages");
 
-    temp = strdup(json_string_value(snippet));
+    iter = json_object_iter(pages);
+
+    if (iter)
+    {
+        page_id = json_object_iter_value(iter);
+    }
+
+    extract = json_object_get(page_id, "extract");
+
+    if (extract)
+        temp = strdup(json_string_value(extract));
+    else
+        temp = strdup("This line intentionally left blank.");
 
     json_decref(root);
+    json_decref(iter);
 
     return temp;
 }
@@ -60,6 +73,7 @@ void mod_line_wiki(struct irc_t * irc)
     char * content;
     char url_path[512];
     int i;
+    char strip_buf[2];
 
     /* strip the leading command prefix (.wiki) */
     p = strchr(irc->request, ' ');
@@ -75,11 +89,17 @@ void mod_line_wiki(struct irc_t * irc)
     t = p;
 
     while ((t = strchr(t, ' ')) != NULL)
-        *t = '_';
+        *t = '+';
 
-    sprintf(url_path, "http://en.wikipedia.org/w/api.php?action=query&list=search&srsearch=%s&format=json", p);
+    sprintf(url_path, "http://en.wikipedia.org/w/api.php?action=query&prop=extracts&exchars=350&titles=%s&format=json&redirects", p);
 
     content = curl_perform(url_path);
+
+    t = content;
+    while ( (t = strstr(t, "\\n")) != NULL) {
+        t[0] = '-';
+        t[1] = ' ';
+    }
 
     p = parse_json_wiki(content);
    
