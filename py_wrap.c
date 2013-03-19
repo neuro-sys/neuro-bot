@@ -60,7 +60,7 @@ char * py_call_module(struct py_module_t * mod, struct irc_t * irc)
     p_val = PyObject_CallObject(mod->pFunc, p_args);  
     t = PyString_AsString(p_val);                     
 
-    Py_DECREF(p_args);
+    //Py_DECREF(p_args);
 
     return strdup(t);
 }
@@ -74,7 +74,7 @@ static void set_pymodule_path(char * py_path)
 
 int py_load_modules(void)
 {
-    char            * cur_dir = g_get_current_dir();
+    char            * cur_dir;
     char            * mod_dir;
     GFileEnumerator * enum_children;
     GFile           * mod_path_file;
@@ -82,11 +82,16 @@ int py_load_modules(void)
     GFileInfo       * fileInfo;
     char            * modules_path;
 
+    cur_dir = g_get_current_dir();
+
     modules_path = config_get_string(GROUP_MODULES, KEY_PYPATH);
     if (!modules_path)
         modules_path = g_strdup(mod_path);
 
     signal(SIGINT, signal_handler);
+    signal(SIGABRT, signal_handler);
+    signal(SIGBREAK, signal_handler);
+
     g_type_init();
     Py_Initialize();
 
@@ -103,7 +108,7 @@ int py_load_modules(void)
     mod_path_file = g_file_new_for_path(mod_dir);
     g_free(mod_dir);
 
-    enum_children = g_file_enumerate_children(mod_path_file, NULL, 0, NULL, &error);
+    enum_children = g_file_enumerate_children(mod_path_file, "*", 0, NULL, &error);
     if (!enum_children || error) {
         g_printerr("Can't open the specified path: %s\n", mod_dir);
         if (error) {
@@ -115,21 +120,23 @@ int py_load_modules(void)
 
     mod_hash_map = g_hash_table_new(g_str_hash, g_str_equal);
 
-    while ( (fileInfo = g_file_enumerator_next_file(enum_children, NULL, NULL)) != NULL) {
+    while ( (fileInfo = g_file_enumerator_next_file(enum_children, NULL, &error)) != NULL) {
         struct py_module_t * mod;
-        char * file_name_temp = (g_file_info_get_attribute_as_string(fileInfo, G_FILE_ATTRIBUTE_STANDARD_NAME));
+        char * file_name;
         char mod_name[50];
 
-        if (!file_name_temp) {
+        file_name = strdup(g_file_info_get_name (fileInfo));
+
+        if (!file_name) {
             continue;
         }
 
-        if (!g_strrstr(file_name_temp, ".py") || file_name_temp[strlen(file_name_temp)-1] == 'c') 
+        if (!g_strrstr(file_name, ".py") || file_name[strlen(file_name)-1] == 'c') 
             continue;
 
-        strcpy(mod_name, file_name_temp);
+        strcpy(mod_name, file_name);
         *strchr(mod_name, '.') = '\0';
-        g_free(file_name_temp);
+        
         g_strstrip(mod_name);
 
         mod = malloc(sizeof (struct py_module_t));

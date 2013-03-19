@@ -27,6 +27,8 @@ void strip_html_tags(char * dest, char * src)
 
         *dest++ = *src++;
     }
+
+    *dest = '\0';
 }
 
 static char * parse_json_wiki(char * data)
@@ -34,9 +36,9 @@ static char * parse_json_wiki(char * data)
     json_t        * root;
     json_error_t  error;
     json_t        * query, * search, * search_el, * snippet;
-    char    * temp;
+    char          * temp;
 
-    root        = json_loads(data, JSON_DECODE_ANY | JSON_DISABLE_EOF_CHECK , &error);
+    root = json_loads(data, JSON_DECODE_ANY | JSON_DISABLE_EOF_CHECK , &error);
     if (!root)
         return NULL;
 
@@ -47,10 +49,7 @@ static char * parse_json_wiki(char * data)
 
     temp = strdup(json_string_value(snippet));
 
-    json_decref(snippet);
-    json_decref(search_el);
-    json_decref(search);
-    json_decref(query);
+    json_decref(root);
 
     return temp;
 }
