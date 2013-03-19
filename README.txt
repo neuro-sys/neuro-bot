@@ -14,6 +14,8 @@ If autotools does not work, you may use ~/irc-bot/build_simple.sh
 
 For writing command modules see ~/irc-bot/modules/README
 
+Windows x86 build, rev-193:
+http://dl.dropbox.com/u/28327717/coolbot.rar
 
 Jansson:
 You can have it from its official page http://www.digip.org/jansson/
