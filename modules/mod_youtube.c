@@ -37,9 +37,16 @@ void parse_json_youtube(char * data, struct youtube_t * youtube)
     json_decref(average);
     json_decref(rating);
 
-    viewCount = json_object_get(statistics, "viewCount");
-    temp = strdup(json_string_value(viewCount));
-    strcpy(youtube->view_count, temp);
+    if (statistics != NULL) 
+    {
+      viewCount = json_object_get(statistics, "viewCount");
+      temp = strdup(json_string_value(viewCount));
+      strcpy(youtube->view_count, temp);
+    }
+    else 
+    {
+      strcpy(youtube->view_count, "N/A");
+    }
 
     title_t = json_object_get(title, "$t");
     temp = json_string_value(title_t); 
