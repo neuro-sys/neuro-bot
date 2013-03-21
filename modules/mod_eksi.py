@@ -1,15 +1,12 @@
 #!/usr/bin/env python2
 # -*- coding: utf8 -*-
 
-# provided by decaf
-
 from urlgrabber import urlread
 from bs4 import BeautifulSoup
 
-import sys
 
 # sonuç boyutu [unicode char]
-LIMIT = 450
+LIMIT = 400
 
 def mod_eksi(_from, _line):
     return daModule(_line.replace('.eksi ',''))
@@ -41,4 +38,4 @@ def parsit(st):
     netice = " | ".join(dt)
     if len(netice) > LIMIT:
         netice = netice[:LIMIT].rpartition("|")[0]
-    return (baslik + ' ' + netice + ' | ' + href).encode('utf-8')
+    return (baslik +' '+ netice).encode('utf-8') +' | '+ href
