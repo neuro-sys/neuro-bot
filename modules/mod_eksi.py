@@ -9,7 +9,7 @@ from bs4 import BeautifulSoup
 import sys
 
 # sonuç boyutu [unicode char]
-LIMIT = 400
+LIMIT = 480
 
 def mod_eksi(_from, _line):
     return daModule(_line.replace('.eksi ',''))
@@ -39,8 +39,8 @@ def parsit(st):
     entries = soup.find_all("div", attrs={"class": "content"})
     dt = [entry_isle(entry) for entry in entries]
     netice = " | ".join(dt)
-    if len(netice) > (LIMIT - len(href) - len(baslik) + 4):
-        netice = netice[:LIMIT].rpartition("|")[0]
+    if len(netice) > LIMIT:
+        netice = netice[:(LIMIT - len(baslik) - len(href) - 4)].rpartition("|")[0]
     return (baslik + ' ' + netice + ' | ' + href).encode('utf-8')
 
 if __name__ == "__main__":

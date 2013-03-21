@@ -58,9 +58,12 @@ char * py_call_module(struct py_module_t * mod, struct irc_t * irc)
     n = PyTuple_SetItem(p_args, 1, p_val);            
 
     p_val = PyObject_CallObject(mod->pFunc, p_args);  
-    t = PyString_AsString(p_val);                     
+    if (p_val)
+        t = PyString_AsString(p_val);                     
+    else
+        t = "Python module crashed.";
 
-    //Py_DECREF(p_args);
+    Py_DECREF(p_args);
 
     return strdup(t);
 }
