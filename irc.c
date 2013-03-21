@@ -73,7 +73,7 @@ static void irc_proc_cmd_privmsg_user_cmd (struct irc_t * irc)
 
         if (mod) {
             ret = py_call_module ( mod, irc );
-            sprintf( irc->response, "PRIVMSG %s :%s\r\n", irc->from, ret );
+            snprintf( irc->response, MAX_MSG , "PRIVMSG %s :%s\r\n", irc->from, ret );
 
             free(ret);
         }
