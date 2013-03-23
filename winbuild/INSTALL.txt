@@ -1,1 +1,3 @@
 Extract the dependency projects into their respective folders.
+
+For python, replace the Python path in neuro-bot/neuro-bot/neuro-bot.vcxproj to your installation directory
