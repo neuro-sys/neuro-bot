@@ -7,7 +7,7 @@ CFLAGS="`pkg-config $LIBS --cflags` -I. -g"
 LDFLAGS="`pkg-config $LIBS --libs` -g"
 
 gcc -c *.c modules/*.c $CFLAGS
-gcc *.o -o ircclient $LDFLAGS
+gcc *.o -o neurobot $LDFLAGS
 
 
 

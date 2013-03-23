@@ -106,7 +106,6 @@ static void irc_proc_cmd_privmsg (struct irc_t * irc)
             mod_line_title (irc);
     }  
 
-SKIP:
     g_strfreev (tokens);
 }
 

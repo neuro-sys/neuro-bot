@@ -6,8 +6,10 @@
 from urlgrabber import urlread
 from bs4 import BeautifulSoup
 
+import sys
+
 # sonuç boyutu [byte]
-LIMIT = 509
+LIMIT = 400
 
 def mod_eksi(_from, _line):
     return daModule(_line.replace('.eksi ',''))
@@ -42,8 +44,10 @@ def parsit(st):
     entries = soup.find_all("div", attrs={"class": "content"})
     dt = [entry_isle(entry) for entry in entries]
     netice = " | ".join(dt)
-    netice = (baslik +' '+ netice + ' | '+ href).encode('utf-8')
+    netice = (baslik +' '+ netice)
     while(len(netice) > LIMIT):
         netice = icindenkes(netice)
-    return netice    
+    return (netice +' | '+ href).encode('utf-8')
 
+if __name__ == "__main__":
+    print(mod_eksi("", sys.argv[1]))
