@@ -16,6 +16,7 @@ struct user_t * user_create(char * name)
     return user;
 }
 
+
 void user_destroy(struct user_t * user)
 {
     free(user);

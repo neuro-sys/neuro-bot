@@ -98,7 +98,10 @@ struct channel_t * session_channel_remove_by_name(struct session_t * session, ch
 
 void session_destroy(struct session_t * session)
 {
-    g_slist_free_full(session->channel_list, (void (*)(void *)) &channel_destroy);
+    // there is no g_slist_free_full() in flippin debian (glib 2.24)
+    // g_slist_free_full(session->channel_list, (void (*)(void *)) &channel_destroy);
+    g_slist_foreach(session->channel_list, (GFunc) user_destroy, NULL);
+    g_slist_free(session->channel_list);
     free(session);
 }
 

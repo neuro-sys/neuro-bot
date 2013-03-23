@@ -7,7 +7,7 @@ from urlgrabber import urlread
 from bs4 import BeautifulSoup
 
 # sonuç boyutu [byte]
-LIMIT = 509
+LIMIT = 450
 
 def mod_eksi(_from, _line):
     return daModule(_line.replace('.eksi ',''))

@@ -42,3 +42,5 @@ missing
 *.lo
 stamp-h1
 *.pyc
+.sconsign.dblite
+tags

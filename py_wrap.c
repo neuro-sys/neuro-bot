@@ -2,12 +2,13 @@
 #include "config.h"
 #include "irc.h"
 
-#include <python2.7/Python.h>
+#include <Python.h>
 #include <glib.h>
 #include <gio/gio.h>
 #include <glib-object.h>
 #include <signal.h>
-#include <assert.h>
+// Python.h has this one (mehmet)
+//#include <assert.h>
 
 
 static const char * mod_path = "modules";

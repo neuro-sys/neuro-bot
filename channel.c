@@ -47,8 +47,10 @@ const char * channel_get_name(const struct channel_t * channel)
 }
 
 void channel_destroy(struct channel_t * channel)
-{
-    g_slist_free_full(channel->user_list, (void (*)(void *)) &user_destroy);
+{   // there is no g_slist_free_full() in flippin debian (glib 2.24)
+    // g_slist_free_full(channel->user_list, (void (*)(void *)) &user_destroy);
+    g_slist_foreach(channel->user_list, (GFunc) user_destroy, NULL);
+    g_slist_free(channel->user_list);
     free(channel);
 }
 
