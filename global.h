@@ -3,9 +3,10 @@
 
 #include "log.h"
 
-#if defined (HAVE_WINDOWS) || defined (WIN32)
+#ifdef _WIN32
   #define __func__ __FUNCTION__
   #pragma warning(disable : 4996)
+#define snprintf _snprintf
 #endif
 
 #endif

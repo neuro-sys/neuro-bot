@@ -1,8 +1,9 @@
+
 #include "global.h"
 #include "config.h"
 #include "irc.h"
 
-#include <python2.7/Python.h>
+#include <Python.h>
 #include <glib.h>
 #include <gio/gio.h>
 #include <glib-object.h>
@@ -63,8 +64,9 @@ char * py_call_module(struct py_module_t * mod, struct irc_t * irc)
     else
         t = "Python module crashed.";
 
+#ifndef _WIN32
     Py_DECREF(p_args);
-
+#endif
     return strdup(t);
 }
 
@@ -93,8 +95,7 @@ int py_load_modules(void)
 
     signal(SIGINT, signal_handler);
     signal(SIGABRT, signal_handler);
-
-    g_type_init();
+	g_type_init();
     Py_Initialize();
 
     if (modules_path[0] == '/')
@@ -171,4 +172,3 @@ int py_load_modules(void)
 
     return 1;
 }
-

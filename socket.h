@@ -3,7 +3,7 @@
 
 #include "global.h"
 
-#if defined (HAVE_WINDOWS) || defined(WIN32)
+#if defined (_WIN32)
   #include <ws2tcpip.h>
   #define t_connect t_connect_win
   extern int t_connect_win(char *host, char *port);

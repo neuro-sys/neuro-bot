@@ -1,7 +1,7 @@
 #include "config.h"
 #include <stdlib.h>
 
-#define CONFIG_FILE "irc-client.conf"
+#define CONFIG_FILE "neurobot.conf"
 
 struct config_t {
     GKeyFile *key_file;

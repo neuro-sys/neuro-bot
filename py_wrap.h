@@ -10,4 +10,3 @@ extern char *               py_call_module(struct py_module_t * mod, struct irc_
 extern struct py_module_t * find_module_from_command(char * cmd);
 
 #endif
-

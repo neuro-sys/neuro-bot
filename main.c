@@ -20,6 +20,7 @@ int main(int argc, char *argv[])
 
     config_init();
 
+
     if ( py_load_modules() < 0 )
         g_printerr("Could not load python modules, going on without them.\n");
 

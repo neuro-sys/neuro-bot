@@ -29,7 +29,7 @@ struct network_t * network_connect(char * host_name, int port)
     sprintf(port_str, "%d", port);
     sockfd = t_connect(host_name, port_str);
 
-#if defined(HAVE_WINDOWS) || defined(WIN32)
+#if defined (_WIN32)
     network->giochannel = g_io_channel_win32_new_socket(sockfd);
 #elif defined(unix)
     network->giochannel = g_io_channel_unix_new(sockfd);
