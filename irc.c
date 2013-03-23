@@ -68,7 +68,6 @@ static void irc_proc_cmd_privmsg_user_cmd (struct irc_t * irc)
     }
     else 
     { 
-#if defined (Py_PYTHON_H)
         char * ret;
         struct py_module_t * mod = find_module_from_command (tokens[0]); 
 
@@ -78,7 +77,6 @@ static void irc_proc_cmd_privmsg_user_cmd (struct irc_t * irc)
 
             free(ret);
         }
-#endif
     }
 
     if ( !strncmp (irc->admin, irc->nick_to_msg, strlen(irc->admin)) ) {
