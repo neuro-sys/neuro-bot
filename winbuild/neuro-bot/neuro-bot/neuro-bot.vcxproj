@@ -37,10 +37,10 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IncludePath>$(ProjectDir)..\..\..\;$(ProjectDir)..\gtk+-bundle\include;$(ProjectDir)..\curl-7.29.0\include;D:\Python27\include;$(IncludePath)</IncludePath>
+    <IncludePath>$(ProjectDir)..\..\..\;$(ProjectDir)..\gtk+-bundle\include;$(ProjectDir)..\curl-7.29.0\include;C:\Python27\include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <LibraryPath>$(ProjectDir)..\gtk+-bundle\lib;$(ProjectDir)..\jansson-2.4\win32\vs2010\Output\Debug;D:\Python27\libs;$(LibraryPath)</LibraryPath>
+    <LibraryPath>$(ProjectDir)..\gtk+-bundle\lib;$(ProjectDir)..\jansson-2.4\win32\vs2010\Output\Debug;C:\Python27\libs;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
