@@ -1,3 +1,4 @@
+#if defined (Py_PYTHON_H)
 #include "global.h"
 #include "config.h"
 #include "irc.h"
@@ -172,3 +173,4 @@ int py_load_modules(void)
     return 1;
 }
 
+#endif

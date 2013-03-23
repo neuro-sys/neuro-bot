@@ -1,4 +1,4 @@
-#if defined(HAVE_WINDOWS) || defined(WIN32)
+#if defined(_WIN32)
 #include <stdio.h>
 #include <WS2tcpip.h>
 #include "socket.h"
