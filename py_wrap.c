@@ -95,7 +95,7 @@ int py_load_modules(void)
 
     signal(SIGINT, signal_handler);
     signal(SIGABRT, signal_handler);
-
+	g_type_init();
     Py_Initialize();
 
     if (modules_path[0] == '/')
