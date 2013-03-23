@@ -8,12 +8,15 @@
 #include <stdio.h>
 #include <glib.h>
 #include <string.h>
+#include <locale.h>
 
 int main(int argc, char *argv[])
 {
     struct session_t * session;
     gchar  * server, * nick, * pass;
     gint   port;
+
+    setlocale(LC_CTYPE, "");
 
     config_init();
 
