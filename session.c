@@ -11,18 +11,12 @@
 #include <stdlib.h>
 #include <string.h>
 
-struct session_t {
-    struct network_t  * network;
-    GSList            * channel_list;
-    char              * nickname;
-};
-
 struct network_t * session_get_network(struct session_t * session)
 {
     return session->network;
 }
 
-void session_run(struct session_t * session, char * nick, char * pass)
+static void session_run(struct session_t * session, char * nick, char * pass)
 { 
     char          * line;
     struct irc_t  irc;
@@ -63,10 +57,12 @@ struct session_t * session_create(char * host, int port)
         return NULL;
     
     session->network = network_connect(host, port);
-    
+        
     if (!session->network) 
         return NULL;
-    
+   
+    session->run = &session_run;
+
     return session;
 }
 

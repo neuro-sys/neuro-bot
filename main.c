@@ -39,10 +39,11 @@ int main(int argc, char *argv[])
     if (!nick)
         nick = g_strdup("cafer");
     pass = config_get_string(GROUP_CLIENT, KEY_PASS);
+
     if (!pass)
         pass = g_strdup("");
 
-    session_run(session, nick, pass);
+    session->run(session, nick, pass);
 
     g_free(nick);
     g_free(pass);
