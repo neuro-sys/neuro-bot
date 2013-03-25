@@ -21,6 +21,28 @@ GHashTable * mod_hash_map;
 
 static char * mod_dir;
 
+char * get_loaded_module_names()
+{
+    char * buf;
+
+    buf = malloc(510);
+
+    buf[0] = '\0';
+
+    GHashTableIter iter;
+    gpointer key, value;
+
+    g_hash_table_iter_init(&iter, mod_hash_map);
+    while (g_hash_table_iter_next(&iter, &key, &value))
+    {
+        strcat(buf, " [");
+        strcat(buf, key);
+        strcat(buf, "]");
+    }
+
+    return buf;
+}
+
 static void signal_handler(int signum)
 {
     exit(signum);

@@ -51,7 +51,13 @@ static void irc_proc_cmd_privmsg_user_cmd_admin (struct irc_t * irc)
     {
         if ( py_load_mod_hash() > 0 )
         {
-            sprintf(irc->response, "PRIVMSG %s :Loaded.\r\n", irc->from);
+            char * t;
+
+            t = get_loaded_module_names();
+           
+            snprintf(irc->response, 510, "PRIVMSG %s :Loaded : %s\r\n", irc->from, t);
+
+            free(t);
         }
         else
         {
