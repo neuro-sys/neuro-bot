@@ -1,14 +1,14 @@
-
-#include "global.h"
-#include "config.h"
-#include "irc.h"
-
 #include <Python.h>
 #include <glib.h>
 #include <gio/gio.h>
 #include <glib-object.h>
 #include <signal.h>
 #include <assert.h>
+
+#include "global.h"
+#include "config.h"
+#include "irc.h"
+
 
 
 static const char * mod_path = "modules";

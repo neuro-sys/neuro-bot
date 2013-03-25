@@ -121,7 +121,7 @@ static void irc_proc_cmd (struct irc_t * irc)
     } 
     else if ( !strncmp ("PING", cmd, strlen("PING")) )
     {
-        sprintf (irc->response, "PONG %s\r\n", irc->request);
+        snprintf (irc->response, strlen(irc->response), "PONG %s\r\n", irc->request);
     }
 }
 
@@ -131,6 +131,9 @@ static void irc_parse_prefix (struct irc_t * irc, char * line)
     char ** tokens;
 
     tokens = g_strsplit (line, " ", 4); 
+    
+    if (!tokens)
+        return;
 
     strcpy (irc->srv_msg.prefix, tokens[0]+1); /* skip ':' from the prefix */
     strcpy (irc->srv_msg.command, tokens[1]);
