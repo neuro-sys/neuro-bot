@@ -3,6 +3,7 @@
 
 #include <stdio.h>
 #include <time.h>
+#include <stdlib.h>
 
 char * mod_time(struct irc_t * irc)
 {

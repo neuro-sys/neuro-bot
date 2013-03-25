@@ -29,8 +29,6 @@ struct mod_c_t * find_mod_c(char * cmd)
     char t[50];
     gboolean is_found = FALSE;
 
-    cmd++;
-
     is_found = g_hash_table_lookup_extended (mod_c_hash_map, cmd, NULL, (void **) &mod);
     if (is_found == FALSE)
         return NULL;

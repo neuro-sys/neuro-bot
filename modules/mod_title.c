@@ -7,8 +7,7 @@
 #include <stdio.h>
 #include <string.h>
 
-    static int
-validate_http(char * line)
+static int validate_http(char * line)
 {
     char * ret, * t, * p;
 
@@ -27,8 +26,7 @@ validate_http(char * line)
 }
 
 
-    static int
-validate_http2(char * line)
+static int validate_http2(char * line)
 {
     GRegex      * regex;
     GMatchInfo  * match_info;
@@ -48,8 +46,7 @@ validate_http2(char * line)
     return 1;
 }
 
-    static
-int parse_title(char * dest, char * src)
+static int parse_title(char * dest, char * src)
 {
     GRegex     * regex;
     GMatchInfo * match_info;
@@ -71,7 +68,7 @@ int parse_title(char * dest, char * src)
     return -1;
 }
 
-void mod_line_title(struct irc_t * irc)
+char * mod_title(struct irc_t * irc)
 {
     char  title[256];
     char  * content = NULL;
@@ -84,10 +81,11 @@ void mod_line_title(struct irc_t * irc)
     if (!content) return;
 
     if ( parse_title(title, content) > 0 ) {
-        sprintf(irc->response, "PRIVMSG %s :[TITLE]: %s\r\n", irc->from, title);
+        free(content);
+        return strdup(title);
     }
 
-    free(content);
+    return NULL;
 }
 
 

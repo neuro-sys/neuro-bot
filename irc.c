@@ -74,20 +74,22 @@ static void irc_proc_cmd_privmsg_user_cmd (struct irc_t * irc)
 {
     char ** tokens;
     struct mod_c_t * mod_c;
+    char * t;
 
     tokens = g_strsplit_set (irc->request, " \r\n", 2);
 
-
-    if (mod_c = find_mod_c(tokens[0]))
+    t = strdup(tokens[0]);
+    if (mod_c = find_mod_c(++t))
     {
         char * ret = mod_c->func(irc);
         
-        if (!ret)
-            return;
 
-        snprintf(irc->response, MAX_MSG, "PRIVMSG %s :%s\r\n", irc->from, ret);
+        if (ret)
+        {
+            snprintf(irc->response, MAX_MSG, "PRIVMSG %s :%s\r\n", irc->from, ret);
 
-        free(ret);
+            free(ret);
+        }
     }
     else
     {
@@ -124,10 +126,29 @@ static void irc_proc_cmd_privmsg (struct irc_t * irc)
     } 
     else if ( g_strrstr (irc->request, "http:") || g_strrstr(irc->request, "https:") )
     {
+
+        struct mod_c_t * mod;
+        char * ret;
+
         if ( g_strrstr (irc->request, "youtube.com") || g_strrstr(irc->request, "youtu.be") )
-            mod_line_youtube (irc); 
+        {
+
+            mod = find_mod_c("mod_youtube");
+        }
         else
-            mod_line_title (irc);
+        {
+
+            mod = find_mod_c("mod_title");
+        }
+
+        ret = mod->func(irc); 
+
+        if (ret)
+        {
+            snprintf(irc->response, MAX_MSG, "PRIVMSG %s :%s\r\n", irc->from, ret);
+
+            free(ret);
+        }
     }  
 
     g_strfreev (tokens);

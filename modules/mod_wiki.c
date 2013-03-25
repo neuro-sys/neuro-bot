@@ -67,8 +67,9 @@ static char * parse_json_wiki(char * data)
     return temp;
 }
 
-void mod_line_wiki(struct irc_t * irc)
+char * mod_wiki(struct irc_t * irc)
 {
+    char * ret;
     char * p, * t;
     char * content;
     char url_path[512];
@@ -110,7 +111,7 @@ void mod_line_wiki(struct irc_t * irc)
 
     strip_html_tags(t, p);
 
-    sprintf(irc->response, "PRIVMSG %s :%s\r\n", irc->from, t);
+    ret = strdup(t);
 
     free(p);
     free(t);

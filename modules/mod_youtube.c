@@ -16,8 +16,7 @@ struct youtube_t {
     int             valid;
 };
 
-    static
-void parse_json_youtube(char * data, struct youtube_t * youtube)
+static void parse_json_youtube(char * data, struct youtube_t * youtube)
 {
     json_t        * root;
     json_error_t  error;
@@ -55,8 +54,7 @@ void parse_json_youtube(char * data, struct youtube_t * youtube)
     youtube->valid = 1;
 }
 
-    static
-void proc_info_youtube(struct irc_t * irc, struct youtube_t * youtube)
+static void proc_info_youtube(struct irc_t * irc, struct youtube_t * youtube)
 {
     GRegex      * regex;
     GMatchInfo  * match_info;
@@ -81,13 +79,12 @@ void proc_info_youtube(struct irc_t * irc, struct youtube_t * youtube)
     } 
 
     g_regex_unref(regex);
-
-
 }
 
 
-void mod_line_youtube(struct irc_t * irc)
+char * mod_youtube(struct irc_t * irc)
 {
+    char ret[510];
     struct youtube_t * youtube;
 
     youtube = malloc(sizeof (struct youtube_t));
@@ -95,7 +92,11 @@ void mod_line_youtube(struct irc_t * irc)
     proc_info_youtube(irc, youtube);
 
     if (youtube->valid)
-        sprintf(irc->response, "PRIVMSG %s :[%s] - [rating: %f, viewed: %s]\r\n", 
-                irc->from, youtube->title, youtube->rating, youtube->view_count);
+    {
+        sprintf(ret, "[%s] - [rating: %f, viewed: %s]", 
+                youtube->title, youtube->rating, youtube->view_count);
+    }
     free(youtube);
+
+    return strdup(ret);
 }
