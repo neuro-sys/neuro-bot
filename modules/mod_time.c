@@ -4,10 +4,15 @@
 #include <stdio.h>
 #include <time.h>
 
-void mod_cmd_time(struct irc_t * irc)
+char * mod_time(struct irc_t * irc)
 {
+    char * ret;
     time_t now;
 
+    ret = malloc(510);
+
     time(&now);
-    sprintf(irc->response, "PRIVMSG %s :%s\r\n", irc->from, ctime(&now));
+    sprintf(ret, "%s", ctime(&now));
+
+    return ret;
 }

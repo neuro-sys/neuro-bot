@@ -7,6 +7,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+#include "module.h"
+
 #include "modules/mod_title.h"
 #include "modules/mod_youtube.h"
 #include "modules/mod_time.h"
@@ -71,24 +73,29 @@ static void irc_proc_cmd_privmsg_user_cmd_admin (struct irc_t * irc)
 static void irc_proc_cmd_privmsg_user_cmd (struct irc_t * irc)
 {
     char ** tokens;
+    struct mod_c_t * mod_c;
 
     tokens = g_strsplit_set (irc->request, " \r\n", 2);
 
-    if ( !strncmp (".time", tokens[0], strlen(".time")) ) 
-    {
-        //mod_cmd_time (irc);
 
-    }
-    else if ( !strncmp(".wiki", tokens[0], strlen(".wiki")) )
+    if (mod_c = find_mod_c(tokens[0]))
     {
-        mod_line_wiki (irc);
+        char * ret = mod_c->func(irc);
+        
+        if (!ret)
+            return;
+
+        snprintf(irc->response, MAX_MSG, "PRIVMSG %s :%s\r\n", irc->from, ret);
+
+        free(ret);
     }
-    else 
-    { 
+    else
+    {
         char * ret;
         struct py_module_t * mod = find_module_from_command (tokens[0]); 
 
-        if (mod) {
+        if (mod)
+        {
             ret = py_call_module ( mod, irc );
             snprintf( irc->response, MAX_MSG , "PRIVMSG %s :%s\r\n", irc->from, ret );
 

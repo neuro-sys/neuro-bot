@@ -11,18 +11,31 @@
 #include "module.h"
 #include "irc.h"
 
-struct mod_c_t {
-    char * mod_name;
-    char * (* func)(struct irc_t * irc);
-};
 
 static const char * mod_path = "modules";
 
 static char * mod_dir;
 
+GHashTable * mod_c_hash_map;
+
 char * module_get_dir()
 {
     return mod_dir;
+}
+
+struct mod_c_t * find_mod_c(char * cmd)
+{
+    struct mod_c_t * mod;
+    char t[50];
+    gboolean is_found = FALSE;
+
+    cmd++;
+
+    is_found = g_hash_table_lookup_extended (mod_c_hash_map, cmd, NULL, (void **) &mod);
+    if (is_found == FALSE)
+        return NULL;
+
+    return mod;
 }
 
 void module_load(void * data)
@@ -64,6 +77,8 @@ void module_load(void * data)
     }
 
     mod_c->func = (char * (*)(struct irc_t *)) initializer;
+
+    g_hash_table_insert(mod_c_hash_map, strdup(file_name), mod_c);
 
     g_printerr("Module loaded: [%s]\n", file_name);
 }
@@ -121,6 +136,8 @@ void init_module()
         mod_dir = g_strdup_printf("%s%c%s", cur_dir, G_DIR_SEPARATOR, modules_path);
     g_free(cur_dir);
     g_free(modules_path);
+
+    mod_c_hash_map = g_hash_table_new(g_str_hash, g_str_equal);
 
     module_iterate_files(module_load);
 }
