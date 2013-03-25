@@ -8,10 +8,8 @@
 #include "global.h"
 #include "config.h"
 #include "irc.h"
+#include "module.h"
 
-
-
-static const char * mod_path = "modules";
 
 struct py_module_t {
     PyObject * pName, * pModule, * pFunc;
@@ -19,7 +17,6 @@ struct py_module_t {
 
 GHashTable * mod_hash_map;
 
-static char * mod_dir;
 
 char * get_loaded_module_names()
 {
@@ -123,91 +120,69 @@ static void set_pymodule_path(char * py_path)
     PyList_Append(sys_path, path);
 }
 
-int py_load_mod_hash()
+void py_load_callback(void *data)
 {
-    GFileEnumerator * enum_children;
-    GFile           * mod_path_file;
-    GError          * error = NULL;
-    GFileInfo       * fileInfo;
 
+    struct py_module_t * mod;
+    char mod_name[50];
+    char * file_name;
+
+    file_name = (char *) data;
+    if (!file_name) {
+        return;
+    }
+
+    if (!g_strrstr(file_name, ".py") || file_name[strlen(file_name)-1] == 'c') 
+        return;
+
+    strcpy(mod_name, file_name);
+    *strchr(mod_name, '.') = '\0';
+
+    g_strstrip(mod_name);
+
+    mod = malloc(sizeof (struct py_module_t));
+
+    mod->pName = PyString_FromString(mod_name);
+    mod->pModule = PyImport_ImportModule(mod_name);
+
+    if (!mod->pModule) {
+        g_printerr("Can't load module: %s\n", mod_name);
+        free(mod);
+        if (PyErr_Occurred()) PyErr_Print();
+        return;
+    }
+
+    mod->pFunc = PyObject_GetAttrString(mod->pModule, mod_name);
+
+    if (!mod->pFunc || !PyCallable_Check(mod->pFunc)) {
+        g_printerr("Error python call method check.\n");
+        free(mod);
+        if (PyErr_Occurred()) PyErr_Print();
+        return;
+    }
+
+    g_hash_table_insert(mod_hash_map, strdup(mod_name), mod);
+    g_printerr("Module loaded: [%s]\n", mod_name);
+}
+
+void py_load_mod_hash(char * mod_dir)
+{
     if (mod_hash_map)
         py_unload_modules();
 
-    mod_path_file = g_file_new_for_path(mod_dir);
-    g_free(mod_dir);
-
-    enum_children = g_file_enumerate_children(mod_path_file, "*", 0, NULL, &error);
-    if (!enum_children || error) {
-        g_printerr("Can't open the specified path: %s\n", mod_dir);
-        if (error) {
-            g_error_free(error);
-            error = NULL;
-        }
-        return -1;
-    }
-
     mod_hash_map = g_hash_table_new(g_str_hash, g_str_equal);
 
-    while ( (fileInfo = g_file_enumerator_next_file(enum_children, NULL, &error)) != NULL) {
-        struct py_module_t * mod;
-        char * file_name;
-        char mod_name[50];
+    module_iterate_files(py_load_callback);
 
-        file_name = strdup(g_file_info_get_name (fileInfo));
-
-        if (!file_name) {
-            continue;
-        }
-
-        if (!g_strrstr(file_name, ".py") || file_name[strlen(file_name)-1] == 'c') 
-            continue;
-
-        strcpy(mod_name, file_name);
-        *strchr(mod_name, '.') = '\0';
-        
-        g_strstrip(mod_name);
-
-        mod = malloc(sizeof (struct py_module_t));
-
-        mod->pName = PyString_FromString(mod_name);
-        mod->pModule = PyImport_ImportModule(mod_name);
-
-        if (!mod->pModule) {
-            g_printerr("Can't load module: %s\n", mod_name);
-            free(mod);
-            if (PyErr_Occurred()) PyErr_Print();
-            continue;
-        }
-
-        mod->pFunc = PyObject_GetAttrString(mod->pModule, mod_name);
-
-        if (!mod->pFunc || !PyCallable_Check(mod->pFunc)) {
-            g_printerr("Error python call method check.\n");
-            free(mod);
-            if (PyErr_Occurred()) PyErr_Print();
-            continue;
-        }
-
-        g_hash_table_insert(mod_hash_map, strdup(mod_name), mod);
-        g_printerr("Module loaded: [%s]\n", mod_name);
-    }
-
-    if (!g_file_enumerator_close(enum_children, NULL, NULL))
-        g_printerr("The file handle resource cannot be freed.\n");
-
-    return 1;
 }
 
 int py_load_modules(void)
 {
-    char            * cur_dir;
-    char            * modules_path;
+    char * mod_dir;
 
-    cur_dir = g_get_current_dir();
+    init_module();
 
-    modules_path = config_get_string(GROUP_MODULES, KEY_PYPATH);
-    if (!modules_path)
-        modules_path = g_strdup(mod_path);
+    mod_dir = module_get_dir();
 
     signal(SIGINT, signal_handler);
     signal(SIGABRT, signal_handler);
@@ -215,17 +190,9 @@ int py_load_modules(void)
 	g_type_init();
     Py_Initialize();
 
-    if (modules_path[0] == '/')
-        mod_dir = g_strdup(modules_path);
-    else
-        mod_dir = g_strdup_printf("%s%c%s", cur_dir, G_DIR_SEPARATOR, modules_path);
-    g_free(cur_dir);
-    g_free(modules_path);
-    g_printerr("Scanning python modules in: %s\n", mod_dir); 
-
     set_pymodule_path(mod_dir);
 
-    py_load_mod_hash();
+    py_load_mod_hash(mod_dir);
 
     return 1;
 }
