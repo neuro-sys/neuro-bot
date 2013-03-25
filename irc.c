@@ -47,6 +47,17 @@ static void irc_proc_cmd_privmsg_user_cmd_admin (struct irc_t * irc)
     {
         sprintf(irc->response, "%s", tokens[1]);
     }
+    else if ( !strncmp(".reload", tokens[0], strlen(".reload")) )
+    {
+        if ( py_load_mod_hash() > 0 )
+        {
+            sprintf(irc->response, "PRIVMSG %s :Loaded.\r\n", irc->from);
+        }
+        else
+        {
+            sprintf(irc->response, "PRIVMSG %s :Failed.\r\n", irc->from);
+        }
+    }
 
     g_strfreev (tokens);
 }
@@ -126,14 +137,14 @@ static void irc_proc_cmd (struct irc_t * irc)
 }
 
 /*     message    =  [ ":" prefix SPACE ] command [ params ] crlf */
-static void irc_parse_prefix (struct irc_t * irc, char * line)
+static int irc_parse_prefix (struct irc_t * irc, char * line)
 {
     char ** tokens;
 
     tokens = g_strsplit (line, " ", 4); 
     
     if (!tokens)
-        return;
+        return -1;
 
     strcpy (irc->srv_msg.prefix, tokens[0]+1); /* skip ':' from the prefix */
     strcpy (irc->srv_msg.command, tokens[1]);
@@ -156,6 +167,8 @@ static void irc_parse_prefix (struct irc_t * irc, char * line)
     }
 
     g_strfreev (tokens);
+
+    return 1;
 }
 
 static void irc_parse_other (struct irc_t * irc, char * line)
@@ -179,7 +192,8 @@ void irc_process_line(struct irc_t * irc, char * line)
 
     if ( line[0] == ':' ) 
     {
-        irc_parse_prefix(irc, line);
+        if (irc_parse_prefix(irc, line) < 0)
+            return;
     } 
     else 
     {

@@ -19,9 +19,33 @@ struct py_module_t {
 
 GHashTable * mod_hash_map;
 
+static char * mod_dir;
+
 static void signal_handler(int signum)
 {
     exit(signum);
+}
+
+void py_unload_modules()
+{
+    GHashTableIter iter;
+    gpointer key, value;
+
+    g_hash_table_iter_init(&iter, mod_hash_map);
+    while (g_hash_table_iter_next(&iter, &key, &value))
+    {
+        struct py_module_t * p;
+
+        p = (struct py_module_t *) value;
+        
+        Py_DECREF(p->pFunc);
+        Py_DECREF(p->pModule);
+        Py_DECREF(p->pName);
+
+        free(p);
+
+        g_hash_table_iter_remove(&iter);
+    }
 }
 
 struct py_module_t * find_module_from_command(char * cmd)
@@ -77,36 +101,15 @@ static void set_pymodule_path(char * py_path)
     PyList_Append(sys_path, path);
 }
 
-int py_load_modules(void)
+int py_load_mod_hash()
 {
-    char            * cur_dir;
-    char            * mod_dir;
     GFileEnumerator * enum_children;
     GFile           * mod_path_file;
     GError          * error = NULL;
     GFileInfo       * fileInfo;
-    char            * modules_path;
 
-    cur_dir = g_get_current_dir();
-
-    modules_path = config_get_string(GROUP_MODULES, KEY_PYPATH);
-    if (!modules_path)
-        modules_path = g_strdup(mod_path);
-
-    signal(SIGINT, signal_handler);
-    signal(SIGABRT, signal_handler);
-	g_type_init();
-    Py_Initialize();
-
-    if (modules_path[0] == '/')
-        mod_dir = g_strdup(modules_path);
-    else
-        mod_dir = g_strdup_printf("%s%c%s", cur_dir, G_DIR_SEPARATOR, modules_path);
-    g_free(cur_dir);
-    g_free(modules_path);
-    g_printerr("Scanning python modules in: %s\n", mod_dir); 
-
-    set_pymodule_path(mod_dir);
+    if (mod_hash_map)
+        py_unload_modules();
 
     mod_path_file = g_file_new_for_path(mod_dir);
     g_free(mod_dir);
@@ -172,3 +175,36 @@ int py_load_modules(void)
 
     return 1;
 }
+
+int py_load_modules(void)
+{
+    char            * cur_dir;
+    char            * modules_path;
+
+    cur_dir = g_get_current_dir();
+
+    modules_path = config_get_string(GROUP_MODULES, KEY_PYPATH);
+    if (!modules_path)
+        modules_path = g_strdup(mod_path);
+
+    signal(SIGINT, signal_handler);
+    signal(SIGABRT, signal_handler);
+
+	g_type_init();
+    Py_Initialize();
+
+    if (modules_path[0] == '/')
+        mod_dir = g_strdup(modules_path);
+    else
+        mod_dir = g_strdup_printf("%s%c%s", cur_dir, G_DIR_SEPARATOR, modules_path);
+    g_free(cur_dir);
+    g_free(modules_path);
+    g_printerr("Scanning python modules in: %s\n", mod_dir); 
+
+    set_pymodule_path(mod_dir);
+
+    py_load_mod_hash();
+
+    return 1;
+}
+
