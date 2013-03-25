@@ -76,7 +76,7 @@ static void irc_proc_cmd_privmsg_user_cmd (struct irc_t * irc)
 
     if ( !strncmp (".time", tokens[0], strlen(".time")) ) 
     {
-        mod_cmd_time (irc);
+        //mod_cmd_time (irc);
 
     }
     else if ( !strncmp(".wiki", tokens[0], strlen(".wiki")) )

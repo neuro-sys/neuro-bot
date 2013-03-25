@@ -128,9 +128,6 @@ void py_load_callback(void *data)
     char * file_name;
 
     file_name = (char *) data;
-    if (!file_name) {
-        return;
-    }
 
     if (!g_strrstr(file_name, ".py") || file_name[strlen(file_name)-1] == 'c') 
         return;
@@ -187,7 +184,6 @@ int py_load_modules(void)
     signal(SIGINT, signal_handler);
     signal(SIGABRT, signal_handler);
 
-	g_type_init();
     Py_Initialize();
 
     set_pymodule_path(mod_dir);

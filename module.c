@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <glib.h>
 #include <gio/gio.h>
 #include <glib-object.h>
@@ -8,6 +9,12 @@
 #include "config.h"
 #include "global.h"
 #include "module.h"
+#include "irc.h"
+
+struct mod_c_t {
+    char * mod_name;
+    char * (* func)(struct irc_t * irc);
+};
 
 static const char * mod_path = "modules";
 
@@ -17,6 +24,50 @@ char * module_get_dir()
 {
     return mod_dir;
 }
+
+void module_load(void * data)
+{
+    char * file_name;
+    char file_full_path[250];
+    void * mod;
+    void * initializer;
+    char * t;
+    struct mod_c_t * mod_c;
+
+    mod_c = malloc(sizeof (struct mod_c_t));
+
+    file_name = (char *) data;
+
+    if (!g_strrstr(file_name, ".so")) 
+        return;
+
+
+    snprintf(file_full_path, 250, "%s/%s", mod_dir, file_name);
+
+    mod = dlopen(file_full_path, RTLD_LAZY);
+    if (!mod)
+    {
+        g_printerr("%s could not be opened.\n", file_name);
+        return;
+    }
+
+    t = strchr(file_name, '.');
+    *t = '\0';
+
+    mod_c->mod_name = strdup(file_name);
+
+    initializer = dlsym(mod, file_name);
+    if (!initializer)
+    {
+        g_printerr("entry point %s not found in %s.\n", file_name, file_full_path);
+        return;
+    }
+
+    mod_c->func = (char * (*)(struct irc_t *)) initializer;
+
+    g_printerr("Module loaded: [%s]\n", file_name);
+}
+
 
 void module_iterate_files(void (*callback)(void * data))
 {
@@ -56,6 +107,8 @@ void init_module()
     char            * cur_dir;
     char            * modules_path;
 
+	g_type_init();
+
     cur_dir = g_get_current_dir();
 
     modules_path = config_get_string(GROUP_MODULES, KEY_PYPATH);
@@ -68,6 +121,8 @@ void init_module()
         mod_dir = g_strdup_printf("%s%c%s", cur_dir, G_DIR_SEPARATOR, modules_path);
     g_free(cur_dir);
     g_free(modules_path);
+
+    module_iterate_files(module_load);
 }
 
 
