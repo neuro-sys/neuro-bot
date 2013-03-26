@@ -6,12 +6,6 @@
 #include <glib.h>
 #include <string.h>
 
-
-GIOChannel * network_get_giochannel(struct network_t * network)
-{
-    return network->giochannel;
-}
-
 void network_connect(struct network_t * network, char * host_name, int port)
 {
     char port_str[10];
@@ -48,19 +42,11 @@ int network_read_line(struct network_t * network, char ** buf)
     return len;
 }
 
-int network_read(struct network_t * network, char * str)
-{
-    gsize len;
-    g_io_channel_read_to_end(network->giochannel, &str, &len, NULL);
-    return len;
-}
-
 void network_send_message(struct network_t * network, char * message)
 {
     gsize     read;
     GError    * error = NULL;
     GIOStatus status;
-
 
     status = g_io_channel_write_chars(network->giochannel, message, strlen(message), &read, &error);
 
@@ -73,8 +59,7 @@ void network_auth(struct network_t * network, char * nick, char * user, char * p
 {
     char message[255];
 
-    sprintf(message, "NICK %s\r\n"
-            "USER %s 8 * :%s\r\n\r\n", nick, user, user);
+    snprintf(message, sizeof message, "NICK %s\r\n" "USER %s 8 * :%s\r\n\r\n", nick, user, user);
 
     network_send_message(network, message);
     if (pass && *pass != '\0') {

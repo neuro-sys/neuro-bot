@@ -9,28 +9,6 @@
 
 #include "module.h"
 
-#include "modules/mod_title.h"
-#include "modules/mod_youtube.h"
-#include "modules/mod_time.h"
-#include "modules/mod_wiki.h"
-
-
-/*
-   Every function name is prefixed with either a `irc_proc' or `irc_parse'.
-
-   irc_parse_* family of functions are for parsing the raw irc massages 
-   into a struct srv_msg_t type.
-
-   irc_proc_* family of functions are for processing the struct srv_msg_t
-   type previously obtained by irc_parse_*, and responding the server with
-   the appropriate reply.
-
-   irc_proc_cmd_* family of functions are for processing the 
-   srv_msg_t.command message (e.g. PRIVMSG, PING, CTCP). Depending on the srv
-   command, irc_proc_cmd_{privmsg,ping,ctcp} functions are called respectively.
-
-*/
-
 static void irc_proc_cmd_privmsg_user_cmd_admin (struct irc_t * irc)
 {
     char ** tokens;
@@ -51,7 +29,7 @@ static void irc_proc_cmd_privmsg_user_cmd_admin (struct irc_t * irc)
     }
     else if ( !strncmp(".reload", tokens[0], strlen(".reload")) )
     {
-        load_c_modules();
+        module_load();
         py_load_mod_hash();
     }
 
@@ -67,7 +45,7 @@ static void irc_proc_cmd_privmsg_user_cmd (struct irc_t * irc)
     tokens = g_strsplit_set (irc->request, " \r\n", 2);
 
     t = strdup(tokens[0]);
-    if (mod_c = find_mod_c(++t))
+    if (mod_c = module_find(++t))
     {
         char * ret = mod_c->func(irc);
         
@@ -82,7 +60,7 @@ static void irc_proc_cmd_privmsg_user_cmd (struct irc_t * irc)
     else
     {
         char * ret;
-        struct py_module_t * mod = find_module_from_command (tokens[0]); 
+        struct py_module_t * mod = py_find_loaded_name (tokens[0]); 
 
         if (mod)
         {
@@ -120,12 +98,12 @@ static void irc_proc_cmd_privmsg (struct irc_t * irc)
 
         if ( g_strrstr (irc->request, "youtube.com") || g_strrstr(irc->request, "youtu.be") )
         {
-            mod = find_mod_c("mod_youtube");
+            mod = module_find("mod_youtube");
         }
         else
         {
 
-            mod = find_mod_c("mod_title");
+            mod = module_find("mod_title");
         }
 
         ret = mod->func(irc); 

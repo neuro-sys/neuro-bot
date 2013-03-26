@@ -1,6 +1,4 @@
 #include "session.h"
-#include "channel.h"
-#include "user.h"
 #include "network.h"
 #include "irc.h"
 #include "global.h"

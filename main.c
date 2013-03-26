@@ -1,6 +1,4 @@
 ﻿#include "session.h"
-#include "channel.h"
-#include "user.h"
 #include "global.h"
 #include "config.h"
 #include "py_wrap.h"
@@ -21,7 +19,7 @@ int main(int argc, char *argv[])
 
     config_init();
 
-    init_module();
+    module_init();
 
     if ( py_load_modules() < 0 )
         g_printerr("Could not load python modules, going on without them.\n");

@@ -2,7 +2,6 @@
 #define __SESSION_H
 
 #include "network.h"
-#include "channel.h"
 
 struct session_t {
     void                (* run) (struct session_t * session, char * nick, char * pass);

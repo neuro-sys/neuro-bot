@@ -11,33 +11,34 @@
 #include "irc.h"
 #include "module.h"
 
-static const char * mod_path = "modules";
+static const char       * mod_path = "modules";
 
-static char * mod_dir;
+static       char       * mod_dir;
 
-GHashTable * mod_c_hash_map;
+             GHashTable * mod_c_hash_map;
 
 char * module_get_dir()
 {
     return mod_dir;
 }
 
-struct mod_c_t * find_mod_c(char * cmd)
+struct mod_c_t * module_find(char * cmd)
 {
     struct mod_c_t * mod;
     char t[50];
     gboolean is_found = FALSE;
 
-    snprintf(t, 50, "mod_%s", cmd);
+    snprintf(t, sizeof t, "mod_%s", cmd);
 
     is_found = g_hash_table_lookup_extended (mod_c_hash_map, t, NULL, (void **) &mod);
+
     if (is_found == FALSE)
         return NULL;
 
     return mod;
 }
 
-void module_load(void * data)
+void module_load_callback(void * data)
 {
     char * file_name;
     char file_full_path[250];
@@ -83,7 +84,7 @@ void module_load(void * data)
     g_printerr("Module loaded: [%s]\n", file_name);
 }
 
-char * get_loaded_c_mod_names()
+char * module_get_loaded_names()
 {
     char * buf;
 
@@ -104,7 +105,7 @@ char * get_loaded_c_mod_names()
 
     return buf;
 }
-void modules_unload()
+void module_unload_all()
 {
     GHashTableIter iter;
     gpointer key, value;
@@ -154,18 +155,17 @@ void module_iterate_files(void (*callback)(void * data))
 
 }
 
-void load_c_modules()
+void module_load()
 {
-    modules_unload();
+    module_unload_all();
 
-    module_iterate_files(module_load);
+    module_iterate_files(&module_load_callback);
 }
 
-void init_module()
+void module_init()
 {
-
-    char            * cur_dir;
-    char            * modules_path;
+    char * cur_dir;
+    char * modules_path;
 
 	g_type_init();
 
@@ -184,6 +184,6 @@ void init_module()
 
     mod_c_hash_map = g_hash_table_new(g_str_hash, g_str_equal);
 
-    load_c_modules();
+    module_load();
 }
 

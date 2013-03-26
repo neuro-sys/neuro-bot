@@ -11,9 +11,9 @@ struct mod_c_t {
 };
 
 extern char *           module_get_dir();
-extern void             init_module();
-extern struct mod_c_t * find_mod_c(char * cmd);
-extern void             load_c_modules();
+extern void             module_init();
+extern struct mod_c_t * module_find(char * cmd);
+extern void             module_load();
 
 #endif
 

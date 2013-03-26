@@ -15,13 +15,11 @@ struct py_module_t {
     PyObject * pName, * pModule, * pFunc;
 };
 
-GHashTable * mod_hash_map;
+GHashTable * py_mod_hash_map;
 
-
-char * get_loaded_module_names()
+char * py_get_loaded_names()
 {
     char * buf;
-
     buf = malloc(510);
 
     buf[0] = '\0';
@@ -29,7 +27,7 @@ char * get_loaded_module_names()
     GHashTableIter iter;
     gpointer key, value;
 
-    g_hash_table_iter_init(&iter, mod_hash_map);
+    g_hash_table_iter_init(&iter, py_mod_hash_map);
     while (g_hash_table_iter_next(&iter, &key, &value))
     {
         strcat(buf, " [");
@@ -50,7 +48,7 @@ void py_unload_modules()
     GHashTableIter iter;
     gpointer key, value;
 
-    g_hash_table_iter_init(&iter, mod_hash_map);
+    g_hash_table_iter_init(&iter, py_mod_hash_map);
     while (g_hash_table_iter_next(&iter, &key, &value))
     {
         struct py_module_t * p;
@@ -67,7 +65,7 @@ void py_unload_modules()
     }
 }
 
-struct py_module_t * find_module_from_command(char * cmd)
+struct py_module_t * py_find_loaded_name(char * cmd)
 {
     struct py_module_t * mod = NULL;
     char t[50];
@@ -78,7 +76,7 @@ struct py_module_t * find_module_from_command(char * cmd)
     strcpy(t, "mod_");
     strcat(t, cmd);
 
-    is_found = g_hash_table_lookup_extended (mod_hash_map, t, NULL, (void **) &mod);
+    is_found = g_hash_table_lookup_extended (py_mod_hash_map, t, NULL, (void **) &mod);
     if (is_found == FALSE)
         return NULL;
 
@@ -158,16 +156,16 @@ void py_load_callback(void *data)
         return;
     }
 
-    g_hash_table_insert(mod_hash_map, strdup(mod_name), mod);
+    g_hash_table_insert(py_mod_hash_map, strdup(mod_name), mod);
     g_printerr("Module loaded: [%s]\n", mod_name);
 }
 
 void py_load_mod_hash(char * mod_dir)
 {
-    if (mod_hash_map)
+    if (py_mod_hash_map)
         py_unload_modules();
 
-    mod_hash_map = g_hash_table_new(g_str_hash, g_str_equal);
+    py_mod_hash_map = g_hash_table_new(g_str_hash, g_str_equal);
 
     module_iterate_files(py_load_callback);
 
