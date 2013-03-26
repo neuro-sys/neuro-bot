@@ -116,4 +116,6 @@ char * mod_wiki(struct irc_t * irc)
     free(p);
     free(t);
     free(content);
+
+    return ret;
 }
