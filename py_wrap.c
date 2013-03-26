@@ -89,15 +89,14 @@ char * py_call_module(struct py_module_t * mod, struct irc_t * irc)
     PyObject    * p_args;
     PyObject    * p_val;
     char        * t;
-    int n;
 
     p_args = PyTuple_New(2);                          
     t = strchr(irc->request, '\r');                   
     *t = '\0';
     p_val = PyString_FromString(irc->from);           
-    n = PyTuple_SetItem(p_args, 0, p_val);            
+    PyTuple_SetItem(p_args, 0, p_val);            
     p_val = PyString_FromString(irc->request);        
-    n = PyTuple_SetItem(p_args, 1, p_val);            
+    PyTuple_SetItem(p_args, 1, p_val);            
 
     p_val = PyObject_CallObject(mod->pFunc, p_args);  
     if (p_val)
@@ -168,7 +167,6 @@ void py_load_mod_hash(char * mod_dir)
     py_mod_hash_map = g_hash_table_new(g_str_hash, g_str_equal);
 
     module_iterate_files(py_load_callback);
-
 }
 
 int py_load_modules(void)

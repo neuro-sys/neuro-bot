@@ -45,7 +45,7 @@ static void irc_proc_cmd_privmsg_user_cmd (struct irc_t * irc)
     tokens = g_strsplit_set (irc->request, " \r\n", 2);
 
     t = strdup(tokens[0]);
-    if (mod_c = module_find(++t))
+    if ( (mod_c = module_find(++t)) )
     {
         char * ret = mod_c->func(irc);
         

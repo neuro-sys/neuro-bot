@@ -10,10 +10,11 @@ struct mod_c_t {
     char * (* func)(struct irc_t * irc);
 };
 
-extern char *           module_get_dir();
-extern void             module_init();
+extern char *           module_get_dir(void);
+extern void             module_init(void);
 extern struct mod_c_t * module_find(char * cmd);
-extern void             module_load();
+extern void             module_load(void);
+extern void             module_iterate_files(void (*callback)(void * data));
 
 #endif
 
