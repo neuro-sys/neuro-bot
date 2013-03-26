@@ -9,5 +9,3 @@ LDFLAGS="`pkg-config $LIBS --libs` -ldl -g"
 gcc -c *.c $CFLAGS
 gcc *.o -o neurobot $LDFLAGS
 
-
-

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-[ "$1" == "rm" ] && rm *.o *.so && exit
+[ "$1" == "rm" ] && rm -vf *.o *.so *.pyc && exit
 
 LIBS="jansson libcurl glib-2.0 gio-2.0 python-2.7"
 CFLAGS="`pkg-config $LIBS --cflags` -I.. -g"
