@@ -2,9 +2,14 @@
 
 [ "$1" == "rm" ] && rm -vf *.o *.so *.pyc && exit
 
-LIBS="jansson libcurl glib-2.0 gio-2.0 python-2.7"
-CFLAGS="`pkg-config $LIBS --cflags` -I.. -g"
-LDFLAGS="`pkg-config $LIBS --libs` -g"
+PYVER="python2.6"
+
+LIBS="jansson libcurl glib-2.0 gio-2.0"
+PYCFLAGS=`$PYVER-config --cflags`
+PYLDFLAGS=`$PYVER-config --libs`
+CFLAGS="`pkg-config $LIBS --cflags` $PYCFLAGS -I.. -g"
+LDFLAGS="`pkg-config $LIBS --libs` $PYLDFLAGS -ldl -g"
+
 gcc -fPIC -g -c *.c $CFLAGS
 
 gcc -Wl,--no-undefined $LDFLAGS --shared mod_youtube.o -omod_youtube.so ../curl_wrap.o
