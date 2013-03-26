@@ -98,12 +98,12 @@ static void irc_proc_cmd_privmsg (struct irc_t * irc)
 
         if ( g_strrstr (irc->request, "youtube.com") || g_strrstr(irc->request, "youtu.be") )
         {
-            mod = module_find("mod_youtube");
+            mod = module_find("youtube");
         }
         else
         {
 
-            mod = module_find("mod_title");
+            mod = module_find("title");
         }
 
         ret = mod->func(irc); 
