@@ -8,9 +8,8 @@
 
 #include "config.h"
 #include "global.h"
-#include "module.h"
 #include "irc.h"
-
+#include "module.h"
 
 static const char * mod_path = "modules";
 
@@ -64,6 +63,7 @@ void module_load(void * data)
         return;
     }
 
+    mod_c->mod = mod;
     t = strchr(file_name, '.');
     *t = '\0';
 
@@ -83,6 +83,44 @@ void module_load(void * data)
     g_printerr("Module loaded: [%s]\n", file_name);
 }
 
+char * get_loaded_c_mod_names()
+{
+    char * buf;
+
+    buf = malloc(510);
+
+    buf[0] = '\0';
+
+    GHashTableIter iter;
+    gpointer key, value;
+
+    g_hash_table_iter_init(&iter, mod_c_hash_map);
+    while (g_hash_table_iter_next(&iter, &key, &value))
+    {
+        strcat(buf, " [");
+        strcat(buf, key);
+        strcat(buf, "]");
+    }
+
+    return buf;
+}
+void modules_unload()
+{
+    GHashTableIter iter;
+    gpointer key, value;
+
+    g_hash_table_iter_init(&iter, mod_c_hash_map);
+    while (g_hash_table_iter_next(&iter, &key, &value))
+    {
+        struct irc_c_t * mod_c;
+        mod_c = (struct irc_c_t *) value;
+
+        //dlclose(mod_c->mod);
+        free(mod_c);
+
+        g_hash_table_iter_remove(&iter);
+    }
+}
 
 void module_iterate_files(void (*callback)(void * data))
 {
@@ -116,6 +154,13 @@ void module_iterate_files(void (*callback)(void * data))
 
 }
 
+void load_c_modules()
+{
+    modules_unload();
+
+    module_iterate_files(module_load);
+}
+
 void init_module()
 {
 
@@ -139,16 +184,6 @@ void init_module()
 
     mod_c_hash_map = g_hash_table_new(g_str_hash, g_str_equal);
 
-    module_iterate_files(module_load);
+    load_c_modules();
 }
-
-
-struct module_t * create_module()
-{
-    struct module_t * mod = malloc(sizeof(struct module_t));
-
-
-    return mod;
-}
-
 

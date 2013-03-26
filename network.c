@@ -6,25 +6,16 @@
 #include <glib.h>
 #include <string.h>
 
-struct network_t {
-    char        * host_name;
-    int         port;
-    int         sockfd;
-    GIOChannel  * giochannel;
-};
 
 GIOChannel * network_get_giochannel(struct network_t * network)
 {
     return network->giochannel;
 }
 
-struct network_t * network_connect(char * host_name, int port)
+void network_connect(struct network_t * network, char * host_name, int port)
 {
     char port_str[10];
     int sockfd;
-    struct network_t * network;
-
-    network = malloc(sizeof * network);
 
     sprintf(port_str, "%d", port);
     sockfd = t_connect(host_name, port_str);
@@ -40,7 +31,6 @@ struct network_t * network_connect(char * host_name, int port)
     network->host_name  = host_name;
 
     g_io_channel_set_encoding(network->giochannel, NULL, NULL);
-    return network;
 }
 
 int network_read_line(struct network_t * network, char ** buf)

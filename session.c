@@ -11,16 +11,11 @@
 #include <stdlib.h>
 #include <string.h>
 
-struct network_t * session_get_network(struct session_t * session)
-{
-    return session->network;
-}
-
 static void session_run(struct session_t * session, char * nick, char * pass)
 { 
     char          * line;
     struct irc_t  irc;
-    int run = 1;
+    int           quit = 0;
 
     gchar *admin = config_get_string(GROUP_CLIENT, KEY_ADMIN);
     if (!admin) {
@@ -28,20 +23,20 @@ static void session_run(struct session_t * session, char * nick, char * pass)
         g_warning("No admin in config file?");
     }
 
-    network_auth(session->network, nick, "ircbot", pass);
+    network_auth(&session->network, nick, "ircbot", pass);
 
-    while (run) {
+    while (!quit) {
         memset(&irc, 0, sizeof irc);
         
         irc.admin = admin;
         
-        if ( network_read_line(session->network, &line) < 0 )
-            run = 0;
+        if ( network_read_line(&session->network, &line) < 0 )
+            quit = 1;
 
         irc_process_line(&irc, line);
         
         if ( irc.response != NULL )
-            network_send_message(session->network, irc.response);
+            network_send_message(&session->network, irc.response);
         
         g_free(line);
     }
@@ -49,57 +44,15 @@ static void session_run(struct session_t * session, char * nick, char * pass)
     g_free(admin);
 }
 
-struct session_t * session_create(char * host, int port)
+void session_create(struct session_t * session, char * host, int port)
 { 
-    struct session_t * session = malloc(sizeof * session);
-    
-    if (!session) 
-        return NULL;
-    
-    session->network = network_connect(host, port);
+    network_connect(&session->network, host, port);
         
-    if (!session->network) 
-        return NULL;
-   
     session->run = &session_run;
-
-    return session;
-}
-
-void session_add_channel(struct session_t * session, char * name)
-{ 
-    session->channel_list = g_slist_append(session->channel_list, channel_create(name));
-}
-
-struct channel_t * session_channel_find_by_name(struct session_t * session, char * name)
-{
-    guint i;
-
-    for (i = 0; i < g_slist_length(session->channel_list); i++) {
-        struct channel_t * channel = g_slist_nth_data(session->channel_list, i);
-
-        if (!strcmp(channel_get_name(channel), name))
-            return channel;
-    }
-
-    return NULL;
-}
-
-struct channel_t * session_channel_remove_by_name(struct session_t * session, char * name)
-{
-    struct channel_t * channel = session_channel_find_by_name(session, name);
-    session->channel_list = g_slist_remove(session->channel_list, channel);
-    return channel;
 }
 
 void session_destroy(struct session_t * session)
 {
-    g_slist_free_full(session->channel_list, (void (*)(void *)) &channel_destroy);
-    free(session);
-}
 
-void session_print_channels(struct session_t * session)
-{
-    channels_print(session->channel_list, stdout);
 }
 

@@ -4,6 +4,7 @@
 #include "global.h"
 #include "config.h"
 #include "py_wrap.h"
+#include "module.h"
 
 #include <stdio.h>
 #include <glib.h>
@@ -12,7 +13,7 @@
 
 int main(int argc, char *argv[])
 {
-    struct session_t * session;
+    struct session_t session;
     gchar  * server, * nick, * pass;
     gint   port;
 
@@ -20,6 +21,7 @@ int main(int argc, char *argv[])
 
     config_init();
 
+    init_module();
 
     if ( py_load_modules() < 0 )
         g_printerr("Could not load python modules, going on without them.\n");
@@ -34,7 +36,7 @@ int main(int argc, char *argv[])
     if (!port)
         port = 6667;
 
-    session = session_create(server, port);
+    session_create(&session, server, port);
 
     nick = config_get_string(GROUP_CLIENT, KEY_NICK);
     if (!nick)
@@ -44,13 +46,13 @@ int main(int argc, char *argv[])
     if (!pass)
         pass = g_strdup("");
 
-    session->run(session, nick, pass);
+    session.run(&session, nick, pass);
 
     g_free(nick);
     g_free(pass);
     g_free(server);
 
-    session_destroy(session);
+    session_destroy(&session);
 
     return 0;
 }

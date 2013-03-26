@@ -177,7 +177,6 @@ int py_load_modules(void)
 {
     char * mod_dir;
 
-    init_module();
 
     mod_dir = module_get_dir();
 

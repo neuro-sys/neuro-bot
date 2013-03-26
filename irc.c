@@ -51,20 +51,8 @@ static void irc_proc_cmd_privmsg_user_cmd_admin (struct irc_t * irc)
     }
     else if ( !strncmp(".reload", tokens[0], strlen(".reload")) )
     {
-        if ( py_load_mod_hash() > 0 )
-        {
-            char * t;
-
-            t = get_loaded_module_names();
-           
-            snprintf(irc->response, 510, "PRIVMSG %s :Loaded : %s\r\n", irc->from, t);
-
-            free(t);
-        }
-        else
-        {
-            sprintf(irc->response, "PRIVMSG %s :Failed.\r\n", irc->from);
-        }
+        load_c_modules();
+        py_load_mod_hash();
     }
 
     g_strfreev (tokens);
@@ -132,7 +120,6 @@ static void irc_proc_cmd_privmsg (struct irc_t * irc)
 
         if ( g_strrstr (irc->request, "youtube.com") || g_strrstr(irc->request, "youtu.be") )
         {
-
             mod = find_mod_c("mod_youtube");
         }
         else
