@@ -1,15 +1,13 @@
 #!/usr/bin/env python2
 # -*- coding: utf8 -*-
 
-# provided by decaf
+# provided by decaf
 
 from urlgrabber import urlread
 from bs4 import BeautifulSoup
 
-import sys
-
 # sonuç boyutu [byte]
-LIMIT = 400
+LIMIT = 450
 
 def mod_eksi(_from, _line):
     return daModule(_line.replace('.eksi ',''))
@@ -44,10 +42,8 @@ def parsit(st):
     entries = soup.find_all("div", attrs={"class": "content"})
     dt = [entry_isle(entry) for entry in entries]
     netice = " | ".join(dt)
-    netice = (baslik +' '+ netice)
+    netice = (baslik +' '+ netice + ' | '+ href).encode('utf-8')
     while(len(netice) > LIMIT):
         netice = icindenkes(netice)
-    return (netice +' | '+ href).encode('utf-8')
+    return netice    
 
-if __name__ == "__main__":
-    print(mod_eksi("", sys.argv[1]))
