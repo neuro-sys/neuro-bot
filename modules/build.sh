@@ -2,12 +2,12 @@
 
 [ "$1" == "rm" ] && rm -vf *.o *.so *.pyc && exit
 
-PYVER="python2.6"
+PYVER="python2.7"
 
 LIBS="jansson libcurl glib-2.0 gio-2.0"
 PYCFLAGS=`$PYVER-config --cflags`
 PYLDFLAGS=`$PYVER-config --libs`
-CFLAGS="`pkg-config $LIBS --cflags` $PYCFLAGS -I.. -g -O0"
+CFLAGS="`pkg-config $LIBS --cflags` $PYCFLAGS -I.. -g -O0 -U_FORTIFY_SOURCE"
 LDFLAGS="`pkg-config $LIBS --libs` $PYLDFLAGS -ldl -g -O0"
 
 gcc -fPIC -g -c *.c $CFLAGS
