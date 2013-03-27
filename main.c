@@ -19,8 +19,11 @@ int main(int argc, char *argv[])
     module_init();
     log_init(G_LOG_LEVEL_ERROR);
 
-    session_create(&session);
-    session.run(&session);
+    while (1)
+    {
+        session_create(&session);
+        session.run(&session);
+    }
     
     config_uninit();
     session_destroy(&session);

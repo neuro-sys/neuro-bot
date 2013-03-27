@@ -14,9 +14,9 @@ static void session_auth_to_network(struct session_t * session)
     char message[MAX_IRC_MSG];
 
     snprintf(message, sizeof message, "NICK %s\r\n" "USER %s 8 * :%s\r\n\r\n", 
-            "neurobot", 
-            "github.com/neuro-sys/neuro-bot", 
-            session->nickname);
+            session->nickname, 
+            "ircbot", 
+            "github.com/neuro-sys/neuro-bot");
 
     network_send_message(&session->network, message);
 
