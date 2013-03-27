@@ -131,7 +131,7 @@ static void irc_proc_cmd (struct irc_t * irc)
     } 
     else if ( !strncmp ("PING", cmd, strlen("PING")) )
     {
-        snprintf (irc->response, strlen(irc->response), "PONG %s\r\n", irc->request);
+        snprintf (irc->response, MAX_MSG, "PONG %s\r\n", irc->request);
     }
 }
 
