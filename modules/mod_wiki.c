@@ -74,7 +74,6 @@ char * mod_wiki(struct irc_t * irc)
     char * content;
     char url_path[512];
     int i;
-    char strip_buf[2];
 
     /* strip the leading command prefix (.wiki) */
     p = strchr(irc->request, ' ');

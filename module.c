@@ -84,7 +84,7 @@ void module_load_callback(void * data)
     g_printerr("Module loaded: [%s]\n", file_name);
 }
 
-char * module_get_loaded_names()
+char * module_get_loaded_names(void)
 {
     char * buf;
 
@@ -105,7 +105,8 @@ char * module_get_loaded_names()
 
     return buf;
 }
-void module_unload_all()
+
+void module_unload_all(void)
 {
     GHashTableIter iter;
     gpointer key, value;

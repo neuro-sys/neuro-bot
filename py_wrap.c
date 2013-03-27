@@ -17,7 +17,7 @@ struct py_module_t {
 
 GHashTable * py_mod_hash_map;
 
-char * py_get_loaded_names()
+char * py_get_loaded_names(void)
 {
     char * buf;
     GHashTableIter iter;
@@ -43,7 +43,7 @@ static void signal_handler(int signum)
     exit(signum);
 }
 
-void py_unload_modules()
+void py_unload_modules(void)
 {
     GHashTableIter iter;
     gpointer key, value;
