@@ -84,3 +84,24 @@ void config_uninit(void)
     free(config);
     config = NULL;
 }
+
+void config_load(struct session_t * session)
+{
+
+    session->network.host_name = config_get_string(GROUP_CLIENT, KEY_SERVER);
+    if (!session->network.host_name)
+        session->network.host_name = g_strdup("irc.freenode.net");
+
+    session->network.port = config_get_integer(GROUP_CLIENT, KEY_PORT);
+    if (!session->network.port)
+        session->network.port = 6667;
+
+    session->nickname = config_get_string(GROUP_CLIENT, KEY_NICK);
+    if (!session->nickname)
+        session->nickname = g_strdup("cafer");
+
+    session->password = config_get_string(GROUP_CLIENT, KEY_PASS);
+    if (!session->password)
+        session->password = g_strdup("");
+}
+

@@ -10,6 +10,7 @@
 #include "global.h"
 #include "irc.h"
 #include "module.h"
+#include "py_wrap.h"
 
 static const char       * mod_path = "modules";
 
@@ -186,5 +187,8 @@ void module_init()
     mod_c_hash_map = g_hash_table_new(g_str_hash, g_str_equal);
 
     module_load();
+
+    if ( py_load_modules() < 0 )
+        g_printerr("Could not load python modules, going on without them.\n");
 }
 

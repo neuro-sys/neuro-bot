@@ -10,7 +10,7 @@ struct network_t {
     GIOChannel  * giochannel;
 };
 
-extern void     network_connect         (struct network_t * network, char * host_name, int port);
+extern void     network_connect         (struct network_t * network);
 extern int      network_read_line       (struct network_t * network, char ** buf);
 extern void     network_auth            (struct network_t * network, char * nick, char * user, char * name);
 extern void     network_send_message    (struct network_t * network, char * message);

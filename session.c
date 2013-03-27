@@ -9,7 +9,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-static void session_run(struct session_t * session, char * nick, char * pass)
+static void session_run(struct session_t * session)
 { 
     char          * line;
     struct irc_t  irc;
@@ -21,7 +21,7 @@ static void session_run(struct session_t * session, char * nick, char * pass)
         g_warning("No admin in config file?");
     }
 
-    network_auth(&session->network, nick, "ircbot", pass);
+    network_auth(&session->network, session->nickname, "neurobot", session->password);
 
     while (!quit) {
         memset(&irc, 0, sizeof irc);
@@ -42,9 +42,9 @@ static void session_run(struct session_t * session, char * nick, char * pass)
     g_free(admin);
 }
 
-void session_create(struct session_t * session, char * host, int port)
+void session_create(struct session_t * session)
 { 
-    network_connect(&session->network, host, port);
+    network_connect(&session->network);
         
     session->run = &session_run;
 }

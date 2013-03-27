@@ -1,7 +1,6 @@
 ﻿#include "session.h"
 #include "global.h"
 #include "config.h"
-#include "py_wrap.h"
 #include "module.h"
 
 #include <stdio.h>
@@ -12,44 +11,18 @@
 int main(int argc, char *argv[])
 {
     struct session_t session;
-    gchar  * server, * nick, * pass;
-    gint   port;
 
     setlocale(LC_CTYPE, "");
 
     config_init();
-
+    config_load(&session);
     module_init();
-
-    if ( py_load_modules() < 0 )
-        g_printerr("Could not load python modules, going on without them.\n");
-
     log_init(G_LOG_LEVEL_ERROR);
 
-    server = config_get_string(GROUP_CLIENT, KEY_SERVER);
-    if (!server)
-        server = g_strdup("irc.freenode.net");
-
-    port = config_get_integer(GROUP_CLIENT, KEY_PORT);
-    if (!port)
-        port = 6667;
-
-    session_create(&session, server, port);
-
-    nick = config_get_string(GROUP_CLIENT, KEY_NICK);
-    if (!nick)
-        nick = g_strdup("cafer");
-    pass = config_get_string(GROUP_CLIENT, KEY_PASS);
-
-    if (!pass)
-        pass = g_strdup("");
-
-    session.run(&session, nick, pass);
-
-    g_free(nick);
-    g_free(pass);
-    g_free(server);
-
+    session_create(&session);
+    session.run(&session);
+    
+    config_uninit();
     session_destroy(&session);
 
     return 0;
