@@ -68,7 +68,7 @@ char * mod_title(struct irc_t * irc)
         return strdup(title);
     }
 
-    return strdup("could not parse title");
+    return NULL;
 }
 
 

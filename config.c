@@ -103,5 +103,11 @@ void config_load(struct session_t * session)
     session->password = config_get_string(GROUP_CLIENT, KEY_PASS);
     if (!session->password)
         session->password = g_strdup("");
+
+    session->admin = config_get_string(GROUP_CLIENT, KEY_ADMIN);
+    if (!session->admin) {
+        session->admin = g_strdup(""); /* wut? */
+        g_warning("No admin in config file?");
+    }
 }
 

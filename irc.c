@@ -52,7 +52,7 @@ static void irc_proc_cmd_privmsg_user_cmd (struct irc_t * irc)
 
         if (ret)
         {
-            snprintf(irc->response, MAX_MSG, "PRIVMSG %s :%s\r\n", irc->from, ret);
+            snprintf(irc->response, MAX_IRC_MSG, "PRIVMSG %s :%s\r\n", irc->from, ret);
 
             free(ret);
         }
@@ -65,7 +65,7 @@ static void irc_proc_cmd_privmsg_user_cmd (struct irc_t * irc)
         if (mod)
         {
             ret = py_call_module ( mod, irc );
-            snprintf( irc->response, MAX_MSG , "PRIVMSG %s :%s\r\n", irc->from, ret );
+            snprintf( irc->response, MAX_IRC_MSG , "PRIVMSG %s :%s\r\n", irc->from, ret );
 
             free(ret);
         }
@@ -96,6 +96,8 @@ static void irc_proc_cmd_privmsg (struct irc_t * irc)
         struct mod_c_t * mod;
         char * ret;
 
+        ret = NULL;
+
         if ( g_strrstr (irc->request, "youtube.com") || g_strrstr(irc->request, "youtu.be") )
         {
             mod = module_find("youtube");
@@ -106,11 +108,14 @@ static void irc_proc_cmd_privmsg (struct irc_t * irc)
             mod = module_find("title");
         }
 
-        ret = mod->func(irc); 
+        if (mod)
+        {
+            ret = mod->func(irc); 
+        }
 
         if (ret)
         {
-            snprintf(irc->response, MAX_MSG, "PRIVMSG %s :%s\r\n", irc->from, ret);
+            snprintf(irc->response, MAX_IRC_MSG, "PRIVMSG %s :%s\r\n", irc->from, ret);
 
             free(ret);
         }
@@ -131,7 +136,7 @@ static void irc_proc_cmd (struct irc_t * irc)
     } 
     else if ( !strncmp ("PING", cmd, strlen("PING")) )
     {
-        snprintf (irc->response, MAX_MSG, "PONG %s\r\n", irc->request);
+        snprintf (irc->response, MAX_IRC_MSG, "PONG %s\r\n", irc->request);
     }
 }
 

@@ -31,7 +31,6 @@ int network_read_line(struct network_t * network, char ** buf)
     GError * error = NULL;
 
     if ( (giostatus = g_io_channel_read_line (network->giochannel, buf, &len, NULL, &error)) != G_IO_STATUS_NORMAL) {
-        printf("%d\n", giostatus);
         if (giostatus == 0) printf("%s\n", error->message);
         return -1;
     }
@@ -52,17 +51,3 @@ void network_send_message(struct network_t * network, char * message)
 
 }
 
-void network_auth(struct network_t * network, char * nick, char * user, char * pass)
-{
-    char message[255];
-
-    snprintf(message, sizeof message, "NICK %s\r\n" "USER %s 8 * :%s\r\n\r\n", nick, user, user);
-
-    network_send_message(network, message);
-    if (pass && *pass != '\0') {
-        sprintf(message, "PRIVMSG NickServ :identify %s\r\n", pass);
-        network_send_message(network, message);
-    }
-
-    printf("%s", message);
-}

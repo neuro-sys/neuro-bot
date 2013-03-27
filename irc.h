@@ -3,21 +3,20 @@
 
 #include "session.h"
 
-#define MAX_MSG 510
-#define MAX_LEN 100
+#define MAX_IRC_MSG 510
 
 struct srv_message_t {
-    char prefix[MAX_LEN];
-    char command[MAX_LEN];
-    char params[MAX_LEN];
+    char prefix[100];
+    char command[100];
+    char params[100];
 };
 
 struct irc_t {
     struct srv_message_t srv_msg;
-    char                 request[MAX_MSG];
-    char                 response[MAX_MSG];
-    char                 nick_to_msg[MAX_LEN];
-    char                 from[MAX_LEN];
+    char                 request[MAX_IRC_MSG];
+    char                 response[MAX_IRC_MSG];
+    char                 nick_to_msg[100];
+    char                 from[100];
     struct session_t     * session;
     char                 * admin;
 };

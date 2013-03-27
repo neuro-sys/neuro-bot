@@ -9,38 +9,44 @@
 #include <stdlib.h>
 #include <string.h>
 
+static void session_auth_to_network(struct session_t * session)
+{
+    char message[MAX_IRC_MSG];
+
+    snprintf(message, sizeof message, "NICK %s\r\n" "USER %s 8 * :%s\r\n\r\n", 
+            "neurobot", 
+            "github.com/neuro-sys/neuro-bot", 
+            session->nickname);
+
+    network_send_message(&session->network, message);
+
+    sprintf(message, "PRIVMSG NickServ :identify %s\r\n", session->password);
+    network_send_message(&session->network, message);
+}
+
 static void session_run(struct session_t * session)
 { 
     char          * line;
     struct irc_t  irc;
-    int           quit = 0;
 
-    gchar *admin = config_get_string(GROUP_CLIENT, KEY_ADMIN);
-    if (!admin) {
-        admin = g_strdup(""); /* wut? */
-        g_warning("No admin in config file?");
-    }
+    session_auth_to_network(session);
 
-    network_auth(&session->network, session->nickname, "neurobot", session->password);
-
-    while (!quit) {
+    while (1) 
+    {
         memset(&irc, 0, sizeof irc);
         
-        irc.admin = admin;
+        irc.admin = session->admin;
         
         if ( network_read_line(&session->network, &line) < 0 )
-            quit = 1;
+            break;
 
         irc_process_line(&irc, line);
         
         if ( irc.response != NULL )
             network_send_message(&session->network, irc.response);
-        
-        g_free(line);
     }
-
-    g_free(admin);
 }
+
 
 void session_create(struct session_t * session)
 { 

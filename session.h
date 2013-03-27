@@ -8,6 +8,7 @@ struct session_t {
     struct network_t    network;
     char                * nickname;
     char                * password;
+    char                * admin;
 };
 
 extern void                 session_create                  (struct session_t * session);
