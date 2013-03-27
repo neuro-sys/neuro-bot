@@ -20,12 +20,12 @@ GHashTable * py_mod_hash_map;
 char * py_get_loaded_names()
 {
     char * buf;
+    GHashTableIter iter;
+    gpointer key, value;
+
     buf = malloc(510);
 
     buf[0] = '\0';
-
-    GHashTableIter iter;
-    gpointer key, value;
 
     g_hash_table_iter_init(&iter, py_mod_hash_map);
     while (g_hash_table_iter_next(&iter, &key, &value))
