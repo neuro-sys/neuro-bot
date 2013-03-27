@@ -80,7 +80,7 @@ char * mod_wiki(struct irc_t * irc)
     p = strchr(irc->request, ' ');
 
     if (!p++)
-        return "";
+        return strdup("");
     
     i = strlen(p);
 
@@ -105,7 +105,7 @@ char * mod_wiki(struct irc_t * irc)
     p = parse_json_wiki(content);
    
     if (!p)
-        return "could not parse json wiki";
+        return strdup("could not parse json wiki");
 
     t = malloc(strlen(p));
 

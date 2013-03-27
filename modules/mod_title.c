@@ -12,6 +12,9 @@ static int validate_http(char * line)
     char * ret, * t, * p;
 
     ret = strstr(line, "http");
+    
+    if (!ret)
+        return -1;
 
     t = (p = strchr(ret, ' '))  ? p 
         : (p = strchr(ret, '\r')) ? p
@@ -54,18 +57,18 @@ char * mod_title(struct irc_t * irc)
     char  * content = NULL;
 
     if (validate_http(irc->request) < 0 )
-        return "invalid url.";
+        return strdup("invalid url.");
 
     content = curl_perform(irc->request);
 
-    if (!content) return "couldn't fetch the content";
+    if (!content) return strdup("couldn't fetch the content");
 
     if ( parse_title(title, content) > 0 ) {
         free(content);
         return strdup(title);
     }
 
-    return "could not parse title";
+    return strdup("could not parse title");
 }
 
 
