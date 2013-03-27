@@ -71,7 +71,7 @@ static void irc_proc_cmd_privmsg_user_cmd (struct irc_t * irc)
         }
     }
 
-    if ( !strncmp (irc->admin, irc->nick_to_msg, strlen(irc->admin)) ) {
+    if ( !strncmp (irc->session->admin, irc->nick_to_msg, strlen(irc->session->admin)) ) {
         irc_proc_cmd_privmsg_user_cmd_admin (irc);
     }
 
@@ -85,6 +85,10 @@ static void irc_proc_cmd_privmsg (struct irc_t * irc)
     tokens = g_strsplit (irc->srv_msg.prefix, "!", 2);
     strcpy (irc->from, irc->srv_msg.params);
     strcpy (irc->nick_to_msg, tokens[0]);
+
+    /* If the message sent in private, then reply to the sender instead */
+    if (!strncmp(irc->srv_msg.params, irc->session->nickname, strlen(irc->srv_msg.params)))
+        strcpy(irc->from, irc->nick_to_msg);
 
     if ( irc->request[0] == '.' ) 
     {

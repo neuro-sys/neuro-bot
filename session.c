@@ -31,18 +31,18 @@ static void session_run(struct session_t * session)
 
     session_auth_to_network(session);
 
+    irc.session = session;        
+
     while (1) 
     {
-        memset(&irc, 0, sizeof irc);
-        
-        irc.admin = session->admin;
-        
+        irc.response[0] = '\0';
+
         if ( network_read_line(&session->network, &line) < 0 )
             break;
 
         irc_process_line(&irc, line);
         
-        if ( irc.response != NULL )
+        if (irc.response[0])
             network_send_message(&session->network, irc.response);
     }
 }
