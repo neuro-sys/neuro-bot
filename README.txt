@@ -14,6 +14,3 @@ The project dependencies are:
 Use ./build.sh script to build (modify as needed).
 
 For building on MS Windows Visual Studio, see ./winbuild
-
-Windows x86 build, rev-193:
-http://www.codedumpster.com/neurobot.7z
