@@ -54,11 +54,12 @@ void py_unload_modules(void)
         struct py_module_t * p;
 
         p = (struct py_module_t *) value;
-        
+ 
+#ifndef _WIN32
         Py_DECREF(p->pFunc);
         Py_DECREF(p->pModule);
         Py_DECREF(p->pName);
-
+#endif
         free(p);
 
         g_hash_table_iter_remove(&iter);

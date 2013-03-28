@@ -3,7 +3,12 @@
 #include <gio/gio.h>
 #include <glib-object.h>
 #include <stdlib.h>
+
+#ifdef _WIN32
+#include <windows.h>
+#else
 #include <dlfcn.h>
+#endif
 #include <string.h>
 
 #include "config.h"
@@ -43,8 +48,14 @@ void module_load_callback(void * data)
 {
     char * file_name;
     char file_full_path[250];
+#ifdef _WIN32
+    HMODULE mod;
+    FARPROC initializer;
+#else
     void * mod;
     void * initializer;
+#endif
+   
     char * t;
     struct mod_c_t * mod_c;
 
@@ -52,13 +63,20 @@ void module_load_callback(void * data)
 
     file_name = (char *) data;
 
+#ifdef _WIN32
+    if (!g_strrstr(file_name, ".dll")) 
+#else
     if (!g_strrstr(file_name, ".so")) 
-        return;
+#endif
+      return;
 
 
     snprintf(file_full_path, 250, "%s/%s", mod_dir, file_name);
-
+#ifdef _WIN32
+    mod = LoadLibrary(file_full_path);
+#else
     mod = dlopen(file_full_path, RTLD_LAZY);
+#endif
     if (!mod)
     {
         g_printerr("%s could not be opened.\n", file_name);
@@ -70,8 +88,11 @@ void module_load_callback(void * data)
     *t = '\0';
 
     mod_c->mod_name = strdup(file_name);
-
+#ifdef _WIN32
+    initializer = GetProcAddress(mod, file_name);
+#else
     initializer = dlsym(mod, file_name);
+#endif
     if (!initializer)
     {
         g_printerr("entry point %s not found in %s.\n", file_name, file_full_path);
@@ -88,13 +109,12 @@ void module_load_callback(void * data)
 char * module_get_loaded_names(void)
 {
     char * buf;
+    GHashTableIter iter;
+    gpointer key, value;
 
     buf = malloc(510);
 
     buf[0] = '\0';
-
-    GHashTableIter iter;
-    gpointer key, value;
 
     g_hash_table_iter_init(&iter, mod_c_hash_map);
     while (g_hash_table_iter_next(&iter, &key, &value))
