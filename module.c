@@ -3,6 +3,7 @@
 #include <gio/gio.h>
 #include <glib-object.h>
 #include <stdlib.h>
+#include "khash.h"
 
 #ifdef _WIN32
 #include <windows.h>
@@ -21,7 +22,8 @@ static const char       * mod_path = "modules";
 
 static       char       * mod_dir;
 
-             GHashTable * mod_c_hash_map;
+KHASH_MAP_INIT_STR(mod_c_hash_map, struct mod_c_t *)
+khash_t(mod_c_hash_map) * h_mod_c_hash_map;
 
 char * module_get_dir()
 {
@@ -30,16 +32,20 @@ char * module_get_dir()
 
 struct mod_c_t * module_find(const char * cmd)
 {
-    struct mod_c_t * mod;
     char t[50];
-    gboolean is_found = FALSE;
+    khiter_t k;
+    struct mod_c_t * mod;
 
     snprintf(t, sizeof t, "mod_%s", cmd);
 
-    is_found = g_hash_table_lookup_extended (mod_c_hash_map, t, NULL, (void **) &mod);
+    k = kh_get(mod_c_hash_map, h_mod_c_hash_map, t);
 
-    if (is_found == FALSE)
+    if (k == kh_end(h_mod_c_hash_map))
         return NULL;
+
+    mod = kh_value(h_mod_c_hash_map, k);
+
+    puts(mod->mod_name);
 
     return mod;
 }
@@ -58,6 +64,9 @@ void module_load_callback(void * data)
    
     char * t;
     struct mod_c_t * mod_c;
+
+    khiter_t k;
+    int ret;
 
     mod_c = malloc(sizeof (struct mod_c_t));
 
@@ -101,7 +110,8 @@ void module_load_callback(void * data)
 
     mod_c->func = (char * (*)(struct irc_t *)) initializer;
 
-    g_hash_table_insert(mod_c_hash_map, strdup(file_name), mod_c);
+    k = kh_put(mod_c_hash_map, h_mod_c_hash_map, strdup(file_name), &ret);
+    kh_value(h_mod_c_hash_map, k) = mod_c;
 
     g_printerr("Module loaded: [%s]\n", file_name);
 }
@@ -109,18 +119,17 @@ void module_load_callback(void * data)
 char * module_get_loaded_names(void)
 {
     char * buf;
-    GHashTableIter iter;
-    gpointer key, value;
+    khiter_t k;
 
     buf = malloc(510);
 
     buf[0] = '\0';
 
-    g_hash_table_iter_init(&iter, mod_c_hash_map);
-    while (g_hash_table_iter_next(&iter, &key, &value))
-    {
+    for (k = kh_begin(h_mod_c_hash_map); k != kh_end(h_mod_c_hash_map); k++) {
+        if (!kh_exist(h_mod_c_hash_map, k))
+            continue;
         strcat(buf, " [");
-        strcat(buf, key);
+        strcat(buf, kh_key(h_mod_c_hash_map, k));
         strcat(buf, "]");
     }
 
@@ -129,19 +138,21 @@ char * module_get_loaded_names(void)
 
 void module_unload_all(void)
 {
-    GHashTableIter iter;
-    gpointer key, value;
+    khiter_t k;
 
-    g_hash_table_iter_init(&iter, mod_c_hash_map);
-    while (g_hash_table_iter_next(&iter, &key, &value))
+    for (k = kh_begin(h_mod_c_hash_map); k != kh_end(h_mod_c_hash_map); k++)
     {
         struct irc_c_t * mod_c;
-        mod_c = (struct irc_c_t *) value;
+
+        if (!kh_exist(h_mod_c_hash_map, k))
+            continue;
+
+        mod_c = (struct irc_c_t *) kh_value(h_mod_c_hash_map, k);
 
         //dlclose(mod_c->mod);
         free(mod_c);
 
-        g_hash_table_iter_remove(&iter);
+        kh_del(mod_c_hash_map, h_mod_c_hash_map, k);
     }
 }
 
@@ -204,7 +215,7 @@ void module_init()
     g_free(cur_dir);
     g_free(modules_path);
 
-    mod_c_hash_map = g_hash_table_new(g_str_hash, g_str_equal);
+    h_mod_c_hash_map = kh_init(mod_c_hash_map);
 
     module_load();
 

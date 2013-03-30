@@ -4,7 +4,6 @@
 #include "module.h"
 
 #include <stdio.h>
-#include <glib.h>
 #include <string.h>
 #include <locale.h>
 
@@ -17,7 +16,6 @@ int main(int argc, char *argv[])
     config_init();
     config_load(&session);
     module_init();
-    log_init(G_LOG_LEVEL_ERROR);
 
     while (1)
     {
