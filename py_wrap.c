@@ -5,6 +5,8 @@
 #include <signal.h>
 #include <assert.h>
 
+#include "khash.h"
+
 #include "global.h"
 #include "config.h"
 #include "irc.h"
@@ -15,23 +17,25 @@ struct py_module_t {
     PyObject * pName, * pModule, * pFunc;
 };
 
-GHashTable * py_mod_hash_map;
+KHASH_MAP_INIT_STR(py_mod_hash_map, struct py_module_t *)
+khash_t(py_mod_hash_map) * h_py_mod_hash_map;
 
 char * py_get_loaded_names(void)
 {
     char * buf;
-    GHashTableIter iter;
-    gpointer key, value;
+    khiter_t k;
 
     buf = malloc(510);
 
     buf[0] = '\0';
 
-    g_hash_table_iter_init(&iter, py_mod_hash_map);
-    while (g_hash_table_iter_next(&iter, &key, &value))
+    for (k = kh_begin(h_py_mod_hash_map); k != kh_end(h_py_mod_hash_map); k++)
     {
+        if (!kh_exist(h_py_mod_hash_map, k))
+            continue;
+
         strcat(buf, " [");
-        strcat(buf, key);
+        strcat(buf, kh_key(h_py_mod_hash_map, k));
         strcat(buf, "]");
     }
 
@@ -45,15 +49,16 @@ static void signal_handler(int signum)
 
 void py_unload_modules(void)
 {
-    GHashTableIter iter;
-    gpointer key, value;
+    khiter_t k;
 
-    g_hash_table_iter_init(&iter, py_mod_hash_map);
-    while (g_hash_table_iter_next(&iter, &key, &value))
+    for (k = kh_begin(h_py_mod_hash_map); k != h_py_mod_hash_map; k++)
     {
         struct py_module_t * p;
 
-        p = (struct py_module_t *) value;
+        if (!kh_exist(h_py_mod_hash_map, k))
+            continue;
+
+        p = (struct py_module_t *) kh_value(h_py_mod_hash_map, k);
  
 #ifndef _WIN32
         Py_DECREF(p->pFunc);
@@ -62,26 +67,26 @@ void py_unload_modules(void)
 #endif
         free(p);
 
-        g_hash_table_iter_remove(&iter);
+        kh_del(py_mod_hash_map, h_py_mod_hash_map, k);
     }
 }
 
 struct py_module_t * py_find_loaded_name(char * cmd)
 {
-    struct py_module_t * mod = NULL;
     char t[50];
-    gboolean is_found = FALSE;
+    khiter_t k;
 
     cmd++; /* skip the '.' prefix */
 
     strcpy(t, "mod_");
     strcat(t, cmd);
 
-    is_found = g_hash_table_lookup_extended (py_mod_hash_map, t, NULL, (void **) &mod);
-    if (is_found == FALSE)
+    kh_get(py_mod_hash_map, h_py_mod_hash_map, t);
+
+    if (k == kh_end(h_py_mod_hash_map))
         return NULL;
 
-    return mod;
+    return kh_value(h_py_mod_hash_map, k);
 
 }
 
@@ -124,6 +129,8 @@ void py_load_callback(void *data)
     struct py_module_t * mod;
     char mod_name[50];
     char * file_name;
+    khiter_t k;
+    int ret;
 
     file_name = (char *) data;
 
@@ -156,16 +163,19 @@ void py_load_callback(void *data)
         return;
     }
 
-    g_hash_table_insert(py_mod_hash_map, strdup(mod_name), mod);
+    k = kh_put(py_mod_hash_map, h_py_mod_hash_map, strdup(mod_name), &ret);
+
+    kh_value(h_py_mod_hash_map, k) = mod;
+
     g_printerr("Module loaded: [%s]\n", mod_name);
 }
 
 void py_load_mod_hash(char * mod_dir)
 {
-    if (py_mod_hash_map)
+    if (h_py_mod_hash_map)
         py_unload_modules();
 
-    py_mod_hash_map = g_hash_table_new(g_str_hash, g_str_equal);
+    h_py_mod_hash_map = kh_init(py_mod_hash_map);
 
     module_iterate_files(py_load_callback);
 }
@@ -173,7 +183,6 @@ void py_load_mod_hash(char * mod_dir)
 int py_load_modules(void)
 {
     char * mod_dir;
-
 
     mod_dir = module_get_dir();
 
