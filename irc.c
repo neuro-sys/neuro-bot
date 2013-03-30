@@ -2,7 +2,6 @@
 #include "global.h"
 #include "py_wrap.h"
 
-#include <glib.h>
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -11,10 +10,22 @@
 
 static void irc_proc_cmd_privmsg_user_cmd_admin (struct irc_t * irc)
 {
-    char ** tokens;
+    char * t;
+    char tokens[2][MAX_IRC_MSG];
+    char str[MAX_IRC_MSG];
 
-    tokens = g_strsplit_set (irc->request, " ", 2);
+    strncpy(str, irc->request, MAX_IRC_MSG);
+    
+    if ( !(t = strtok(str, " ")) )
+        return;
 
+    strncpy(tokens[0], t, MAX_IRC_MSG);
+
+    if ( !(t = strtok(NULL, "\r\n")) )
+        return;
+
+    strncpy(tokens[1], t, MAX_IRC_MSG);
+        
     if ( !strncmp(".join", tokens[0], strlen(".join")) )
     {
         sprintf(irc->response, "JOIN %s\r\n", tokens[1]);
@@ -23,29 +34,31 @@ static void irc_proc_cmd_privmsg_user_cmd_admin (struct irc_t * irc)
     {
         sprintf(irc->response, "PART %s\r\n", tokens[1] );
     }
-    else if ( !strncmp(".privmsg", tokens[0], strlen(".privmsg")) )
+    else if ( !strncmp(".raw", tokens[0], strlen(".raw")) )
     {
-        sprintf(irc->response, "%s", tokens[1]);
+        sprintf(irc->response, "%s\r\n", tokens[1]);
     }
     else if ( !strncmp(".reload", tokens[0], strlen(".reload")) )
     {
         module_load();
         py_load_mod_hash();
     }
-
-    g_strfreev (tokens);
 }
 
 static void irc_proc_cmd_privmsg_user_cmd (struct irc_t * irc)
 {
-    char ** tokens;
     struct mod_c_t * mod_c;
+    char token[MAX_IRC_MSG];
+    char str[MAX_IRC_MSG];
     char * t;
 
-    tokens = g_strsplit_set (irc->request, " \r\n", 2);
+    strncpy(str, irc->request, MAX_IRC_MSG);
+    if ( !(t = strtok(str, " \r\n")) )
+        return;
 
-    t = strdup(tokens[0]);
-    if ( (mod_c = module_find(++t)) )
+    strncpy(token, t, MAX_IRC_MSG);
+
+    if ( (mod_c = module_find(token+1)) )
     {
         char * ret = mod_c->func(irc);
         
@@ -60,7 +73,7 @@ static void irc_proc_cmd_privmsg_user_cmd (struct irc_t * irc)
     else
     {
         char * ret;
-        struct py_module_t * mod = py_find_loaded_name (tokens[0]); 
+        struct py_module_t * mod = py_find_loaded_name (token); 
 
         if (mod)
         {
@@ -74,17 +87,23 @@ static void irc_proc_cmd_privmsg_user_cmd (struct irc_t * irc)
     if ( !strncmp (irc->session->admin, irc->nick_to_msg, strlen(irc->session->admin)) ) {
         irc_proc_cmd_privmsg_user_cmd_admin (irc);
     }
-
-    g_strfreev(tokens);
 }
 
 static void irc_proc_cmd_privmsg (struct irc_t * irc)
 {
-    char ** tokens;
+    char token[MAX_IRC_MSG];
+    char str[MAX_IRC_MSG];
+    char * t;
 
-    tokens = g_strsplit (irc->srv_msg.prefix, "!", 2);
+    strncpy(str, irc->srv_msg.prefix, MAX_IRC_MSG);
+
+    if ( !(t = strtok(str, "!")) )
+        return;
+    
+    strncpy(token, t, MAX_IRC_MSG);
+
     strcpy (irc->from, irc->srv_msg.params);
-    strcpy (irc->nick_to_msg, tokens[0]);
+    strcpy (irc->nick_to_msg, token);
 
     /* If the message sent in private, then reply to the sender instead */
     if (!strncmp(irc->srv_msg.params, irc->session->nickname, strlen(irc->srv_msg.params)))
@@ -124,8 +143,6 @@ static void irc_proc_cmd_privmsg (struct irc_t * irc)
             free(ret);
         }
     }  
-
-    g_strfreev (tokens);
 }
 
 static void irc_proc_cmd (struct irc_t * irc)
@@ -147,12 +164,28 @@ static void irc_proc_cmd (struct irc_t * irc)
 /*     message    =  [ ":" prefix SPACE ] command [ params ] crlf */
 static int irc_parse_prefix (struct irc_t * irc, char * line)
 {
-    char ** tokens;
+    char tokens[4][MAX_IRC_MSG];
+    char * t;
 
-    tokens = g_strsplit (line, " ", 4); 
-    
-    if (!tokens)
+    tokens[0][0] = tokens[1][0] = tokens[2][0] = tokens[3][0] = '\0';
+
+    if ( !(t = strtok(line, " ")) )
         return -1;
+
+    strncpy(tokens[0], t, MAX_IRC_MSG);
+
+    if ( !(t = strtok(NULL, " ")) )
+        return -1;
+
+    strncpy(tokens[1], t, MAX_IRC_MSG);
+
+    if ( !(t = strtok(NULL, " ")) )
+        return -1;
+
+    strncpy(tokens[2], t, MAX_IRC_MSG);
+
+    if ( (t = strtok(NULL, "")) )
+        strncpy(tokens[3], t, MAX_IRC_MSG);
 
     strcpy (irc->srv_msg.prefix, tokens[0]+1); /* skip ':' from the prefix */
     strcpy (irc->srv_msg.command, tokens[1]);
@@ -165,7 +198,7 @@ static int irc_parse_prefix (struct irc_t * irc, char * line)
         strcpy(irc->srv_msg.params, tokens[2]);         
 
         /* the rest is request and optional */
-        if ( tokens[3] != NULL ) 
+        if ( tokens[3] != '\0' ) 
             strcpy (irc->request, tokens[3]+1);
 
     } 
@@ -174,29 +207,35 @@ static int irc_parse_prefix (struct irc_t * irc, char * line)
         strcpy (irc->request, tokens[2]+1);
     }
 
-    g_strfreev (tokens);
-
     return 1;
 }
 
 static void irc_parse_other (struct irc_t * irc, char * line)
 {
-    char ** tokens;
+    char tokens[2][MAX_IRC_MSG];
+    char * t;
 
-    tokens = g_strsplit (line, ":", 2);
+    if ( !(t = strtok(line, ":")) )
+        return;
+
+    strncpy(tokens[0], t, MAX_IRC_MSG);
+
+    if ( !(t = strtok(NULL, "\r\n")) )
+        return;
+
+    strncpy(tokens[1], t, MAX_IRC_MSG);
+
     if ( !strncmp("PING", tokens[0], 4) ) 
     {
         strcpy (irc->srv_msg.command, tokens[0]);
         strcpy (irc->request, tokens[1]);
     }
-
-    g_strfreev(tokens);
 }
 
 /* message    =  [ ":" prefix SPACE ] command [ params ] crlf */
 void irc_process_line(struct irc_t * irc, char * line)
 {  
-    g_printerr(line);
+    printf("%s", line);
 
     if ( line[0] == ':' ) 
     {

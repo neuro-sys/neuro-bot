@@ -28,7 +28,7 @@ char * module_get_dir()
     return mod_dir;
 }
 
-struct mod_c_t * module_find(char * cmd)
+struct mod_c_t * module_find(const char * cmd)
 {
     struct mod_c_t * mod;
     char t[50];
