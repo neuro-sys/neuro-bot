@@ -1,36 +1,13 @@
 #include "irc.h"
 #include "global.h"
 #include "curl_wrap.h"
+#include "neurobotapi.h"
 
 #include <string.h>
 #include <stdlib.h>
 #include <jansson.h>
 #include <curl/curl.h>
-#include <glib.h>
 #include <stdio.h>
-
-void strip_html_tags(char * dest, char * src)
-{
-    int inside = 0;
-
-    while (*src != '\0')
-    {
-
-        if (*src == '>') {
-            inside = 0;
-            src++;
-        } 
-        
-        if (*src == '<' || inside) {
-            inside = 1;
-            src++;
-            continue;
-        }
-
-        *dest++ = *src++;
-    }
-    *dest = '\0';
-}
 
 static char * parse_json_wiki(char * data)
 {
@@ -108,7 +85,7 @@ char * mod_wiki(struct irc_t * irc)
 
     t = malloc(strlen(p));
 
-    strip_html_tags(t, p);
+    n_strip_tags(t, p);
 
     ret = strdup(t);
 

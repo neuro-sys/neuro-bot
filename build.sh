@@ -12,7 +12,3 @@ LDFLAGS="`pkg-config $LIBS --libs` $PYLDFLAGS -ldl -O0"
 
 gcc -Wall $CFLAGS -c *.c 
 gcc -Wall $LDFLAGS *.o -o neurobot 
-
-cd modules
-./build.sh
-

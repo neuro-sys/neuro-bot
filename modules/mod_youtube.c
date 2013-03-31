@@ -6,7 +6,6 @@
 #include <stdlib.h>
 #include <jansson.h>
 #include <curl/curl.h>
-#include <glib.h>
 #include <stdio.h>
 
 struct youtube_t {
@@ -38,13 +37,13 @@ static void parse_json_youtube(char * data, struct youtube_t * youtube)
 
     if (statistics != NULL) 
     {
-      viewCount = json_object_get(statistics, "viewCount");
-      temp = strdup(json_string_value(viewCount));
-      strcpy(youtube->view_count, temp);
+        viewCount = json_object_get(statistics, "viewCount");
+        temp = strdup(json_string_value(viewCount));
+        strcpy(youtube->view_count, temp);
     }
     else 
     {
-      strcpy(youtube->view_count, "N/A");
+        strcpy(youtube->view_count, "N/A");
     }
 
     title_t = json_object_get(title, "$t");
@@ -56,29 +55,19 @@ static void parse_json_youtube(char * data, struct youtube_t * youtube)
 
 static void proc_info_youtube(struct irc_t * irc, struct youtube_t * youtube)
 {
-    GRegex      * regex;
-    GMatchInfo  * match_info;
     char        url_path[512];
     char        * content;
+    char *t;
 
-    regex = g_regex_new("(?<=v=)[a-zA-Z0-9-]+(?=&)|(?<=v\\/)[^&\\n]+|(?<=v=)[^&\\n]+|(?<=youtu.be/)[^&\\n]+", 0, 0, NULL);
+    t = strstr(irc->request, "v=");
+    if (t) t +=2;
+    t = strtok(t, " &\r\n\\");
 
-    g_regex_match(regex, irc->request, 0, &match_info);
-    if (g_match_info_matches(match_info)) {
-        char * match = g_match_info_fetch(match_info, 0);
-        char nasty_escape[20];
+    sprintf(url_path, "http://gdata.youtube.com/feeds/api/videos/%s?alt=json&ver=2", t);
 
-        strcpy(nasty_escape, match);
-        nasty_escape[11] = '\0';
-        sprintf(url_path, "http://gdata.youtube.com/feeds/api/videos/%s?alt=json&ver=2", nasty_escape);
-        g_free(match);
-
-        content = curl_perform(url_path);
-        parse_json_youtube(content, youtube);
-        free(content);
-    } 
-
-    g_regex_unref(regex);
+    content = curl_perform(url_path);
+    parse_json_youtube(content, youtube);
+    free(content);
 }
 
 
@@ -93,7 +82,7 @@ char * mod_youtube(struct irc_t * irc)
 
     if (youtube->valid)
     {
-        sprintf(ret, "[%s] - [rating: %f, viewed: %s]", 
+        sprintf(ret, "[%s] - [rating: %.2f/5, viewed: %s]", 
                 youtube->title, youtube->rating, youtube->view_count);
     }
     free(youtube);

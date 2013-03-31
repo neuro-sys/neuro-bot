@@ -1,8 +1,8 @@
 #include "irc.h"
 #include "curl_wrap.h"
 #include "global.h"
+#include "neurobotapi.h"
 
-#include <glib.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -16,7 +16,8 @@ static int validate_http(char * line)
     if (!ret)
         return -1;
 
-    t = (p = strchr(ret, ' '))  ? p 
+    /* This is the same as a switch-case, in case you don't know */
+    t =   (p = strchr(ret, ' '))  ? p 
         : (p = strchr(ret, '\r')) ? p
         : (p = strchr(ret, '\n')) ? p
         : 0;
@@ -30,23 +31,13 @@ static int validate_http(char * line)
 
 static int parse_title(char * dest, char * src)
 {
-    GRegex     * regex;
-    GMatchInfo * match_info;
+    char * t;
 
-    regex = g_regex_new("(?s)(?i)<title.*>(.*?)<\\/title>", G_REGEX_MULTILINE, 0, NULL);
-    g_regex_match(regex, src, 0, &match_info);
-    if (g_match_info_matches(match_info)) {
-        char * t = g_match_info_fetch(match_info, 1);
-        strcpy(dest, "[TITLE] :");
-        strncat(dest, t, 255);
-        g_free(t);
-        g_match_info_free(match_info);
-        g_regex_unref(regex);
-
+    t = n_get_tag_value(src, "title");
+    if (t) {
+        strcpy(dest, t); 
         return 1;
     }
-    g_match_info_free(match_info);
-    g_regex_unref(regex);
 
     return -1;
 }
