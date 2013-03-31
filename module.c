@@ -1,14 +1,9 @@
 #include <stdio.h>
-#include <glib.h>
-#include <gio/gio.h>
-#include <glib-object.h>
 #include <stdlib.h>
-
-#ifdef _WIN32
-#include <windows.h>
-#else
+#include <sys/types.h>
+#include <unistd.h>
+#include <dirent.h>
 #include <dlfcn.h>
-#endif
 #include <string.h>
 
 #include "config.h"
@@ -47,13 +42,8 @@ void module_load_callback(void * data)
 {
     char * file_name;
     char file_full_path[250];
-#ifdef _WIN32
-    HMODULE mod;
-    FARPROC initializer;
-#else
     void * mod;
     void * initializer;
-#endif
    
     char * t;
     struct mod_c_t * mod_c;
@@ -64,20 +54,12 @@ void module_load_callback(void * data)
 
     file_name = (char *) data;
 
-#ifdef _WIN32
-    if (!g_strrstr(file_name, ".dll")) 
-#else
     if (!g_strrstr(file_name, ".so")) 
-#endif
       return;
 
 
     snprintf(file_full_path, 250, "%s/%s", mod_dir, file_name);
-#ifdef _WIN32
-    mod = LoadLibrary(file_full_path);
-#else
     mod = dlopen(file_full_path, RTLD_LAZY);
-#endif
     if (!mod)
     {
         g_printerr("%s could not be opened.\n", file_name);
@@ -89,11 +71,7 @@ void module_load_callback(void * data)
     *t = '\0';
 
     mod_c->mod_name = strdup(file_name);
-#ifdef _WIN32
-    initializer = GetProcAddress(mod, file_name);
-#else
     initializer = dlsym(mod, file_name);
-#endif
     if (!initializer)
     {
         g_printerr("entry point %s not found in %s.\n", file_name, file_full_path);
@@ -144,34 +122,17 @@ void module_unload_all(void)
 
 void module_iterate_files(void (*callback)(void * data))
 {
-    GFileEnumerator * enum_children;
-    GFile           * mod_path_file;
-    GError          * error = NULL;
-    GFileInfo       * fileInfo;
+    DIR * dir;
+    struct dirent * dirent;
 
-    mod_path_file = g_file_new_for_path(mod_dir);
+    dir = opendir(mod_dir);
 
-    enum_children = g_file_enumerate_children(mod_path_file, "*", 0, NULL, &error);
-    if (!enum_children || error) {
-        g_printerr("Can't open the specified path: %s\n", mod_dir);
-        if (error) {
-            g_error_free(error);
-            error = NULL;
-        }
-        return;
+    while ( (dirent = readdir(dir)) != NULL)
+    {
+        callback(dirent->d_name);
     }
 
-    while ( (fileInfo = g_file_enumerator_next_file(enum_children, NULL, &error)) != NULL) {
-        char * file_name;
-
-        file_name = strdup(g_file_info_get_name (fileInfo));
-
-        callback(file_name);
-    }
-
-    if (!g_file_enumerator_close(enum_children, NULL, NULL))
-        g_printerr("The file handle resource cannot be freed.\n");
-
+    closedir(dir);
 }
 
 void module_load()
@@ -186,18 +147,14 @@ void module_init()
     char * cur_dir;
     char * modules_path;
 
-	g_type_init();
-
-    cur_dir = g_get_current_dir();
+    cur_dir = get_current_dir_name();
 
     modules_path = config_get_string(GROUP_MODULES, KEY_PYPATH);
     if (!modules_path)
-        modules_path = g_strdup(mod_path);
+        modules_path = strdup(mod_path);
 
-    if (modules_path[0] == '/')
-        mod_dir = g_strdup(modules_path);
-    else
-        mod_dir = g_strdup_printf("%s%c%s", cur_dir, G_DIR_SEPARATOR, modules_path);
+    mod_dir = strdup(modules_path);
+
     g_free(cur_dir);
     g_free(modules_path);
 

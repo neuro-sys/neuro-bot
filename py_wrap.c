@@ -1,7 +1,4 @@
 #include <Python.h>
-#include <glib.h>
-#include <gio/gio.h>
-#include <glib-object.h>
 #include <signal.h>
 #include <assert.h>
 
