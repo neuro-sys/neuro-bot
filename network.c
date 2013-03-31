@@ -1,53 +1,57 @@
 #include "global.h"
 #include "network.h"
 #include "socket.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <glib.h>
 #include <string.h>
+
+#include <sys/types.h>
+#include <unistd.h>
+
+static int read_line(int fd, size_t res_len, char *buf) {
+    size_t i = 0;
+    char c = 0;
+    do {
+        if(read(fd, &c, sizeof(char)) != sizeof(char))
+            return -1;
+        buf[i++] = c;
+    }
+    while(c != '\n' && i < res_len);
+    buf[i - 1] = 0;         /* eliminates '\n' */
+    return 0;
+}
 
 void network_connect(struct network_t * network)
 {
     char port_str[10];
     int sockfd;
 
+
     sprintf(port_str, "%d", network->port);
     sockfd = t_connect(network->host_name, port_str);
-
-#if defined (_WIN32)
-    network->giochannel = g_io_channel_win32_new_socket(sockfd);
-#elif defined(unix)
-    network->giochannel = g_io_channel_unix_new(sockfd);
-#else
-#error WUT?
-#endif
-    g_io_channel_set_encoding(network->giochannel, NULL, NULL);
+    network->sockfd = sockfd;
 }
 
-int network_read_line(struct network_t * network, char ** buf)
+int network_read_line(struct network_t * network, char * buf)
 {
-    gsize len;
-    GIOStatus giostatus;
-    GError * error = NULL;
+    struct timeval tv;
+    fd_set readfs;
 
-    if ( (giostatus = g_io_channel_read_line (network->giochannel, buf, &len, NULL, &error)) != G_IO_STATUS_NORMAL) {
-        if (giostatus == 0) printf("%s\n", error->message);
-        return -1;
-    }
+    tv.tv_sec = 120;
+    tv.tv_usec = 0;
 
-    return len;
+    FD_ZERO(&readfs);
+    FD_SET(network->sockfd, &readfs);
+
+    select(network->sockfd+1, &readfs, NULL, NULL, &tv);
+    if (FD_ISSET(network->sockfd, &readfs))
+        read_line(network->sockfd, 1024, buf);
 }
 
 void network_send_message(struct network_t * network, char * message)
 {
-    gsize     read;
-    GError    * error = NULL;
-    GIOStatus status;
-
-    status = g_io_channel_write_chars(network->giochannel, message, strlen(message), &read, &error);
-
-    if (status == G_IO_STATUS_NORMAL)
-        g_io_channel_flush(network->giochannel, NULL);
-
+    send(network->sockfd, message, strlen(message), 0);
 }
 

@@ -26,7 +26,7 @@ static void session_auth_to_network(struct session_t * session)
 
 static void session_run(struct session_t * session)
 { 
-    char          * line;
+    char          line[MAX_IRC_MSG];
     struct irc_t  irc;
 
     session_auth_to_network(session);
@@ -37,7 +37,7 @@ static void session_run(struct session_t * session)
     {
         irc.response[0] = '\0';
 
-        if ( network_read_line(&session->network, &line) < 0 )
+        if ( network_read_line(&session->network, line) < 0 )
             break;
 
         irc_process_line(&irc, line);

@@ -5,8 +5,6 @@
 #include <signal.h>
 #include <assert.h>
 
-#include "khash.h"
-
 #include "global.h"
 #include "config.h"
 #include "irc.h"
@@ -17,25 +15,21 @@ struct py_module_t {
     PyObject * pName, * pModule, * pFunc;
 };
 
-KHASH_MAP_INIT_STR(py_mod_hash_map, struct py_module_t *)
-khash_t(py_mod_hash_map) * h_py_mod_hash_map;
+void * mod_array_py[100][2];
 
 char * py_get_loaded_names(void)
 {
     char * buf;
-    khiter_t k;
+    int k;
 
     buf = malloc(510);
 
     buf[0] = '\0';
 
-    for (k = kh_begin(h_py_mod_hash_map); k != kh_end(h_py_mod_hash_map); k++)
+    for (k = 0; mod_array_py[k][0] != NULL; k++)
     {
-        if (!kh_exist(h_py_mod_hash_map, k))
-            continue;
-
         strcat(buf, " [");
-        strcat(buf, kh_key(h_py_mod_hash_map, k));
+        strcat(buf, mod_array_py[k][0]);
         strcat(buf, "]");
     }
 
@@ -49,45 +43,41 @@ static void signal_handler(int signum)
 
 void py_unload_modules(void)
 {
-    khiter_t k;
+    int k;
 
-    for (k = kh_begin(h_py_mod_hash_map); k != h_py_mod_hash_map; k++)
+    for (k = 0; mod_array_py[k][0] != NULL; k++)
     {
         struct py_module_t * p;
 
-        if (!kh_exist(h_py_mod_hash_map, k))
-            continue;
+        p = mod_array_py[k][1];
 
-        p = (struct py_module_t *) kh_value(h_py_mod_hash_map, k);
- 
-#ifndef _WIN32
         Py_DECREF(p->pFunc);
         Py_DECREF(p->pModule);
         Py_DECREF(p->pName);
-#endif
-        free(p);
 
-        kh_del(py_mod_hash_map, h_py_mod_hash_map, k);
+        free(mod_array_py[k][0]);
+        free(mod_array_py[k][1]);
+
+        mod_array_py[k][0] = NULL;
+        mod_array_py[k][1] = NULL;
     }
 }
 
 struct py_module_t * py_find_loaded_name(char * cmd)
 {
     char t[50];
-    khiter_t k;
+    int k;
 
     cmd++; /* skip the '.' prefix */
 
     strcpy(t, "mod_");
     strcat(t, cmd);
 
-    kh_get(py_mod_hash_map, h_py_mod_hash_map, t);
+    for (k = 0; mod_array_py[k][0] != NULL; k++)
+        if (!strcmp(mod_array_py[k][0], t))
+            return mod_array_py[k][1];
 
-    if (k == kh_end(h_py_mod_hash_map))
-        return NULL;
-
-    return kh_value(h_py_mod_hash_map, k);
-
+    return NULL;
 }
 
 char * py_call_module(struct py_module_t * mod, struct irc_t * irc)
@@ -129,7 +119,7 @@ void py_load_callback(void *data)
     struct py_module_t * mod;
     char mod_name[50];
     char * file_name;
-    khiter_t k;
+    int k;
     int ret;
 
     file_name = (char *) data;
@@ -163,19 +153,16 @@ void py_load_callback(void *data)
         return;
     }
 
-    k = kh_put(py_mod_hash_map, h_py_mod_hash_map, strdup(mod_name), &ret);
+    for (k = 0; mod_array_py[k][0] != NULL; k++) {}
+    mod_array_py[k][0] = strdup(mod_name);
+    mod_array_py[k][1] = mod;
 
-    kh_value(h_py_mod_hash_map, k) = mod;
-
-    g_printerr("Module loaded: [%s]\n", mod_name);
+    fprintf(stderr, "Module loaded: [%s]\n", mod_name);
 }
 
 void py_load_mod_hash(char * mod_dir)
 {
-    if (h_py_mod_hash_map)
-        py_unload_modules();
-
-    h_py_mod_hash_map = kh_init(py_mod_hash_map);
+    py_unload_modules();
 
     module_iterate_files(py_load_callback);
 }

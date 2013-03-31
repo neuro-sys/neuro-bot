@@ -3,7 +3,6 @@
 #include <gio/gio.h>
 #include <glib-object.h>
 #include <stdlib.h>
-#include "khash.h"
 
 #ifdef _WIN32
 #include <windows.h>
@@ -22,8 +21,8 @@ static const char       * mod_path = "modules";
 
 static       char       * mod_dir;
 
-KHASH_MAP_INIT_STR(mod_c_hash_map, struct mod_c_t *)
-khash_t(mod_c_hash_map) * h_mod_c_hash_map;
+#define MOD_MAX_NUM 50
+void * mod_array[MOD_MAX_NUM][2];
 
 char * module_get_dir()
 {
@@ -33,21 +32,16 @@ char * module_get_dir()
 struct mod_c_t * module_find(const char * cmd)
 {
     char t[50];
-    khiter_t k;
+    int k;
     struct mod_c_t * mod;
 
     snprintf(t, sizeof t, "mod_%s", cmd);
 
-    k = kh_get(mod_c_hash_map, h_mod_c_hash_map, t);
+    for (k = 0; mod_array[k][0] != NULL; k++)
+        if (!strcmp(mod_array[k][0], t))
+            return mod_array[k][1];
 
-    if (k == kh_end(h_mod_c_hash_map))
-        return NULL;
-
-    mod = kh_value(h_mod_c_hash_map, k);
-
-    puts(mod->mod_name);
-
-    return mod;
+    return NULL;
 }
 
 void module_load_callback(void * data)
@@ -65,7 +59,7 @@ void module_load_callback(void * data)
     char * t;
     struct mod_c_t * mod_c;
 
-    khiter_t k;
+    int k;
     int ret;
 
     mod_c = malloc(sizeof (struct mod_c_t));
@@ -110,8 +104,9 @@ void module_load_callback(void * data)
 
     mod_c->func = (char * (*)(struct irc_t *)) initializer;
 
-    k = kh_put(mod_c_hash_map, h_mod_c_hash_map, strdup(file_name), &ret);
-    kh_value(h_mod_c_hash_map, k) = mod_c;
+    for (k = 0; mod_array[k][0] != NULL; k++) {}
+    mod_array[k][0] = strdup(file_name);
+    mod_array[k][1] = mod_c;
 
     g_printerr("Module loaded: [%s]\n", file_name);
 }
@@ -119,17 +114,16 @@ void module_load_callback(void * data)
 char * module_get_loaded_names(void)
 {
     char * buf;
-    khiter_t k;
+    int k;
 
     buf = malloc(510);
 
     buf[0] = '\0';
 
-    for (k = kh_begin(h_mod_c_hash_map); k != kh_end(h_mod_c_hash_map); k++) {
-        if (!kh_exist(h_mod_c_hash_map, k))
-            continue;
+    for (k = 0; mod_array[k][0] != NULL; k++)
+    {
         strcat(buf, " [");
-        strcat(buf, kh_key(h_mod_c_hash_map, k));
+        strcat(buf, mod_array[k][0]);
         strcat(buf, "]");
     }
 
@@ -138,21 +132,15 @@ char * module_get_loaded_names(void)
 
 void module_unload_all(void)
 {
-    khiter_t k;
+    int k;
 
-    for (k = kh_begin(h_mod_c_hash_map); k != kh_end(h_mod_c_hash_map); k++)
+    for (k = 0; mod_array[k][0] != NULL; k++)
     {
-        struct irc_c_t * mod_c;
+        free(mod_array[k][0]);
+        free(mod_array[k][1]);
 
-        if (!kh_exist(h_mod_c_hash_map, k))
-            continue;
-
-        mod_c = (struct irc_c_t *) kh_value(h_mod_c_hash_map, k);
-
-        //dlclose(mod_c->mod);
-        free(mod_c);
-
-        kh_del(mod_c_hash_map, h_mod_c_hash_map, k);
+        mod_array[k][0] = NULL;
+        mod_array[k][1] = NULL;
     }
 }
 
@@ -214,8 +202,6 @@ void module_init()
         mod_dir = g_strdup_printf("%s%c%s", cur_dir, G_DIR_SEPARATOR, modules_path);
     g_free(cur_dir);
     g_free(modules_path);
-
-    h_mod_c_hash_map = kh_init(mod_c_hash_map);
 
     module_load();
 

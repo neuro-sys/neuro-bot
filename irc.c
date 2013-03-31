@@ -235,7 +235,7 @@ static void irc_parse_other (struct irc_t * irc, char * line)
 /* message    =  [ ":" prefix SPACE ] command [ params ] crlf */
 void irc_process_line(struct irc_t * irc, char * line)
 {  
-    printf("%s", line);
+    fprintf(stderr, "%s\n", line);
 
     if ( line[0] == ':' ) 
     {
