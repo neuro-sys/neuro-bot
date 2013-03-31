@@ -46,6 +46,7 @@ char * mod_title(struct irc_t * irc)
 {
     char  title[256];
     char  * content = NULL;
+    char * t;
 
     if (validate_http(irc->request) < 0 )
         return strdup("invalid url.");
@@ -56,6 +57,11 @@ char * mod_title(struct irc_t * irc)
 
     if ( parse_title(title, content) > 0 ) {
         free(content);
+        t = title;
+        while (*t != '\0')
+            if (*t++ == '\n')
+                t[-1] = ' ';
+
         return strdup(title);
     }
 
