@@ -13,7 +13,7 @@
 static char * parse_json_wiki(char * data)
 {
     char * temp;
-    json_value * root, * query, * pages;
+    json_value * root, * query, * pages, * id, * extract;
     int i;
 
     temp = malloc(MAX_IRC_MSG);
@@ -21,10 +21,19 @@ static char * parse_json_wiki(char * data)
     root = json_parse(data);
 
     query = root->u.object.values[0].value;
+    if (!query) return "";
 
     pages = query->u.object.values[1].value;
+    if (!pages) return "";
 
-    strncpy(temp, pages->u.object.values[0].value->u.object.values[3].value.u.string.ptr, MAX_IRC_MSG);
+    id = pages->u.object.values[0].value;
+    if (!id || id->u.string.length == 3)
+        return "Not found.";
+
+    extract = id->u.object.values[3].value;
+    if (!extract) return "";
+
+    strncpy(temp, extract->u.string.ptr, MAX_IRC_MSG);
 
     return temp;
 }
@@ -74,7 +83,6 @@ char * mod_wiki(struct irc_t * irc)
 
     ret = strdup(t);
 
-    free(p);
     free(t);
     free(content);
 
