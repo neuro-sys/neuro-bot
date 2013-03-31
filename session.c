@@ -2,9 +2,7 @@
 #include "network.h"
 #include "irc.h"
 #include "global.h"
-#include "config.h"
 
-#include <glib.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

@@ -13,7 +13,6 @@ int main(int argc, char *argv[])
 
     setlocale(LC_CTYPE, "");
 
-    config_init();
     config_load(&session);
     module_init();
 
@@ -23,7 +22,6 @@ int main(int argc, char *argv[])
         session.run(&session);
     }
     
-    config_uninit();
     session_destroy(&session);
 
     return 0;

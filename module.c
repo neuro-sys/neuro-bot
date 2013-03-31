@@ -12,8 +12,6 @@
 #include "module.h"
 #include "py_wrap.h"
 
-static const char       * mod_path = "modules";
-
 static       char       * mod_dir;
 
 #define MOD_MAX_NUM 50
@@ -147,20 +145,18 @@ void module_init()
     char * cur_dir;
     char * modules_path;
 
-    cur_dir = get_current_dir_name();
+    cur_dir = (char *) get_current_dir_name();
 
-    modules_path = config_get_string(GROUP_MODULES, KEY_PYPATH);
-    if (!modules_path)
-        modules_path = strdup(mod_path);
+    modules_path = strdup("modules");
 
     mod_dir = strdup(modules_path);
 
-    g_free(cur_dir);
-    g_free(modules_path);
+    free(cur_dir);
+    free(modules_path);
 
     module_load();
 
     if ( py_load_modules() < 0 )
-        g_printerr("Could not load python modules, going on without them.\n");
+        fprintf(stderr, "Could not load python modules, going on without them.\n");
 }
 
