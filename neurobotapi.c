@@ -50,5 +50,7 @@ char * n_get_tag_value(char * body, char * tagname)
     
         return ret;
     }
+
+    return "";
 }
 

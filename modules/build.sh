@@ -12,11 +12,11 @@ LDFLAGS="`pkg-config $LIBS --libs` $PYLDFLAGS -ldl -g -O0 -L."
 
 gcc -fPIC -g -c *.c $CFLAGS
 
-gcc -Wl,--no-undefined $LDFLAGS --shared mod_youtube.o -omod_youtube.so ../curl_wrap.o ../neurobotapi.o
-gcc -Wl,--no-undefined $LDFLAGS --shared mod_wiki.o -omod_wiki.so ../curl_wrap.o ../neurobotapi.o
-gcc -Wl,--no-undefined $LDFLAGS --shared mod_title.o -omod_title.so ../curl_wrap.o ../neurobotapi.o
-gcc -Wl,--no-undefined $LDFLAGS --shared mod_time.o -omod_time.so ../curl_wrap.o ../neurobotapi.o
-gcc -Wl,--no-undefined $LDFLAGS --shared mod_ddg.o -omod_ddg.so ../curl_wrap.o ../neurobotapi.o
+gcc -Wl,--no-undefined $LDFLAGS --shared mod_youtube.o -omod_youtube.so ../curl_wrap.o ../neurobotapi.o ../json.o
+gcc -Wl,--no-undefined $LDFLAGS --shared mod_wiki.o -omod_wiki.so ../curl_wrap.o ../neurobotapi.o ../json.o
+gcc -Wl,--no-undefined $LDFLAGS --shared mod_title.o -omod_title.so ../curl_wrap.o ../neurobotapi.o ../json.o
+gcc -Wl,--no-undefined $LDFLAGS --shared mod_time.o -omod_time.so ../curl_wrap.o ../neurobotapi.o ../json.o
+gcc -Wl,--no-undefined $LDFLAGS --shared mod_ddg.o -omod_ddg.so ../curl_wrap.o ../neurobotapi.o 
 
 
 

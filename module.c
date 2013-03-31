@@ -142,16 +142,15 @@ void module_load()
 
 void module_init()
 {
-    char * cur_dir;
+    char cur_dir[1024];
     char * modules_path;
 
-    cur_dir = (char *) get_current_dir_name();
+    getcwd(cur_dir, 1024);
 
     modules_path = strdup("modules");
 
     mod_dir = strdup(modules_path);
 
-    free(cur_dir);
     free(modules_path);
 
     module_load();

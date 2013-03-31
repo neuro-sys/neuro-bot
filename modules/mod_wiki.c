@@ -3,43 +3,28 @@
 #include "curl_wrap.h"
 #include "neurobotapi.h"
 
+#include "json.h"
+
 #include <string.h>
 #include <stdlib.h>
-#include <jansson.h>
 #include <curl/curl.h>
 #include <stdio.h>
 
 static char * parse_json_wiki(char * data)
 {
-    json_t        * root;
-    json_error_t  error;
-    json_t        * query, * pages, * page_id, * extract;
-    char          * temp;
-    void          * iter;
+    char * temp;
+    json_value * root, * query, * pages;
+    int i;
 
-    root        = json_loads(data, JSON_DECODE_ANY | JSON_DISABLE_EOF_CHECK , &error);
-    if (!root)
-        return NULL;
+    temp = malloc(MAX_IRC_MSG);
 
-    query      = json_object_get(root, "query");
-    pages      = json_object_get(query, "pages");
+    root = json_parse(data);
 
-    iter = json_object_iter(pages);
+    query = root->u.object.values[0].value;
 
-    if (iter)
-    {
-        page_id = json_object_iter_value(iter);
-    }
+    pages = query->u.object.values[1].value;
 
-    extract = json_object_get(page_id, "extract");
-
-    if (extract)
-        temp = strdup(json_string_value(extract));
-    else
-        temp = strdup("This line intentionally left blank.");
-
-    json_decref(root);
-    json_decref(iter);
+    strncpy(temp, pages->u.object.values[0].value->u.object.values[3].value.u.string.ptr, MAX_IRC_MSG);
 
     return temp;
 }
