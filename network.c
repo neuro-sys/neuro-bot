@@ -4,12 +4,15 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <glib.h>
 #include <string.h>
 
+#include <sys/socket.h>
 #include <sys/types.h>
 #include <unistd.h>
 
+/*
+ * via ii@suckless project.
+ */
 static int read_line(int fd, size_t res_len, char *buf) {
     size_t i = 0;
     char c = 0;
@@ -27,7 +30,6 @@ void network_connect(struct network_t * network)
 {
     char port_str[10];
     int sockfd;
-
 
     sprintf(port_str, "%d", network->port);
     sockfd = t_connect(network->host_name, port_str);
@@ -47,7 +49,9 @@ int network_read_line(struct network_t * network, char * buf)
 
     select(network->sockfd+1, &readfs, NULL, NULL, &tv);
     if (FD_ISSET(network->sockfd, &readfs))
-        read_line(network->sockfd, 1024, buf);
+        return read_line(network->sockfd, 1024, buf);
+
+    return -1;
 }
 
 void network_send_message(struct network_t * network, char * message)

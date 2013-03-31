@@ -33,7 +33,6 @@ struct mod_c_t * module_find(const char * cmd)
 {
     char t[50];
     int k;
-    struct mod_c_t * mod;
 
     snprintf(t, sizeof t, "mod_%s", cmd);
 
@@ -60,7 +59,6 @@ void module_load_callback(void * data)
     struct mod_c_t * mod_c;
 
     int k;
-    int ret;
 
     mod_c = malloc(sizeof (struct mod_c_t));
 

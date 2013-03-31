@@ -120,7 +120,6 @@ void py_load_callback(void *data)
     char mod_name[50];
     char * file_name;
     int k;
-    int ret;
 
     file_name = (char *) data;
 

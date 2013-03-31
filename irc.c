@@ -21,10 +21,8 @@ static void irc_proc_cmd_privmsg_user_cmd_admin (struct irc_t * irc)
 
     strncpy(tokens[0], t, MAX_IRC_MSG);
 
-    if ( !(t = strtok(NULL, "\r\n")) )
-        return;
-
-    strncpy(tokens[1], t, MAX_IRC_MSG);
+    if ( (t = strtok(NULL, "\r\n")) )
+        strncpy(tokens[1], t, MAX_IRC_MSG);
         
     if ( !strncmp(".join", tokens[0], strlen(".join")) )
     {

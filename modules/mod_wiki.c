@@ -84,7 +84,7 @@ char * mod_wiki(struct irc_t * irc)
     i = strlen(p);
 
     /* strip the trailing cr-lf */
-    p[i-2] = '\0';
+    p[i-1] = '\0';
 
     t = p;
 
