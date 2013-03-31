@@ -21,10 +21,10 @@ static char * parse_json_wiki(char * data)
     root = json_parse(data);
 
     query = root->u.object.values[0].value;
-    if (!query) return "";
+    if (!query) return NULL;
 
     pages = query->u.object.values[1].value;
-    if (!pages) return "";
+    if (!pages) return NULL;
 
     id = pages->u.object.values[0].value;
     if (!id || id->u.string.length == 3)

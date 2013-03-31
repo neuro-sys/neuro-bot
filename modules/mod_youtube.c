@@ -2,9 +2,10 @@
 #include "global.h"
 #include "curl_wrap.h"
 
+#include "json.h"
+
 #include <string.h>
 #include <stdlib.h>
-#include <jansson.h>
 #include <curl/curl.h>
 #include <stdio.h>
 
@@ -17,38 +18,24 @@ struct youtube_t {
 
 static void parse_json_youtube(char * data, struct youtube_t * youtube)
 {
-    json_t        * root;
-    json_error_t  error;
-    json_t        * entry, * rating, * statistics, * title, * average, * viewCount, * title_t;
-    const char    * temp;
+    json_value * root, * entry, * title, * rating, * viewcount;
 
-    root        = json_loads(data, JSON_DECODE_ANY | JSON_DISABLE_EOF_CHECK , &error);
-    if (!root)
-        return;
-    entry       = json_object_get(root, "entry");
-    rating      = json_object_get(entry, "gd$rating");
-    statistics  = json_object_get(entry, "yt$statistics"); 
-    title       = json_object_get(entry, "title");
-    average     = json_object_get(rating, "average");
+    root = json_parse(data);
 
-    json_unpack(average, "F", &youtube->rating);
-    json_decref(average);
-    json_decref(rating);
+    entry = root->u.object.values[2].value;
+    if (!entry) return;
 
-    if (statistics != NULL) 
-    {
-        viewCount = json_object_get(statistics, "viewCount");
-        temp = strdup(json_string_value(viewCount));
-        strcpy(youtube->view_count, temp);
-    }
-    else 
-    {
-        strcpy(youtube->view_count, "N/A");
-    }
+    title = entry->u.object.values[8].value->u.object.values[0].value;
+    if (!title) return;
+    strcpy(youtube->title, title->u.string.ptr);
 
-    title_t = json_object_get(title, "$t");
-    temp = json_string_value(title_t); 
-    strcpy(youtube->title, temp);
+    rating = entry->u.object.values[14].value->u.object.values[0].value;
+    if (!rating) return;
+    youtube->rating = rating->u.dbl;
+
+    viewcount = entry->u.object.values[15].value->u.object.values[1].value;
+    if (!viewcount) return;
+    strcpy(youtube->view_count, viewcount->u.string.ptr);
 
     youtube->valid = 1;
 }

@@ -7,9 +7,7 @@
                                                                                      
 The project dependencies are: 
  - curl
- - glib-2.0
- - jansson
- - python2
+ - python2 (Optional)
 
 Use ./build.sh script to build (modify as needed).
 
