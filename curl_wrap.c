@@ -2,7 +2,6 @@
 
 #include <stdlib.h>
 #include <string.h>
-#include <glib.h>
 
 struct mem_block_t {
     char * memory;
@@ -26,9 +25,9 @@ static size_t WriteMemoryCallback(void * contents, size_t size, size_t nmemb, vo
     memcpy(&(mem->memory[mem->size]), contents, realsize);
     mem->size += realsize;
     mem->memory[mem->size] = 0;
-    g_debug("Memory chunking: %zu bytes.", mem->size);
+    fprintf(stderr, "Memory chunking: %zu bytes.", mem->size);
     if (mem->size > 16*1024) {
-        g_debug("Passed chunking limit\n");
+        fprintf(stderr, "Passed chunking limit\n");
         return -1;
     }
     return realsize;

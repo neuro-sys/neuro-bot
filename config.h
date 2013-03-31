@@ -4,8 +4,6 @@
 #include "global.h"
 #include "session.h"
 
-#include <glib.h>
-
 #define GROUP_CLIENT "client"
 #define GROUP_MODULES "modules"
 

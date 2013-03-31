@@ -111,7 +111,7 @@ static void irc_proc_cmd_privmsg (struct irc_t * irc)
     {
         irc_proc_cmd_privmsg_user_cmd (irc);
     } 
-    else if ( g_strrstr (irc->request, "http:") || g_strrstr(irc->request, "https:") )
+    else if ( strstr (irc->request, "http:") || strstr(irc->request, "https:") )
     {
 
         struct mod_c_t * mod;
@@ -119,7 +119,7 @@ static void irc_proc_cmd_privmsg (struct irc_t * irc)
 
         ret = NULL;
 
-        if ( g_strrstr (irc->request, "youtube.com") || g_strrstr(irc->request, "youtu.be") )
+        if ( strstr (irc->request, "youtube.com") || strstr(irc->request, "youtu.be") )
         {
             mod = module_find("youtube");
         }

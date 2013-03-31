@@ -120,13 +120,11 @@ void py_load_callback(void *data)
 
     file_name = (char *) data;
 
-    if (!g_strrstr(file_name, ".py") || file_name[strlen(file_name)-1] == 'c') 
+    if (!strstr(file_name, ".py") || file_name[strlen(file_name)-1] == 'c') 
         return;
 
     strcpy(mod_name, file_name);
     *strchr(mod_name, '.') = '\0';
-
-    g_strstrip(mod_name);
 
     mod = malloc(sizeof (struct py_module_t));
 
@@ -134,7 +132,7 @@ void py_load_callback(void *data)
     mod->pModule = PyImport_ImportModule(mod_name);
 
     if (!mod->pModule) {
-        g_printerr("Can't load module: %s\n", mod_name);
+        fprintf(stderr, "Can't load module: %s\n", mod_name);
         free(mod);
         if (PyErr_Occurred()) PyErr_Print();
         return;
@@ -143,7 +141,7 @@ void py_load_callback(void *data)
     mod->pFunc = PyObject_GetAttrString(mod->pModule, mod_name);
 
     if (!mod->pFunc || !PyCallable_Check(mod->pFunc)) {
-        g_printerr("Error python call method check.\n");
+        fprintf(stderr, "Error python call method check.\n");
         free(mod);
         if (PyErr_Occurred()) PyErr_Print();
         return;

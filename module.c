@@ -52,7 +52,7 @@ void module_load_callback(void * data)
 
     file_name = (char *) data;
 
-    if (!g_strrstr(file_name, ".so")) 
+    if (!strstr(file_name, ".so")) 
       return;
 
 
@@ -60,7 +60,7 @@ void module_load_callback(void * data)
     mod = dlopen(file_full_path, RTLD_LAZY);
     if (!mod)
     {
-        g_printerr("%s could not be opened.\n", file_name);
+        fprintf(stderr, "%s could not be opened.\n", file_name);
         return;
     }
 
@@ -72,7 +72,7 @@ void module_load_callback(void * data)
     initializer = dlsym(mod, file_name);
     if (!initializer)
     {
-        g_printerr("entry point %s not found in %s.\n", file_name, file_full_path);
+        fprintf(stderr, "entry point %s not found in %s.\n", file_name, file_full_path);
         return;
     }
 
@@ -82,7 +82,7 @@ void module_load_callback(void * data)
     mod_array[k][0] = strdup(file_name);
     mod_array[k][1] = mod_c;
 
-    g_printerr("Module loaded: [%s]\n", file_name);
+    fprintf(stderr, "Module loaded: [%s]\n", file_name);
 }
 
 char * module_get_loaded_names(void)

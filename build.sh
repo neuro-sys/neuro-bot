@@ -4,7 +4,7 @@
 
 PYVER="python2.7"
 
-LIBS="jansson libcurl glib-2.0 gio-2.0"
+LIBS="jansson libcurl"
 PYCFLAGS=`$PYVER-config --cflags`
 PYLDFLAGS=`$PYVER-config --libs`
 CFLAGS="`pkg-config $LIBS --cflags` $PYCFLAGS -I. -g -O0 -U_FORTIFY_SOURCE"

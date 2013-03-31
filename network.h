@@ -1,8 +1,6 @@
 #ifndef __NETWORK_H
 #define __NETWORK_H
 
-#include <glib.h>
-
 struct network_t {
     char        * host_name;
     int         port;
