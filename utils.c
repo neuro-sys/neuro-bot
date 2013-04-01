@@ -1,6 +1,5 @@
-#include "neurobotapi.h"
-
 #include <string.h>
+#include <ctype.h>
 
 void n_strip_tags(char * dest, char * src)
 {
@@ -13,7 +12,7 @@ void n_strip_tags(char * dest, char * src)
             inside = 0;
             src++;
         } 
-        
+
         if (*src == '<' || inside) {
             inside = 1;
             src++;
@@ -25,11 +24,15 @@ void n_strip_tags(char * dest, char * src)
     *dest = '\0';
 }
 
-char * n_get_tag_value(char * body, char * tagname)
+char * n_get_tag_value(char * body, const char * tagname)
 {
     char * btag, * etag;
     char buf[1024];
     char * ret;
+    char * t;
+    char tag[1024];
+
+    strncpy(tag, tagname, 1024);
 
     while ( *body != '\0' )
     {
@@ -43,11 +46,17 @@ char * n_get_tag_value(char * body, char * tagname)
         strncpy(buf, btag+1, etag-btag);
         body = etag+1;
 
-        if (!strcasestr(buf, tagname))
+        /* upper-case everything for searching */
+        t = buf;
+        while (*t) *t = toupper(*t), t++;
+        t = tag;
+        while (*t) *t = toupper(*t), t++;
+
+        if (!strstr(buf, tag))
             continue;
 
         ret = strtok(body, "<");
-    
+
         return ret;
     }
 

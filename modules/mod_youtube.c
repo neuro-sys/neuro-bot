@@ -1,13 +1,11 @@
-#include "irc.h"
-#include "global.h"
-#include "curl_wrap.h"
+#include "neurobotapi.h"
 
 #include "json.h"
 
 #include <string.h>
 #include <stdlib.h>
-#include <curl/curl.h>
 #include <stdio.h>
+#include <dlfcn.h>
 
 struct youtube_t {
     double          rating;
@@ -15,6 +13,7 @@ struct youtube_t {
     char            title[100];
     int             valid;
 };
+
 
 static void parse_json_youtube(char * data, struct youtube_t * youtube)
 {

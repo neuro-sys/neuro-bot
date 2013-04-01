@@ -11,6 +11,8 @@
 #include "irc.h"
 #include "module.h"
 #include "py_wrap.h"
+#include "curl_wrap.h"
+#include "utils.h"
 
 static       char       * mod_dir;
 
@@ -42,7 +44,8 @@ void module_load_callback(void * data)
     char file_full_path[250];
     void * mod;
     void * initializer;
-   
+    void (* init_fp) (void ** fp_list);
+    void * fp_list[3];
     char * t;
     struct mod_c_t * mod_c;
 
@@ -75,6 +78,14 @@ void module_load_callback(void * data)
         fprintf(stderr, "entry point %s not found in %s.\n", file_name, file_full_path);
         return;
     }
+
+    fp_list[0] = curl_perform;
+    fp_list[1] = n_strip_tags;
+    fp_list[2] = n_get_tag_value;
+
+    init_fp = dlsym(mod, "init");
+
+    init_fp(fp_list);
 
     mod_c->func = (char * (*)(struct irc_t *)) initializer;
 

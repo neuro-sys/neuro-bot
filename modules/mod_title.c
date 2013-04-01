@@ -1,11 +1,10 @@
-#include "irc.h"
-#include "curl_wrap.h"
-#include "global.h"
 #include "neurobotapi.h"
 
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <dlfcn.h>
+
 
 static int validate_http(char * line)
 {
@@ -44,8 +43,8 @@ static int parse_title(char * dest, char * src)
 
 char * mod_title(struct irc_t * irc)
 {
-    char  title[256];
-    char  * content = NULL;
+    char title[256];
+    char * content = NULL;
     char * t;
 
     if (validate_http(irc->request) < 0 )

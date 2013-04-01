@@ -2,9 +2,7 @@
 #include <time.h>
 #include <stdlib.h>
 
-#include "irc.h"
-#include "global.h"
-
+#include "neurobotapi.h"
 
 char * mod_time(struct irc_t * irc)
 {

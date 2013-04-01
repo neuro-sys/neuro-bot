@@ -1,14 +1,11 @@
-#include "irc.h"
-#include "global.h"
-#include "curl_wrap.h"
 #include "neurobotapi.h"
-
 #include "json.h"
 
 #include <string.h>
 #include <stdlib.h>
-#include <curl/curl.h>
 #include <stdio.h>
+#include <dlfcn.h>
+
 
 static char * parse_json_wiki(char * data)
 {
