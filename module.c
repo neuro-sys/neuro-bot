@@ -195,7 +195,7 @@ void module_init()
 
     getcwd(cur_dir, 1024);
 
-    sprintf(buf, "%s\\%s", cur_dir, "modules");
+    sprintf(buf, "%s/%s", cur_dir, "modules");
     
     mod_dir = strdup(buf);
 
