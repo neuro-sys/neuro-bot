@@ -156,7 +156,7 @@ void py_load_callback(void *data)
     fprintf(stderr, "Python module loaded: [%s]\n", mod_name);
 }
 
-void py_load_mod_hash()
+void py_load_mod_hash(void)
 {
     py_unload_modules();
 

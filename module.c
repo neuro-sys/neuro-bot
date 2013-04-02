@@ -155,7 +155,7 @@ void module_iterate_files(void (*callback)(void * data))
 	if (!dir)
 	{
 		fprintf(stderr, "no modules found, skipping.\n");
-		return NULL;
+		return;
 	}
     while ( (dirent = readdir(dir)) != NULL)
     {
