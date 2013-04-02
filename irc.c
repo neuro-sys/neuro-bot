@@ -62,7 +62,6 @@ static void irc_proc_cmd_privmsg_user_cmd (struct irc_t * irc)
     {
         char * ret = mod_c->func(irc);
         
-
         if (ret)
         {
             snprintf(irc->response, MAX_IRC_MSG, "PRIVMSG %s :%s\r\n", irc->from, ret);
@@ -236,7 +235,7 @@ static void irc_parse_other (struct irc_t * irc, char * line)
 /* message    =  [ ":" prefix SPACE ] command [ params ] crlf */
 void irc_process_line(struct irc_t * irc, char * line)
 {  
-    fprintf(stderr, "%s\n", line);
+    fprintf(stderr, "%s", line);
 
     if ( line[0] == ':' ) 
     {

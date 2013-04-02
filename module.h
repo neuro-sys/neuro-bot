@@ -10,11 +10,10 @@ struct mod_c_t {
     char * (* func)(struct irc_t * irc);
 };
 
-extern char *           module_get_dir(void);
 extern void             module_init(void);
 extern struct mod_c_t * module_find(const char * cmd);
 extern void             module_load(void);
 extern void             module_iterate_files(void (*callback)(void * data));
-
+extern int              py_load_modules(char * mod_dir);
 #endif
 

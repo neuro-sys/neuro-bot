@@ -153,22 +153,18 @@ void py_load_callback(void *data)
     mod_array_py[k][0] = strdup(mod_name);
     mod_array_py[k][1] = mod;
 
-    fprintf(stderr, "Module loaded: [%s]\n", mod_name);
+    fprintf(stderr, "Python module loaded: [%s]\n", mod_name);
 }
 
-void py_load_mod_hash(char * mod_dir)
+void py_load_mod_hash()
 {
     py_unload_modules();
 
     module_iterate_files(py_load_callback);
 }
 
-int py_load_modules(void)
+int py_load_modules(char * mod_dir)
 {
-    char * mod_dir;
-
-    mod_dir = module_get_dir();
-
     signal(SIGINT, signal_handler);
     signal(SIGABRT, signal_handler);
 
@@ -176,7 +172,7 @@ int py_load_modules(void)
 
     set_pymodule_path(mod_dir);
 
-    py_load_mod_hash(mod_dir);
+    py_load_mod_hash();
 
     return 1;
 }

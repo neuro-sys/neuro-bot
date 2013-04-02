@@ -25,11 +25,6 @@ static       char       * mod_dir;
 #define MOD_MAX_NUM 50
 void * mod_array[MOD_MAX_NUM][2];
 
-char * module_get_dir()
-{
-    return mod_dir;
-}
-
 struct mod_c_t * module_find(const char * cmd)
 {
     char t[50];
@@ -113,7 +108,7 @@ void module_load_callback(void * data)
     mod_array[k][0] = strdup(file_name);
     mod_array[k][1] = mod_c;
 
-    fprintf(stderr, "Module loaded: [%s]\n", file_name);
+    fprintf(stderr, "Shared-lib Module loaded: [%s]\n", file_name);
 }
 
 char * module_get_loaded_names(void)
@@ -164,7 +159,16 @@ void module_iterate_files(void (*callback)(void * data))
 
     closedir(dir);
 #else
+  HANDLE hFile;
+  WIN32_FIND_DATA  findData;
+  char dir_buf[1024];
 
+  snprintf(dir_buf, 1024, "%s\\*", mod_dir);
+  hFile = FindFirstFile(dir_buf, &findData);
+
+  do {
+      callback(findData.cFileName);
+  } while (FindNextFile(hFile, &findData));
 #endif
 }
 
@@ -178,20 +182,18 @@ void module_load()
 void module_init()
 {
     char cur_dir[1024];
-    char * modules_path;
+    char buf[1024];
 
     getcwd(cur_dir, 1024);
 
-    modules_path = strdup("modules");
-
-    mod_dir = strdup(modules_path);
-
-    free(modules_path);
+    sprintf(buf, "%s\\%s", cur_dir, "modules");
+    
+    mod_dir = strdup(buf);
 
     module_load();
 
 #ifdef USE_PYTHON_MODULES
-    if ( py_load_modules() < 0 )
+    if ( py_load_modules(mod_dir) < 0 )
         fprintf(stderr, "Could not load python modules, going on without them.\n");
 #endif
 }
