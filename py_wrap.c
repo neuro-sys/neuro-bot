@@ -1,3 +1,5 @@
+#ifdef USE_PYTHON_MODULES
+
 #include <Python.h>
 #include <signal.h>
 #include <assert.h>
@@ -179,3 +181,4 @@ int py_load_modules(void)
     return 1;
 }
 
+#endif

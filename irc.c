@@ -1,5 +1,5 @@
-#include "irc.h"
 #include "global.h"
+#include "irc.h"
 #include "py_wrap.h"
 
 #include <string.h>
@@ -39,7 +39,9 @@ static void irc_proc_cmd_privmsg_user_cmd_admin (struct irc_t * irc)
     else if ( !strncmp(".reload", tokens[0], strlen(".reload")) )
     {
         module_load();
+#ifdef USE_PYTHON_MODULES
         py_load_mod_hash();
+#endif
     }
 }
 
@@ -68,6 +70,7 @@ static void irc_proc_cmd_privmsg_user_cmd (struct irc_t * irc)
             free(ret);
         }
     }
+#ifdef USE_PYTHON_MODULES
     else
     {
         char * ret;
@@ -81,7 +84,7 @@ static void irc_proc_cmd_privmsg_user_cmd (struct irc_t * irc)
             free(ret);
         }
     }
-
+#endif
     if ( !strncmp (irc->session->admin, irc->nick_to_msg, strlen(irc->session->admin)) ) {
         irc_proc_cmd_privmsg_user_cmd_admin (irc);
     }

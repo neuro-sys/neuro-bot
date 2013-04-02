@@ -185,7 +185,9 @@ void module_init()
 
     module_load();
 
+#ifdef USE_PYTHON_MODULES
     if ( py_load_modules() < 0 )
         fprintf(stderr, "Could not load python modules, going on without them.\n");
+#endif
 }
 
