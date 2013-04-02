@@ -1,8 +1,5 @@
 #include "neurobotapi.h"
 
-#include <string.h>
-#include <ctype.h>
-
 char *  (*curl_perform)(char * url);
 void    (*n_strip_tags)(char * dest, char * src);
 char *  (*n_get_tag_value)(char * body, char * tagname);
