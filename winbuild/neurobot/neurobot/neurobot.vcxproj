@@ -10,8 +10,33 @@
       <Platform>Win32</Platform>
     </ProjectConfiguration>
   </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\..\config.c" />
+    <ClCompile Include="..\..\..\curl_wrap.c" />
+    <ClCompile Include="..\..\..\irc.c" />
+    <ClCompile Include="..\..\..\main.c" />
+    <ClCompile Include="..\..\..\module.c" />
+    <ClCompile Include="..\..\..\network.c" />
+    <ClCompile Include="..\..\..\py_wrap.c" />
+    <ClCompile Include="..\..\..\session.c" />
+    <ClCompile Include="..\..\..\socket_unix.c" />
+    <ClCompile Include="..\..\..\socket_win.c" />
+    <ClCompile Include="..\..\..\utils.c" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\config.h" />
+    <ClInclude Include="..\..\..\curl_wrap.h" />
+    <ClInclude Include="..\..\..\global.h" />
+    <ClInclude Include="..\..\..\irc.h" />
+    <ClInclude Include="..\..\..\module.h" />
+    <ClInclude Include="..\..\..\network.h" />
+    <ClInclude Include="..\..\..\py_wrap.h" />
+    <ClInclude Include="..\..\..\session.h" />
+    <ClInclude Include="..\..\..\socket.h" />
+    <ClInclude Include="..\..\..\utils.h" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
-    <ProjectGuid>{426E1083-CC26-4AC3-8107-B241D1BC2F46}</ProjectGuid>
+    <ProjectGuid>{74392ECF-4C8D-4CD8-8AC2-294F38A4DCF2}</ProjectGuid>
     <RootNamespace>neurobot</RootNamespace>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -37,10 +62,8 @@
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <IncludePath>$(ProjectDir)..\..\..\;$(ProjectDir)..\gtk+-bundle\include;$(ProjectDir)..\curl-7.29.0\include;C:\Python27\include;$(IncludePath)</IncludePath>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
-    <LibraryPath>$(ProjectDir)..\gtk+-bundle\lib;$(ProjectDir)..\jansson-2.4\win32\vs2010\Output\Debug;C:\Python27\libs;$(LibraryPath)</LibraryPath>
+    <IncludePath>C:\Python27\include;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\Python27\libs;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -49,15 +72,8 @@
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalDependencies>glib-2.0.lib;gio-2.0.lib;gobject-2.0.lib;libcurl.lib;jansson.lib;Ws2_32.lib;python27.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>python27.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
-    <PreBuildEvent>
-      <Command>$(ProjectDir)build.bat</Command>
-    </PreBuildEvent>
-    <CustomBuildStep>
-      <Command>
-      </Command>
-    </CustomBuildStep>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -72,43 +88,6 @@
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
   </ItemDefinitionGroup>
-  <ItemGroup>
-    <ClCompile Include="..\..\..\config.c" />
-    <ClCompile Include="..\..\..\curl_wrap.c" />
-    <ClCompile Include="..\..\..\irc.c" />
-    <ClCompile Include="..\..\..\log.c" />
-    <ClCompile Include="..\..\..\main.c" />
-    <ClCompile Include="..\..\..\module.c" />
-    <ClCompile Include="..\..\..\modules\mod_time.c" />
-    <ClCompile Include="..\..\..\modules\mod_title.c" />
-    <ClCompile Include="..\..\..\modules\mod_wiki.c" />
-    <ClCompile Include="..\..\..\modules\mod_youtube.c" />
-    <ClCompile Include="..\..\..\network.c" />
-    <ClCompile Include="..\..\..\py_wrap.c" />
-    <ClCompile Include="..\..\..\session.c" />
-    <ClCompile Include="..\..\..\socket_unix.c" />
-    <ClCompile Include="..\..\..\socket_win.c" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="..\..\..\config.h" />
-    <ClInclude Include="..\..\..\curl_wrap.h" />
-    <ClInclude Include="..\..\..\global.h" />
-    <ClInclude Include="..\..\..\irc.h" />
-    <ClInclude Include="..\..\..\log.h" />
-    <ClInclude Include="..\..\..\module.h" />
-    <ClInclude Include="..\..\..\modules\mod_example.h" />
-    <ClInclude Include="..\..\..\modules\mod_time.h" />
-    <ClInclude Include="..\..\..\modules\mod_title.h" />
-    <ClInclude Include="..\..\..\modules\mod_wiki.h" />
-    <ClInclude Include="..\..\..\modules\mod_youtube.h" />
-    <ClInclude Include="..\..\..\network.h" />
-    <ClInclude Include="..\..\..\py_wrap.h" />
-    <ClInclude Include="..\..\..\session.h" />
-    <ClInclude Include="..\..\..\socket.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="..\..\..\neurobot.conf" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

@@ -5,6 +5,7 @@
   #define __func__ __FUNCTION__
   #pragma warning(disable : 4996)
 #define snprintf _snprintf
+#define getcwd _getcwd
 #endif
 
 #endif

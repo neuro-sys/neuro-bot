@@ -33,7 +33,7 @@ static size_t WriteMemoryCallback(void * contents, size_t size, size_t nmemb, vo
     return realsize;
 }
 
-__attribute__((visibility("default")))char * curl_perform(char * url)
+char * curl_perform(char * url)
 {
     CURL * curl;
     struct mem_block_t chunk;

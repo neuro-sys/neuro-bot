@@ -6,9 +6,13 @@
 #include <stdlib.h>
 #include <string.h>
 
+#ifndef _WIN32
 #include <sys/socket.h>
-#include <sys/types.h>
 #include <unistd.h>
+#else
+#include <io.h>
+#endif
+#include <sys/types.h>
 
 /*
  * via ii@suckless project.

@@ -1,10 +1,16 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/types.h>
+#include <string.h>
+
+#ifndef _WIN32
 #include <unistd.h>
 #include <dirent.h>
 #include <dlfcn.h>
-#include <string.h>
+#else
+#include <windows.h>
+#include <direct.h>
+#endif
 
 #include "config.h"
 #include "global.h"
@@ -32,8 +38,8 @@ struct mod_c_t * module_find(const char * cmd)
     snprintf(t, sizeof t, "mod_%s", cmd);
 
     for (k = 0; mod_array[k][0] != NULL; k++)
-        if (!strcmp(mod_array[k][0], t))
-            return mod_array[k][1];
+        if (!strcmp((char *) mod_array[k][0], t))
+            return (struct mod_c_t *) mod_array[k][1];
 
     return NULL;
 }
@@ -60,7 +66,11 @@ void module_load_callback(void * data)
 
 
     snprintf(file_full_path, 250, "%s/%s", mod_dir, file_name);
+#ifdef _WIN32
+    mod = LoadLibrary(file_full_path);
+#else
     mod = dlopen(file_full_path, RTLD_LAZY);
+#endif
     if (!mod)
     {
         fprintf(stderr, "%s could not be opened.\n", file_name);
@@ -72,7 +82,11 @@ void module_load_callback(void * data)
     *t = '\0';
 
     mod_c->mod_name = strdup(file_name);
+#ifdef _WIN32
+    initializer = GetProcAddress((HMODULE) mod, file_name);
+#else
     initializer = dlsym(mod, file_name);
+#endif
     if (!initializer)
     {
         fprintf(stderr, "entry point %s not found in %s.\n", file_name, file_full_path);
@@ -83,8 +97,11 @@ void module_load_callback(void * data)
     fp_list[1] = n_strip_tags;
     fp_list[2] = n_get_tag_value;
 
+#ifdef _WIN32
+    init_fp = (void (__cdecl *)(void **))GetProcAddress((HMODULE) mod, "init");
+#else
     init_fp = dlsym(mod, "init");
-
+#endif
     init_fp(fp_list);
 
     mod_c->func = (char * (*)(struct irc_t *)) initializer;
@@ -108,7 +125,7 @@ char * module_get_loaded_names(void)
     for (k = 0; mod_array[k][0] != NULL; k++)
     {
         strcat(buf, " [");
-        strcat(buf, mod_array[k][0]);
+        strcat(buf, (char *) mod_array[k][0]);
         strcat(buf, "]");
     }
 
@@ -131,6 +148,7 @@ void module_unload_all(void)
 
 void module_iterate_files(void (*callback)(void * data))
 {
+#if 0
     DIR * dir;
     struct dirent * dirent;
 
@@ -142,6 +160,7 @@ void module_iterate_files(void (*callback)(void * data))
     }
 
     closedir(dir);
+#endif
 }
 
 void module_load()
