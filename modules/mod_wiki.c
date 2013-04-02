@@ -4,7 +4,6 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include <dlfcn.h>
 
 
 static char * parse_json_wiki(char * data)
@@ -16,6 +15,9 @@ static char * parse_json_wiki(char * data)
     temp = malloc(MAX_IRC_MSG);
 
     root = json_parse(data);
+
+    if (!root)
+      return NULL;
 
     query = root->u.object.values[0].value;
     if (!query) return NULL;
@@ -35,6 +37,9 @@ static char * parse_json_wiki(char * data)
     return temp;
 }
 
+#ifdef _WIN32
+__declspec(dllexport)
+#endif
 char * mod_wiki(struct irc_t * irc)
 {
     char * ret;

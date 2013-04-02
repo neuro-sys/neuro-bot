@@ -33,9 +33,9 @@ int network_read_line(struct network_t * network, char * buf)
       ret = recv(network->sockfd, &ch, 1, 0);
       if (ret > 0)
       {
-        *buf++ = ch;
         if (ch == '\n')
           break;
+        *buf++ = ch;
       }
     }
     *buf = '\0';
