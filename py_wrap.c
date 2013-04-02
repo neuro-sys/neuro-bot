@@ -47,11 +47,11 @@ void py_unload_modules(void)
         struct py_module_t * p;
 
         p = mod_array_py[k][1];
-
+#ifndef _WIN32
         Py_DECREF(p->pFunc);
         Py_DECREF(p->pModule);
         Py_DECREF(p->pName);
-
+#endif
         free(mod_array_py[k][0]);
         free(mod_array_py[k][1]);
 
