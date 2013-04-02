@@ -152,6 +152,11 @@ void module_iterate_files(void (*callback)(void * data))
 
     dir = opendir(mod_dir);
 
+	if (!dir)
+	{
+		fprintf(stderr, "no modules found, skipping.\n");
+		return NULL;
+	}
     while ( (dirent = readdir(dir)) != NULL)
     {
         callback(dirent->d_name);
@@ -165,7 +170,11 @@ void module_iterate_files(void (*callback)(void * data))
 
   snprintf(dir_buf, 1024, "%s\\*", mod_dir);
   hFile = FindFirstFile(dir_buf, &findData);
-
+  if (hFile == INVALID_HANDLE_VALUE)
+	{
+		fprintf(stderr, "no modules found, skipping.\n");
+		return;
+	}
   do {
       callback(findData.cFileName);
   } while (FindNextFile(hFile, &findData));
