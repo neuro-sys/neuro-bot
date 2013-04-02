@@ -1,10 +1,10 @@
+#include "global.h"
 #ifdef USE_PYTHON_MODULES
 
 #include <Python.h>
 #include <signal.h>
 #include <assert.h>
 
-#include "global.h"
 #include "config.h"
 #include "irc.h"
 #include "module.h"
@@ -28,7 +28,7 @@ char * py_get_loaded_names(void)
     for (k = 0; mod_array_py[k][0] != NULL; k++)
     {
         strcat(buf, " [");
-        strcat(buf, mod_array_py[k][0]);
+        strcat(buf, (char *) mod_array_py[k][0]);
         strcat(buf, "]");
     }
 
@@ -73,8 +73,8 @@ struct py_module_t * py_find_loaded_name(char * cmd)
     strcat(t, cmd);
 
     for (k = 0; mod_array_py[k][0] != NULL; k++)
-        if (!strcmp(mod_array_py[k][0], t))
-            return mod_array_py[k][1];
+        if (!strcmp((char *) mod_array_py[k][0], t))
+            return (struct py_module_t *) mod_array_py[k][1];
 
     return NULL;
 }

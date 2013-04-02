@@ -61,9 +61,12 @@ void module_load_callback(void * data)
 
     file_name = (char *) data;
 
+#ifndef _WIN32
     if (!strstr(file_name, ".so")) 
+#else
+    if (!strstr(file_name, ".dll"))
+#endif
       return;
-
 
     snprintf(file_full_path, 250, "%s/%s", mod_dir, file_name);
 #ifdef _WIN32
@@ -148,7 +151,7 @@ void module_unload_all(void)
 
 void module_iterate_files(void (*callback)(void * data))
 {
-#if 0
+#ifndef _WIN32
     DIR * dir;
     struct dirent * dirent;
 
@@ -160,6 +163,8 @@ void module_iterate_files(void (*callback)(void * data))
     }
 
     closedir(dir);
+#else
+
 #endif
 }
 
