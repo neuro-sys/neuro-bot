@@ -12,7 +12,17 @@ void config_load(struct session_t * session)
     char * token;
 
     file = fopen(CONFIG_FILE, "r");
+	if (!file) 
+	{	
+		fprintf(stderr, "No config file found, using defaults.\n");
+		session->nickname = "neurobot";
+		session->password = "";
+		session->admin = "neuro_sys";
+		session->network.host_name = "irc.freenode.net";
+		session->network.port = 6667;
 
+		return;
+	}
     while (fgets(buf, 1024, file))
     {
         token = strtok(buf, "=");
