@@ -13,7 +13,6 @@ struct youtube_t {
     int             valid;
 };
 
-
 static void parse_json_youtube(char * data, struct youtube_t * youtube)
 {
     json_value * root, * entry, * title, * rating, * viewcount;

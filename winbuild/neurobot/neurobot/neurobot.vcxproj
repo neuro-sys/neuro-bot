@@ -14,7 +14,6 @@
     <ClCompile Include="..\..\..\config.c" />
     <ClCompile Include="..\..\..\curl_wrap.c" />
     <ClCompile Include="..\..\..\irc.c" />
-    <ClCompile Include="..\..\..\json.c" />
     <ClCompile Include="..\..\..\main.c" />
     <ClCompile Include="..\..\..\module.c" />
     <ClCompile Include="..\..\..\network.c" />
@@ -29,7 +28,6 @@
     <ClInclude Include="..\..\..\curl_wrap.h" />
     <ClInclude Include="..\..\..\global.h" />
     <ClInclude Include="..\..\..\irc.h" />
-    <ClInclude Include="..\..\..\json.h" />
     <ClInclude Include="..\..\..\module.h" />
     <ClInclude Include="..\..\..\network.h" />
     <ClInclude Include="..\..\..\py_wrap.h" />

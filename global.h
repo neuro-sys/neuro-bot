@@ -4,10 +4,14 @@
 #define USE_PYTHON_MODULES
 
 #ifdef _WIN32
-  #define __func__ __FUNCTION__
+
   #pragma warning(disable : 4996)
-#define snprintf _snprintf
-#define getcwd _getcwd
+
+  #define __func__ __FUNCTION__
+  
+  #define snprintf _snprintf
+  #define getcwd _getcwd
+  
 #endif
 
 #endif
