@@ -65,6 +65,10 @@
     <IncludePath>C:\Python27\include;$(IncludePath)</IncludePath>
     <LibraryPath>C:\Python27\libs;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <IncludePath>C:\Python27\include;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\Python27\libs;$(LibraryPath)</LibraryPath>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
