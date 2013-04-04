@@ -1,6 +1,34 @@
 #include <string.h>
 #include <ctype.h>
 
+#include "json.h"
+
+json_value * n_json_get_object(json_value * object, char * name)
+{
+    int i;
+
+    switch (object->type)
+    {
+    case json_object:
+      for (i = 0; i < object->u.object.length; i++) 
+        {
+            if (strcmp(object->u.object.values[i].name, name))
+              return object->u.object.values[i].value;
+        }
+    }
+    
+}
+
+json_value * n_json_parse(char * data)
+{
+    return json_parse(data);
+}
+
+char * n_json_free(json_value * object)
+{
+    json_value_free(object);
+}
+
 void n_strip_tags(char * dest, char * src)
 {
     int inside = 0;

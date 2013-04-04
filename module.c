@@ -102,7 +102,7 @@ void module_load_callback(void * data)
 #endif
     init_fp(fp_list);
 
-    mod_c->func = (char * (*)(struct irc_t *)) initializer;
+    mod_c->func = (void (*)(struct irc_t *, char *)) initializer;
 
     for (k = 0; mod_array[k][0] != NULL; k++) {}
     mod_array[k][0] = strdup(file_name);

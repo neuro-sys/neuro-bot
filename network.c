@@ -45,6 +45,13 @@ int network_read_line(struct network_t * network, char * buf)
 
 void network_send_message(struct network_t * network, char * message)
 {
+    int len;
+
+    len = strlen(message);
+    
+    if (message[len-2] == '\r' && message[len-1] != '\n')
+        strcat(message, "\r\n");
+
     send(network->sockfd, message, strlen(message), 0);
 }
 

@@ -40,9 +40,8 @@ static char * parse_json_wiki(char * data)
 #ifdef _WIN32
 __declspec(dllexport)
 #endif
-char * mod_wiki(struct irc_t * irc)
+void mod_wiki(struct irc_t * irc, char * reply_msg)
 {
-    char * ret;
     char * p, * t;
     char * content;
     char url_path[512];
@@ -52,7 +51,7 @@ char * mod_wiki(struct irc_t * irc)
     p = strchr(irc->request, ' ');
 
     if (!p++)
-        return strdup("");
+        return;
     
     i = strlen(p);
 
@@ -77,16 +76,9 @@ char * mod_wiki(struct irc_t * irc)
     p = parse_json_wiki(content);
    
     if (!p)
-        return strdup("could not parse json wiki");
+        return;
 
-    t = malloc(strlen(p));
+    n_strip_tags(reply_msg, p);
 
-    n_strip_tags(t, p);
-
-    ret = strdup(t);
-
-    free(t);
     free(content);
-
-    return ret;
 }

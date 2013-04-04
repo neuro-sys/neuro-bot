@@ -60,13 +60,14 @@ static void irc_proc_cmd_privmsg_user_cmd (struct irc_t * irc)
 
     if ( (mod_c = module_find(token+1)) )
     {
-        char * ret = mod_c->func(irc);
-        
-        if (ret)
-        {
-            snprintf(irc->response, MAX_IRC_MSG, "PRIVMSG %s :%s\r\n", irc->from, ret);
+        char reply_msg[MAX_IRC_MSG];
 
-            free(ret);
+        reply_msg[0] = '\0';
+        mod_c->func(irc, reply_msg);
+        
+        if (reply_msg[0])
+        {
+            snprintf(irc->response, MAX_IRC_MSG, "PRIVMSG %s :%s\r\n", irc->from, reply_msg);
         }
     }
 #ifdef USE_PYTHON_MODULES
@@ -117,9 +118,9 @@ static void irc_proc_cmd_privmsg (struct irc_t * irc)
     {
 
         struct mod_c_t * mod;
-        char * ret;
+        char ret[MAX_IRC_MSG];
 
-        ret = NULL;
+        ret[0] = '\0';
 
         if ( strstr (irc->request, "youtube.com") || strstr(irc->request, "youtu.be") )
         {
@@ -133,14 +134,12 @@ static void irc_proc_cmd_privmsg (struct irc_t * irc)
 
         if (mod)
         {
-            ret = mod->func(irc); 
+            mod->func(irc, ret); 
         }
 
-        if (ret)
+        if (ret[0])
         {
             snprintf(irc->response, MAX_IRC_MSG, "PRIVMSG %s :%s\r\n", irc->from, ret);
-
-            free(ret);
         }
     }  
 }

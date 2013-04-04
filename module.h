@@ -7,7 +7,7 @@ struct mod_c_t {
     char * grep_keyword;
     void * mod;
     char * mod_name;
-    char * (* func)(struct irc_t * irc);
+    void (* func)(struct irc_t * irc, char * reply_msg);
 };
 
 extern void             module_init(void);

@@ -42,30 +42,27 @@ static int parse_title(char * dest, char * src)
 #ifdef _WIN32
 __declspec(dllexport)
 #endif
-char * mod_title(struct irc_t * irc)
+void mod_title(struct irc_t * irc, char * reply_msg)
 {
-    char title[256];
     char * content = NULL;
     char * t;
 
     if (validate_http(irc->request) < 0 )
-        return strdup("invalid url.");
+        return;
 
     content = curl_perform(irc->request);
 
-    if (!content) return strdup("couldn't fetch the content");
+    if (!content) return;
 
-    if ( parse_title(title, content) > 0 ) {
+    if ( parse_title(reply_msg, content) > 0 ) {
         free(content);
-        t = title;
+        t = reply_msg;
         while (*t != '\0')
             if (*t++ == '\n')
                 t[-1] = ' ';
-
-        return strdup(title);
     }
 
-    return NULL;
+    return;
 }
 
 

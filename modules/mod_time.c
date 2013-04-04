@@ -7,15 +7,11 @@
 #ifdef _WIN32
 __declspec(dllexport)
 #endif
-char * mod_time(struct irc_t * irc)
+void mod_time(struct irc_t * irc, char * reply_msg)
 {
     char * ret;
     time_t now;
 
-    ret = malloc(510);
-
     time(&now);
-    sprintf(ret, "%s", ctime(&now));
-
-    return ret;
+    sprintf(reply_msg, "%s", ctime(&now));
 }

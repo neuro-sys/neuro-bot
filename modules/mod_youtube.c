@@ -58,9 +58,8 @@ static void proc_info_youtube(struct irc_t * irc, struct youtube_t * youtube)
 #ifdef _WIN32
 __declspec(dllexport)
 #endif
-char * mod_youtube(struct irc_t * irc)
+char * mod_youtube(struct irc_t * irc, char * reply_msg)
 {
-    char ret[510];
     struct youtube_t * youtube;
 
     youtube = malloc(sizeof (struct youtube_t));
@@ -69,10 +68,9 @@ char * mod_youtube(struct irc_t * irc)
 
     if (youtube->valid)
     {
-        sprintf(ret, "[%s] - [rating: %.2f/5, viewed: %s]", 
+        sprintf(reply_msg, "[%s] - [rating: %.2f/5, viewed: %s]", 
                 youtube->title, youtube->rating, youtube->view_count);
     }
     free(youtube);
 
-    return strdup(ret);
 }
