@@ -5,7 +5,6 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
-#include <dlfcn.h>
 
 struct youtube_t {
     double          rating;
@@ -56,7 +55,9 @@ static void proc_info_youtube(struct irc_t * irc, struct youtube_t * youtube)
     free(content);
 }
 
-
+#ifdef _WIN32
+__declspec(dllexport)
+#endif
 char * mod_youtube(struct irc_t * irc)
 {
     char ret[510];

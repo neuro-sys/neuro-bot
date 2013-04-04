@@ -4,6 +4,9 @@
 
 #include "neurobotapi.h"
 
+#ifdef _WIN32
+__declspec(dllexport)
+#endif
 char * mod_time(struct irc_t * irc)
 {
     char * ret;

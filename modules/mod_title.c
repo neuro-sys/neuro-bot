@@ -3,8 +3,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <dlfcn.h>
-
 
 static int validate_http(char * line)
 {
@@ -41,6 +39,9 @@ static int parse_title(char * dest, char * src)
     return -1;
 }
 
+#ifdef _WIN32
+__declspec(dllexport)
+#endif
 char * mod_title(struct irc_t * irc)
 {
     char title[256];
