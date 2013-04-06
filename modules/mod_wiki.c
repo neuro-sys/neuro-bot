@@ -5,11 +5,10 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-
 static char * parse_json_wiki(char * data)
 {
     char * temp;
-    json_value * root, * query, * pages, * id, * extract;
+    json_value * root, * extract;
     int i;
 
     temp = malloc(MAX_IRC_MSG);
@@ -19,20 +18,13 @@ static char * parse_json_wiki(char * data)
     if (!root)
       return NULL;
 
-    query = root->u.object.values[0].value;
-    if (!query) return NULL;
-
-    pages = query->u.object.values[1].value;
-    if (!pages) return NULL;
-
-    id = pages->u.object.values[0].value;
-    if (!id || id->u.string.length == 3)
-        return "Not found.";
-
-    extract = id->u.object.values[3].value;
-    if (!extract) return "";
+    extract = n_json_find_object(root, "extract");
+    if (!extract)
+        return NULL;
 
     strncpy(temp, extract->u.string.ptr, MAX_IRC_MSG);
+
+    json_value_free(root);
 
     return temp;
 }

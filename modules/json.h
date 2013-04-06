@@ -221,6 +221,7 @@ json_value * json_parse_ex
 
 void json_value_free (json_value *);
 
+json_value * n_json_find_object(json_value * parent, char * name);
 
 #ifdef __cplusplus
    } /* extern "C" */

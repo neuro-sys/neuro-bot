@@ -15,26 +15,29 @@ struct youtube_t {
 
 static void parse_json_youtube(char * data, struct youtube_t * youtube)
 {
-    json_value * root, * entry, * title, * rating, * viewcount;
+    json_value * root, * title, * _t, * rating, * viewcount;
 
     root = json_parse(data);
 
-    entry = root->u.object.values[2].value;
-    if (!entry) return;
+    title = n_json_find_object(root, "title");
 
-    title = entry->u.object.values[8].value->u.object.values[0].value;
     if (!title) return;
-    strcpy(youtube->title, title->u.string.ptr);
 
-    rating = entry->u.object.values[14].value->u.object.values[0].value;
+    _t = n_json_find_object(title, "$t");
+    strcpy(youtube->title, _t->u.string.ptr);
+
+    rating = n_json_find_object(root, "average");
     if (!rating) return;
     youtube->rating = rating->u.dbl;
 
-    viewcount = entry->u.object.values[15].value->u.object.values[1].value;
+    viewcount = n_json_find_object(root, "viewCount");
+
     if (!viewcount) return;
     strcpy(youtube->view_count, viewcount->u.string.ptr);
 
     youtube->valid = 1;
+
+    json_value_free(root);
 }
 
 static void proc_info_youtube(struct irc_t * irc, struct youtube_t * youtube)
