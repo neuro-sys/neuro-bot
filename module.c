@@ -111,25 +111,6 @@ void module_load_callback(void * data)
     fprintf(stderr, "Shared-lib Module loaded: [%s]\n", file_name);
 }
 
-char * module_get_loaded_names(void)
-{
-    char * buf;
-    int k;
-
-    buf = malloc(510);
-
-    buf[0] = '\0';
-
-    for (k = 0; mod_array[k][0] != NULL; k++)
-    {
-        strcat(buf, " [");
-        strcat(buf, (char *) mod_array[k][0]);
-        strcat(buf, "]");
-    }
-
-    return buf;
-}
-
 void module_unload_all(void)
 {
     int k;

@@ -16,25 +16,6 @@ struct py_module_t {
 
 void * mod_array_py[100][2];
 
-char * py_get_loaded_names(void)
-{
-    char * buf;
-    int k;
-
-    buf = malloc(510);
-
-    buf[0] = '\0';
-
-    for (k = 0; mod_array_py[k][0] != NULL; k++)
-    {
-        strcat(buf, " [");
-        strcat(buf, (char *) mod_array_py[k][0]);
-        strcat(buf, "]");
-    }
-
-    return buf;
-}
-
 static void signal_handler(int signum)
 {
     exit(signum);
