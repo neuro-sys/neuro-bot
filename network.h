@@ -3,7 +3,7 @@
 
 struct network_t {
     char        * host_name;
-    int         port;
+    char        * port;
     int         sockfd;
 };
 

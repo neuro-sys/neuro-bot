@@ -16,11 +16,9 @@
 
 void network_connect(struct network_t * network)
 {
-    char port_str[10];
     int sockfd;
 
-    sprintf(port_str, "%d", network->port);
-    sockfd = t_connect(network->host_name, port_str);
+    sockfd = t_connect(network->host_name, network->port);
     network->sockfd = sockfd;
 }
 
