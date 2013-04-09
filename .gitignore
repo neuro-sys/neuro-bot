@@ -16,7 +16,6 @@ Release
 *.opensdf
 *.o
 irc-client
-Makefile
 Makefile.in
 aconfig.h*
 autom4te.cache/
