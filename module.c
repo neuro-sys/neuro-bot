@@ -52,8 +52,6 @@ void module_load_callback(void * data)
 
     int k;
 
-    mod_c = malloc(sizeof (struct mod_c_t));
-
     file_name = (char *) data;
 
 #ifndef _WIN32
@@ -74,6 +72,8 @@ void module_load_callback(void * data)
         fprintf(stderr, "%s could not be opened.\n", file_name);
         return;
     }
+
+    mod_c = malloc(sizeof (struct mod_c_t));
 
     mod_c->mod = mod;
     t = strchr(file_name, '.');
