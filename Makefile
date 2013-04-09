@@ -1,6 +1,6 @@
 CC		   = gcc
-CFLAGS	   = -I. -Wall -g
-LDFLAGS	   = -ldl
+CFLAGS	   = -I. -Wall -g -O0
+LDFLAGS	   = -ldl -g -O0
 OBJS	   =config.o \
 		   curl_wrap.o \
 		   irc.o \
