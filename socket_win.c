@@ -34,6 +34,8 @@ int t_connect_win(char *host, char *port)
         return -1;
     }
 
+    freeaddrinfo(res);
+
     return sockfd;
 }
 #endif

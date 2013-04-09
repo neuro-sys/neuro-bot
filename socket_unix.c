@@ -29,6 +29,8 @@ int t_connect_unix(char *host, char *port)
     return -1;
   }
 
+  freeaddrinfo(res);
+
   return sockfd;
 }
 #endif
