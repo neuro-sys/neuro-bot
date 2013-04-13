@@ -1,3 +1,4 @@
+CC			= gcc
 LDFLAGS		= -lm
 LDFLAGS		+= -fPIC -Wall -g -O0 -Wl,--no-undefined --shared
 

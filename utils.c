@@ -34,6 +34,9 @@ char * n_get_tag_value(char * body, const char * tagname)
 
     strncpy(tag, tagname, 1024);
 
+    t = tag;
+    while (*t) *t = toupper(*t), t++;
+
     while ( *body != '\0' )
     {
         btag = strchr(body, '<');
@@ -49,13 +52,15 @@ char * n_get_tag_value(char * body, const char * tagname)
         /* upper-case everything for searching */
         t = buf;
         while (*t) *t = toupper(*t), t++;
-        t = tag;
-        while (*t) *t = toupper(*t), t++;
 
         if (!strstr(buf, tag))
             continue;
 
         ret = strtok(body, "<");
+        t = ret-1;
+        while (*++t != '\0')
+            if (*t == '\n' || *t == '\t')
+                *t = ' ';
 
         return ret;
     }

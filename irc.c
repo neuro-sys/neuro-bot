@@ -25,19 +25,12 @@ static void irc_proc_cmd_privmsg_user_cmd_admin (struct irc_t * irc)
         strncpy(tokens[1], t, MAX_IRC_MSG);
         
     if ( !strncmp(".join", tokens[0], strlen(".join")) )
-    {
         sprintf(irc->response, "JOIN %s\r\n", tokens[1]);
-    } 
     else if (!strncmp(".part", tokens[0], strlen(".part")))
-    {
         sprintf(irc->response, "PART %s\r\n", tokens[1] );
-    }
     else if ( !strncmp(".raw", tokens[0], strlen(".raw")) )
-    {
         sprintf(irc->response, "%s\r\n", tokens[1]);
-    }
-    else if ( !strncmp(".reload", tokens[0], strlen(".reload")) )
-    {
+    else if ( !strncmp(".reload", tokens[0], strlen(".reload")) ) {
         module_load();
 #ifdef USE_PYTHON_MODULES
         py_load_mod_hash();
@@ -66,9 +59,7 @@ static void irc_proc_cmd_privmsg_user_cmd (struct irc_t * irc)
         mod_c->func(irc, reply_msg);
         
         if (reply_msg[0])
-        {
             snprintf(irc->response, MAX_IRC_MSG, "PRIVMSG %s :%s\r\n", irc->from, reply_msg);
-        }
     }
 #ifdef USE_PYTHON_MODULES
     else
@@ -76,18 +67,15 @@ static void irc_proc_cmd_privmsg_user_cmd (struct irc_t * irc)
         char * ret;
         struct py_module_t * mod = py_find_loaded_name (token); 
 
-        if (mod)
-        {
+        if (mod) {
             ret = py_call_module ( mod, irc );
             snprintf( irc->response, MAX_IRC_MSG , "PRIVMSG %s :%s\r\n", irc->from, ret );
-
             free(ret);
         }
     }
 #endif
-    if ( !strncmp (irc->session->admin, irc->nick_to_msg, strlen(irc->session->admin)) ) {
+    if ( !strncmp (irc->session->admin, irc->nick_to_msg, strlen(irc->session->admin)) ) 
         irc_proc_cmd_privmsg_user_cmd_admin (irc);
-    }
 }
 
 static void irc_proc_cmd_privmsg (struct irc_t * irc)
@@ -103,44 +91,28 @@ static void irc_proc_cmd_privmsg (struct irc_t * irc)
     
     strncpy(token, t, MAX_IRC_MSG);
 
-    strcpy (irc->from, irc->srv_msg.params);
-    strcpy (irc->nick_to_msg, token);
+    strcpy(irc->from, irc->srv_msg.params);
+    strcpy(irc->nick_to_msg, token);
 
     /* If the message sent in private, then reply to the sender instead */
     if (!strncmp(irc->srv_msg.params, irc->session->nickname, strlen(irc->srv_msg.params)))
         strcpy(irc->from, irc->nick_to_msg);
 
     if ( irc->request[0] == '.' ) 
-    {
         irc_proc_cmd_privmsg_user_cmd (irc);
-    } 
-    else if ( strstr (irc->request, "http:") || strstr(irc->request, "https:") )
-    {
-
+    else {
         struct mod_c_t * mod;
         char ret[MAX_IRC_MSG];
 
+        mod = module_find_by_keyword(irc->request);
+
         ret[0] = '\0';
 
-        if ( strstr (irc->request, "youtube.com") || strstr(irc->request, "youtu.be") )
-        {
-            mod = module_find("youtube");
-        }
-        else
-        {
-
-            mod = module_find("title");
-        }
-
         if (mod)
-        {
             mod->func(irc, ret); 
-        }
 
         if (ret[0])
-        {
             snprintf(irc->response, MAX_IRC_MSG, "PRIVMSG %s :%s\r\n", irc->from, ret);
-        }
     }  
 }
 
@@ -151,13 +123,9 @@ static void irc_proc_cmd (struct irc_t * irc)
     cmd = irc->srv_msg.command;
 
     if ( !strncmp ("PRIVMSG", cmd, strlen("PRIVMSG")) ) 
-    {
         irc_proc_cmd_privmsg (irc);
-    } 
     else if ( !strncmp ("PING", cmd, strlen("PING")) )
-    {
         snprintf (irc->response, MAX_IRC_MSG, "PONG %s\r\n", irc->request);
-    }
 }
 
 /*     message    =  [ ":" prefix SPACE ] command [ params ] crlf */
@@ -236,13 +204,10 @@ void irc_process_line(struct irc_t * irc, char * line)
 {  
     fprintf(stderr, "%s\n", line);
 
-    if ( line[0] == ':' ) 
-    {
+    if ( line[0] == ':' ) {
         if (irc_parse_prefix(irc, line) < 0)
             return;
-    } 
-    else 
-    {
+    } else {
         irc_parse_other(irc, line);   
     }
 

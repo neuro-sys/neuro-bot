@@ -23,7 +23,9 @@
 static       char       * mod_dir;
 
 #define MOD_MAX_NUM 50
-void * mod_array[MOD_MAX_NUM][2];
+/* mod_array { "mod_name", struct mod_c_t *, char ** keywords */
+enum mod_array_t { mod_array_t_mod_name, mod_array_t_mod_c, mod_array_t_keywords, mod_array_t_NUM };
+void * mod_array[MOD_MAX_NUM][mod_array_t_NUM];
 
 struct mod_c_t * module_find(const char * cmd)
 {
@@ -33,9 +35,28 @@ struct mod_c_t * module_find(const char * cmd)
     snprintf(t, sizeof t, "mod_%s", cmd);
 
     for (k = 0; mod_array[k][0] != NULL; k++)
-        if (!strcmp((char *) mod_array[k][0], t))
-            return (struct mod_c_t *) mod_array[k][1];
+        if (!strcmp((char *) mod_array[k][mod_array_t_mod_name], t))
+            return (struct mod_c_t *) mod_array[k][mod_array_t_mod_c];
 
+    return NULL;
+}
+
+struct mod_c_t * module_find_by_keyword(const char * line)
+{
+    char ** keywords;
+    int i;
+
+    for (i = 0; *mod_array[i] != NULL; i++) {
+        keywords = (char **) mod_array[i][mod_array_t_keywords];
+
+        if (*keywords == NULL)
+            continue;
+
+        while (*keywords)
+            if (strstr(line, *keywords++))
+                return (struct mod_c_t *) mod_array[i][mod_array_t_mod_c];
+    }
+               
     return NULL;
 }
 
@@ -45,10 +66,11 @@ void module_load_callback(void * data)
     char file_full_path[250];
     void * mod;
     void * initializer;
-    void (* init_fp) (void ** fp_list);
+    void (* init_fp) (void ** fp_list, char ***);
     void * fp_list[3];
     char * t;
     struct mod_c_t * mod_c;
+    char ** keywords;
 
     int k;
 
@@ -96,19 +118,33 @@ void module_load_callback(void * data)
     fp_list[2] = n_get_tag_value;
 
 #ifdef _WIN32
-    init_fp = (void (__cdecl *)(void **))GetProcAddress((HMODULE) mod, "init");
+    init_fp = (void (__cdecl *)(void **, char ***))GetProcAddress((HMODULE) mod, "init");
 #else
     init_fp = dlsym(mod, "init");
 #endif
-    init_fp(fp_list);
+    init_fp(fp_list, &keywords);
 
+    mod_c->keywords = keywords;
     mod_c->func = (void (*)(struct irc_t *, char *)) initializer;
 
-    for (k = 0; mod_array[k][0] != NULL; k++) {}
-    mod_array[k][0] = strdup(file_name);
-    mod_array[k][1] = mod_c;
+    for (k = 0; mod_array[k][mod_array_t_mod_name] != NULL; k++) {}
+    mod_array[k][mod_array_t_mod_name] = strdup(file_name);
+    mod_array[k][mod_array_t_mod_c]    = mod_c;
+    mod_array[k][mod_array_t_keywords] = keywords;
 
-    fprintf(stderr, "Shared-lib Module loaded: [%s]\n", file_name);
+    fprintf(stderr, "Shared-lib Module loaded: [%s]", file_name);
+
+    if (*keywords) {
+        fprintf(stderr, " with keywords: ");
+        while (*keywords != NULL) {
+            fprintf(stderr, "\"%s\"", *keywords++);
+            if (*keywords)
+                fprintf(stderr, ", ");
+        }
+        fprintf(stderr, ".");
+    }
+
+    fprintf(stderr, "\n");
 }
 
 void module_unload_all(void)
@@ -117,11 +153,11 @@ void module_unload_all(void)
 
     for (k = 0; mod_array[k][0] != NULL; k++)
     {
-        free(mod_array[k][0]);
-        free(mod_array[k][1]);
+        free(mod_array[k][mod_array_t_mod_name]);
+        free(mod_array[k][mod_array_t_mod_c]);
 
-        mod_array[k][0] = NULL;
-        mod_array[k][1] = NULL;
+        mod_array[k][mod_array_t_mod_name] = NULL;
+        mod_array[k][mod_array_t_mod_c] = NULL;
     }
 }
 

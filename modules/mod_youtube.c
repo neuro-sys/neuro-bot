@@ -6,6 +6,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+char * keywords[MAX_KEYWORDS] = { "youtube.com", "youtu.be" };
+
 struct youtube_t {
     double          rating;
     char            view_count[20];
@@ -70,7 +72,10 @@ char * mod_youtube(struct irc_t * irc, char * reply_msg)
 
     if (youtube->valid)
     {
-        sprintf(reply_msg, "[%s] - [rating: %.2f/5, viewed: %s]", 
+        reply_msg[0] = 0x3;
+        reply_msg[1] = 4;
+
+        sprintf(reply_msg+2, "[%s] - [rating: %.2f/5, viewed: %s]", 
                 youtube->title, youtube->rating, youtube->view_count);
     }
     free(youtube);

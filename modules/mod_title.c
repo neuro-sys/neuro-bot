@@ -4,6 +4,8 @@
 #include <stdio.h>
 #include <string.h>
 
+char * keywords[MAX_KEYWORDS] = { "http", "https" };
+
 static int validate_http(char * line)
 {
     char * ret, * t, * p;
@@ -55,13 +57,13 @@ void mod_title(struct irc_t * irc, char * reply_msg)
     if (!content) return;
 
     if ( parse_title(reply_msg, content) > 0 ) {
-        free(content);
         t = reply_msg;
         while (*t != '\0')
             if (*t++ == '\n')
                 t[-1] = ' ';
     }
 
+    free(content);
     return;
 }
 
