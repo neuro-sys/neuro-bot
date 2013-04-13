@@ -10,7 +10,7 @@ char *  (*n_get_tag_value)(char * body, char * tagname);
 
 #define MAX_KEYWORDS 10
 
-extern char * keywords[MAX_KEYWORDS];
+char * keywords[MAX_KEYWORDS];
 
 
 struct network_t {

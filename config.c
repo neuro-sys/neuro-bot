@@ -18,17 +18,17 @@ void config_load(struct session_t * session)
     char * token;
 
     file = fopen(CONFIG_FILE, "r");
-	if (!file) 
-	{	
-		fprintf(stderr, "No config file found, using defaults.	\n");
-		session->nickname = NICKNAME;
-		session->password = PASSWORD;
-		session->admin = ADMIN;
-		session->network.host_name = HOST;
-		session->network.port = PORT;
+    if (!file) 
+    {	
+        fprintf(stderr, "No config file found, using defaults.	\n");
+        session->nickname = NICKNAME;
+        session->password = PASSWORD;
+        session->admin = ADMIN;
+        session->network.host_name = HOST;
+        session->network.port = PORT;
 
-		return;
-	}
+        return;
+    }
     while (fgets(buf, 1024, file))
     {
         token = strtok(buf, "=");
