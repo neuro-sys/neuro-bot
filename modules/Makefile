@@ -1,6 +1,6 @@
 CC			= gcc
 LDFLAGS		= -lm
-LDFLAGS		+= -fPIC -Wall -g -O0 -Wl,--no-undefined --shared
+LDFLAGS		+= -Wall -g -O0 -Wl,--no-undefined --shared
 
 DEPS		= json.o neurobotapi.o
 
