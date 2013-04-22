@@ -11,7 +11,7 @@ The project dependencies are:
 
 Use ./build.sh script to build (modify as needed).
 
-Undefine USE_PYTHON_FLAGS (defined in global.h) in order to build *without* Python plugin support.
+Define USE_PYTHON_MODULES in order to build Python plugin support.
 
 For building on MS Windows Visual Studio, see ./winbuild
 

@@ -1,7 +1,7 @@
 #ifndef __GLOBAL_H
 #define __GLOBAL_H
 
-#define USE_PYTHON_MODULES
+/* #define USE_PYTHON_MODULES */
 
 #ifdef _WIN32
 
