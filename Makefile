@@ -1,6 +1,6 @@
 CC		   = gcc
-CFLAGS	   = -I. -Wall -g -O0 -DUSE_PYTHON_MODULES
-LDFLAGS	   = -ldl -g -O0
+CFLAGS	   = -I. -Wall -g -O0 -DUSE_PYTHON_MODULES --shared
+LDFLAGS	   = -ldl -g -O0 
 OBJS	   =config.o \
 		   curl_wrap.o \
 		   irc.o \
