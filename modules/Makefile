@@ -4,13 +4,10 @@ LDFLAGS		= -lm -g -O0 -Wall -Wl,--no-undefined --shared -fPIC
 
 DEPS		= neurobotapi.o json.o
 
-%.o : %.c
-	    $(CC) -c $(CFLAGS) $< -o $@
-
 all: mod_wiki.so mod_youtube.so mod_title.so mod_time.so mod_whereis.so
 
 mod_wiki.o: mod_wiki.c
-	$(CC) $(CFLAGS) -c mod_wiki.c
+	$(CC) $(CFLAGS) $(LDFLAGS) -c mod_wiki.c
 
 mod_wiki.so: mod_wiki.o $(DEPS)
 	$(CC) $(CFLAGS) $(LDFLAGS) $(DEPS) mod_wiki.o -o $@ 
