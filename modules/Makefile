@@ -4,7 +4,7 @@ LDFLAGS		+= -Wall -g -O0 -Wl,--no-undefined --shared -fPIC
 
 DEPS		= neurobotapi.o
 
-all: mod_wiki.so mod_youtube.so mod_title.so mod_time.so mod_whereis.so
+all: mod_title.so mod_time.so 
 
 mod_title.so: mod_title.o $(DEPS)
 	$(CC) $(LDFLAGS) $(DEPS) mod_title.o -o $@ 
