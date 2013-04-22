@@ -24,6 +24,12 @@ mod_title.so: mod_title.o $(DEPS)
 mod_time.so: mod_time.o $(DEPS)
 	$(CC) $(CFLAGS) $(LDFLAGS) $(DEPS) mod_time.o -o $@ 
 
+neurobotapi.o : neurobotapi.c
+	$(CC) $(CFLAGS) $(LDFLAGS) -c neurobotapi.c
+
+json.o : json.c
+	$(CC) $(CFLAGS) $(LDFLAGS) -c json.c
+
 clean:
 	rm -fv *.o *.so *.pyc
 
