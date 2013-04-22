@@ -22,10 +22,10 @@ mod_time.so: mod_time.o $(DEPS)
 	$(CC) $(LDFLAGS) $(DEPS) mod_time.o -o $@ 
 
 json.o: json.c
-	$(CC) -Wl,--no-undefined --shared -c json.c 
+	$(CC) -Wl,--no-undefined --shared -fPIC -c json.c 
 
 neurobotapi.o: neurobotapi.c
-	$(CC) -Wl,--no-undefined --shared -c neurobotapi.c 
+	$(CC) -Wl,--no-undefined --shared -fPIC -c neurobotapi.c 
 
 clean:
 	rm -fv *.o *.so *.pyc
