@@ -1,4 +1,4 @@
-﻿#include "session.h"
+#include "session.h"
 #include "global.h"
 #include "config.h"
 #include "module.h"
@@ -21,8 +21,9 @@ int main(int argc, char *argv[])
         session_create(&session);
         session.run(&session);
     }
-    
+
     session_destroy(&session);
 
     return 0;
 }
+
