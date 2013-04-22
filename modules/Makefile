@@ -7,7 +7,7 @@ DEPS		= neurobotapi.o json.o
 all: mod_wiki.so mod_youtube.so mod_title.so mod_time.so mod_whereis.so
 
 %.o: %.c
-	$(CC) $(CFLAGS) -c $< -o $@
+	$(CC) $(CFLAGS) -fPIC -c $< -o $@
 
 mod_wiki.so: mod_wiki.o $(DEPS)
 	$(CC) $(DEPS) $(CFLAGS) $(LDFLAGS) mod_wiki.o -o $@ 
