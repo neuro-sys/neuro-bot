@@ -62,6 +62,16 @@ void config_load(struct session_t * session)
             if (token) session->network.port = strdup(token); 
             else session->network.port = PORT;
         }
+        else if (!strcmp(token, "channels"))
+        {
+            int i = 0;
+
+            while ( (token = strtok(NULL, ",\n")) != NULL)
+            {
+                session->channels_ajoin[i++] = strdup(token);
+            }
+            session->channels_ajoin[i] = '\0';
+        }
 
     }
 

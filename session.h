@@ -9,6 +9,7 @@ struct session_t {
     char                * nickname;
     char                * password;
     char                * admin;
+    char                * channels_ajoin[50];
 };
 
 extern void                 session_create                  (struct session_t * session);

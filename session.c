@@ -7,20 +7,26 @@
 #include <stdlib.h>
 #include <string.h>
 
-static void session_auth_to_network(struct session_t * session)
+static void session_init_irc(struct session_t * session)
 {
     char message[MAX_IRC_MSG];
+    char ** t;
 
-    snprintf(message, sizeof message, "NICK %s\r\n" "USER %s 8 * :%s\r\n", 
-            session->nickname, 
-            "ircbot", 
-            "github.com/neuro-sys/neuro-bot");
-
+    irc_set_nick(session->nickname, message);
     network_send_message(&session->network, message);
 
-    if (!strcmp(session->password, ""))
-        sprintf(message, "PRIVMSG NickServ :identify %s\r\n", session->password);
+    irc_set_user("ircbot", "github.com/neuro-sys/neuro-bot", message);
     network_send_message(&session->network, message);
+
+    if (!strcmp(session->password, "")) {
+        irc_identify_to_auth(session->password, message);
+        network_send_message(&session->network, message);
+    }
+
+    for (t = session->channels_ajoin; *t != NULL; t++) {
+        irc_join_channel(*t, message);
+        network_send_message(&session->network, message);
+    }
 }
 
 static void session_run(struct session_t * session)
@@ -28,7 +34,7 @@ static void session_run(struct session_t * session)
     char          line[MAX_IRC_MSG];
     struct irc_t  irc;
 
-    session_auth_to_network(session);
+    session_init_irc(session);
 
     irc.session = session;        
 
