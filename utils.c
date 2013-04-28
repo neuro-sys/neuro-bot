@@ -1,5 +1,8 @@
 #include <string.h>
 #include <ctype.h>
+#include <stdlib.h>
+#include <regex.h>
+#include <stdio.h>
 
 void n_strip_tags(char * dest, char * src)
 {
@@ -24,47 +27,25 @@ void n_strip_tags(char * dest, char * src)
     *dest = '\0';
 }
 
+/*
+ * Returns a string that matches `<tagname*>...<' in body,
+ * NULL if not found.
+ * (?i)<TITLE>(.+?)</TITLE>
+ */
 char * n_get_tag_value(char * body, const char * tagname)
 {
-    char * btag, * etag;
-    char buf[1024];
-    char * ret;
-    char * t;
-    char tag[1024];
+    char pattern[50];
+    int status;
+    regex_t re;
+    regmatch_t pmatch[2];
 
-    strncpy(tag, tagname, 1024);
-
-    t = tag;
-    while (*t) *t = toupper(*t), t++;
-
-    while ( *body != '\0' )
-    {
-        btag = strchr(body, '<');
-        body = btag;   
-        if (!btag) return "";
-
-        etag = strchr(body, '>');
-        if (!etag) return "";
-
-        strncpy(buf, btag+1, etag-btag);
-        body = etag+1;
-
-        /* upper-case everything for searching */
-        t = buf;
-        while (*t) *t = toupper(*t), t++;
-
-        if (!strstr(buf, tag))
-            continue;
-
-        ret = strtok(body, "<");
-        t = ret-1;
-        while (*++t != '\0')
-            if (*t == '\n' || *t == '\t')
-                *t = ' ';
-
-        return ret;
+    sprintf(pattern, "<%s.*>(.*)</%s>", tagname, tagname);
+    if (regcomp(&re, pattern, REG_ICASE|REG_EXTENDED) != 0) {
+        fprintf(stderr, "Coult not compile regex pattern: %s\n", pattern);
+        return NULL;
     }
-
-    return "";
+    status = regexec(&re, body, 2, pmatch, 0);
+    body[pmatch[1].rm_eo] = '\0';
+    body += pmatch[1].rm_so;
+    return body;
 }
-

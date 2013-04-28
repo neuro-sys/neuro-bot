@@ -11,7 +11,8 @@
   
   #define snprintf _snprintf
   #define getcwd _getcwd
-  
+  #define alloca _alloca
+
 #endif
 
 #endif
