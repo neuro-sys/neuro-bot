@@ -58,7 +58,11 @@ void mod_title(struct irc_t * irc, char * reply_msg)
 
     if ( parse_title(reply_msg, content) > 0 ) {
         t = reply_msg;
-        while (*t != '\0') { if (*t == '\n' || *t == '\t') t[0] = ' '; i++}
+        while (*t != '\0') { 
+			if (*t == '\n' || *t == '\t') 
+				t[0] = ' '; 
+			t++;
+		}
     }
 
     free(content);
