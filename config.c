@@ -70,13 +70,13 @@ void config_load(struct session_t * session)
         else if (!strcmp(token, "channels"))
         {
             int i = 0;
-
+            fprintf(stderr, "Autojoin channels:\n");
             while ( (token = strtok(NULL, ",\n")) != NULL)
             {
-                fprintf(stderr, "Autojoin channels:\n");
                 if (token) {
-                        session->channels_ajoin[i++] = strdup(token);
+                        session->channels_ajoin[i] = strdup(token);
                         fprintf(stderr, "%s\n", session->channels_ajoin[i]);
+                        i++;
                 }
             }
             session->channels_ajoin[i] = '\0';
