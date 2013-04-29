@@ -139,17 +139,24 @@ static void irc_proc_cmd_privmsg (struct irc_t * irc)
 
 static void irc_proc_cmd (struct irc_t * irc)
 {
-    char * cmd;
-
-    cmd = irc->srv_msg.command;
-
-    if ( !strncmp ("PRIVMSG", cmd, strlen("PRIVMSG")) ) 
+    if ( !strncmp ("PRIVMSG", irc->srv_msg.command, strlen("PRIVMSG")) ) 
         irc_proc_cmd_privmsg (irc);
-    else if ( !strncmp ("PING", cmd, strlen("PING")) )
+    else if ( !strncmp ("PING", irc->srv_msg.command, strlen("PING")) )
         snprintf (irc->response, MAX_IRC_MSG, "PONG %s\r\n", irc->request);
+    else if ( !strncmp ("001", irc->srv_msg.command, strlen("001")) ) {
+        char message[MAX_IRC_MSG];
+        char ** t;
 
-    fprintf(stderr, "%s\n", irc->request);
-    if (irc->response[0]) fprintf(stderr, "%s\n", irc->response);
+        if (strcmp(irc->session->password, "")) {
+            fprintf(stderr, "Authing to nickserv\n");
+            irc_identify_to_auth(irc->session->password, message);
+            network_send_message(&irc->session->network, message);
+        }
+        for (t = irc->session->channels_ajoin; *t != NULL; t++) {
+            irc_join_channel(*t, message);
+            network_send_message(&irc->session->network, message);
+        }
+    }
 }
 
 /*     message    =  [ ":" prefix SPACE ] command [ params ] crlf */
@@ -160,16 +167,17 @@ static int irc_parse_prefix (struct irc_t * irc, char * line)
 
     tokens[0][0] = tokens[1][0] = tokens[2][0] = tokens[3][0] = '\0';
 
+    /* prefix */
     if ( !(t = strtok(line, " ")) )
         return -1;
-
     strncpy(tokens[0], t, MAX_IRC_MSG);
 
+    /* command */
     if ( !(t = strtok(NULL, " ")) )
         return -1;
-
     strncpy(tokens[1], t, MAX_IRC_MSG);
 
+    /* params */
     if ( !(t = strtok(NULL, " ")) )
         return -1;
 
@@ -226,7 +234,7 @@ static void irc_parse_other (struct irc_t * irc, char * line)
 /* message    =  [ ":" prefix SPACE ] command [ params ] crlf */
 void irc_process_line(struct irc_t * irc, char * line)
 {  
-
+    fprintf(stderr, "%s\n", line);
     if ( line[0] == ':' ) {
         if (irc_parse_prefix(irc, line) < 0)
             return;
