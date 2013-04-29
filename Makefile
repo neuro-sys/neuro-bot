@@ -15,10 +15,10 @@ OBJS	   =config.o \
 
 MOD_DIR    = ./modules
 
-DEPS	   = libcurl
+DEPS	   = python-2.7 libcurl
 
-CFLAGS	   += $(shell pkg-config $(DEPS) --cflags) $(shell python2.6-config --cflags)
-LDFLAGS    += $(shell pkg-config $(DEPS) --libs) $(shell python2.6-config --libs)
+CFLAGS	   += $(shell pkg-config $(DEPS) --cflags)
+LDFLAGS    += $(shell pkg-config $(DEPS) --libs)
 
 CFLAGS     += -O0
 
