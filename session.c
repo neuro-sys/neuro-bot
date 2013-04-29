@@ -10,7 +10,6 @@
 static void session_init_irc(struct session_t * session)
 {
     char message[MAX_IRC_MSG];
-    char ** t;
 
     irc_set_nick(session->nickname, message);
     network_send_message(&session->network, message);
