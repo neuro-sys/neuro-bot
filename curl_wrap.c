@@ -26,7 +26,7 @@ static size_t WriteMemoryCallback(void * contents, size_t size, size_t nmemb, vo
     mem->size += realsize;
     mem->memory[mem->size] = 0;
     if (mem->size > 16*1024) {
-        fprintf(stderr, "Passed chunking limit: %u\n", mem->size);
+        fprintf(stderr, "Passed chunking limit: %zu\n", mem->size);
         return -1;
     }
     return realsize;
