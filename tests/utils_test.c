@@ -33,7 +33,7 @@ int test_n_strip_tags()
 
 int main(int argc, char *argv[])
 {
-    fprintf(stderr, "Test for utils.c\n");
+    fprintf(stderr, "*** Test for utils.c\n");
 
     test_n_strip_tags();
     test_n_get_tag_value();
