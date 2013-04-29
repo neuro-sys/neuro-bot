@@ -13,7 +13,7 @@ int test_n_get_tag_value(void)
     char * ret;
 
     fprintf(stderr, "Testing n_get_tag_value\n");
-    ret = n_get_tag_value(body, tag);
+    ret = n_get_tag_value(strdup(body), tag);
     assert(ret == NULL || !strcmp(ret, "TEST TITLE"));
     fprintf(stderr, "OK.\n");
     return 0;
