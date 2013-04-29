@@ -29,7 +29,7 @@ neurobot: $(OBJS)
 	$(CC) $(OBJS) -o $@ $(CFLAGS) $(LDFLAGS)
 
 clean:
-	rm -fv $(OBJS) neurobot; $(MAKE) --directory=$(MOD_DIR) clean
+	rm -fv $(OBJS) neurobot; $(MAKE) --directory=$(MOD_DIR) clean; $(MAKE) --directory=$(TEST_DIR) clean;
 
 .PHONY: modules unit_tests
 
