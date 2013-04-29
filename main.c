@@ -12,7 +12,7 @@ int main(int argc, char *argv[])
     struct session_t session;
 
     setlocale(LC_CTYPE, "");
-
+    memset(&session, 0, sizeof session);
     config_load(&session);
     module_init();
 

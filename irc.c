@@ -15,7 +15,7 @@ void irc_set_nick(char * nickname, char * buffer)
 
 void irc_set_user(char * user, char * host, char * buffer)
 {
-    snprintf(buffer, MAX_IRC_MSG, "USER %s 8 * :%s\r\n",
+    snprintf(buffer, MAX_IRC_MSG, "USER %s 8 * :%s\r\n\r\n",
             user, host); 
 }
 
@@ -147,6 +147,9 @@ static void irc_proc_cmd (struct irc_t * irc)
         irc_proc_cmd_privmsg (irc);
     else if ( !strncmp ("PING", cmd, strlen("PING")) )
         snprintf (irc->response, MAX_IRC_MSG, "PONG %s\r\n", irc->request);
+
+    fprintf(stderr, "%s\n", irc->request);
+    if (irc->response[0]) fprintf(stderr, "%s\n", irc->response);
 }
 
 /*     message    =  [ ":" prefix SPACE ] command [ params ] crlf */
@@ -223,7 +226,6 @@ static void irc_parse_other (struct irc_t * irc, char * line)
 /* message    =  [ ":" prefix SPACE ] command [ params ] crlf */
 void irc_process_line(struct irc_t * irc, char * line)
 {  
-    fprintf(stderr, "%s\n", line);
 
     if ( line[0] == ':' ) {
         if (irc_parse_prefix(irc, line) < 0)

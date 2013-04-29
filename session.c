@@ -18,7 +18,7 @@ static void session_init_irc(struct session_t * session)
     irc_set_user("ircbot", "github.com/neuro-sys/neuro-bot", message);
     network_send_message(&session->network, message);
 
-    if (!strcmp(session->password, "")) {
+    if (strcmp(session->password, "")) {
         irc_identify_to_auth(session->password, message);
         network_send_message(&session->network, message);
     }
@@ -35,7 +35,6 @@ static void session_run(struct session_t * session)
     struct irc_t  irc;
 
     session_init_irc(session);
-
     irc.session = session;        
 
     while (1) 

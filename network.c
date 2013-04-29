@@ -47,8 +47,8 @@ void network_send_message(struct network_t * network, char * message)
 
     len = strlen(message);
     
-    if (message[len-2] == '\r' && message[len-1] != '\n')
-        strcat(message, "\r\n");
+//    if (message[len-2] == '\r' && message[len-1] != '\n')
+ //       strcat(message, "\r\n");
 
     send(network->sockfd, message, strlen(message), 0);
 }

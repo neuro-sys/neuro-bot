@@ -15,15 +15,20 @@ OBJS	   =config.o \
 
 MOD_DIR    = ./modules
 
-DEPS	   = python-2.7 libcurl
+DEPS	   = libcurl
 
-CFLAGS	   += $(shell pkg-config $(DEPS) --cflags)
-LDFLAGS    += $(shell pkg-config $(DEPS) --libs)
+CFLAGS	   += $(shell pkg-config $(DEPS) --cflags) $(shell python2.6-config --cflags)
+LDFLAGS    += $(shell pkg-config $(DEPS) --libs) $(shell python2.6-config --libs)
+
+CFLAGS     += -O0
+
+%.o: %.c
+	$(CC) $(CFLAGS) -c $< -o $@
 
 all: neurobot modules
 
 neurobot: $(OBJS)
-	$(CC) $(OBJS) -o $@ $(CFAGS) $(LDFLAGS)
+	$(CC) $(OBJS) -o $@ $(CFLAGS) $(LDFLAGS)
 
 clean:
 	rm -fv $(OBJS) neurobot; $(MAKE) --directory=$(MOD_DIR) clean
