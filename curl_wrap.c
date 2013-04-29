@@ -25,9 +25,8 @@ static size_t WriteMemoryCallback(void * contents, size_t size, size_t nmemb, vo
     memcpy(&(mem->memory[mem->size]), contents, realsize);
     mem->size += realsize;
     mem->memory[mem->size] = 0;
-    fprintf(stderr, "Memory chunking: %zu bytes.\n", mem->size);
     if (mem->size > 16*1024) {
-        fprintf(stderr, "Passed chunking limit\n");
+        fprintf(stderr, "Passed chunking limit: %u\n", mem->size);
         return -1;
     }
     return realsize;
@@ -45,7 +44,6 @@ char * curl_perform(char * url)
     curl_easy_setopt(curl, CURLOPT_URL, url);
     curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1);
     curl_easy_setopt(curl, CURLOPT_POSTREDIR, CURL_REDIR_POST_ALL );
-    curl_easy_setopt(curl, CURLOPT_VERBOSE, 1);
     curl_easy_setopt(curl, CURLOPT_USERAGENT, "neuro_irc_bot");
     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteMemoryCallback);
     curl_easy_setopt(curl, CURLOPT_WRITEDATA, &chunk);
