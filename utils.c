@@ -44,7 +44,8 @@ char * n_get_tag_value(char * body, const char * tagname)
         fprintf(stderr, "Coult not compile regex pattern: %s\n", pattern);
         return NULL;
     }
-    status = regexec(&re, body, 2, pmatch, 0);
+    if ((status = regexec(&re, body, 2, pmatch, 0)) != 0)
+        return NULL;
     body[pmatch[1].rm_eo] = '\0';
     body += pmatch[1].rm_so;
     return body;
