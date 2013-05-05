@@ -6,6 +6,7 @@ char *test_urls[] = {
     "http://www.google.com/",
     "https://www.duckduckgo.com/",
     "http://www.freenode.net/",
+    NULL
 };
 
 int main(int argc, char *argv[])
