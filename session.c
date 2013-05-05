@@ -31,9 +31,7 @@ static void session_run(struct session_t * session)
     {
         irc.response[0] = '\0';
 
-        if ( network_read_line(&session->network, line) < 0 )
-            break;
-
+        network_read_line(&session->network, line);
         irc_process_line(&irc, line);
         
         if (irc.response[0])

@@ -14,6 +14,21 @@
 #endif
 #include <sys/types.h>
 
+
+/* K&R 8.2 */
+int getchar_buf(int sockfd)
+{
+    static char buf[1024];
+    static char * bufp;
+    static unsigned int n;
+
+    if (n == 0) {
+        n = recv(sockfd, buf, 1024, 0);
+        bufp = buf;
+    }
+    return (--n >= 0) ? (unsigned char) *bufp++ : EOF;
+}
+
 void network_connect(struct network_t * network)
 {
     int sockfd;
@@ -22,23 +37,14 @@ void network_connect(struct network_t * network)
     network->sockfd = sockfd;
 }
 
-int network_read_line(struct network_t * network, char * buf)
+void network_read_line(struct network_t * network, char * buf)
 {
     int ret;
-    char ch;
-    while(1)
-    {
-      ret = recv(network->sockfd, &ch, 1, 0);
-      if (ret > 0)
-      {
-        if (ch == '\n')
-          break;
-        *buf++ = ch;
-      }
-    }
-    *buf = '\0';
 
-    return 1;
+    while( (ret = getchar_buf(network->sockfd)) != '\n' )
+        *buf++ = ret;
+
+    *buf = '\0';
 }
 
 void network_send_message(struct network_t * network, char * message)
