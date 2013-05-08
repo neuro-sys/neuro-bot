@@ -31,7 +31,6 @@ char * parse_ip(char * line)
 
     t = strtok(line, " ");
     if (!t) return NULL;
-
     t = strtok(NULL, " \r\n");
     
     return t;
@@ -50,8 +49,6 @@ char * mod_whereis(struct irc_t * irc, char * reply_msg)
     if (!ip) return NULL;
 
     snprintf(url, 500, api_url, ip);
-
     content = curl_perform(url);
-
     json(reply_msg, content);
 }

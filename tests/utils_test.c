@@ -12,10 +12,10 @@ int test_n_get_tag_value(void)
     char * tag = "title";
     char * ret;
 
-    fprintf(stderr, "Testing n_get_tag_value\n");
+    fprintf(stderr, "*** Testing n_get_tag_value\n");
     ret = n_get_tag_value(strdup(body), tag);
     assert(ret == NULL || !strcmp(ret, "TEST TITLE"));
-    fprintf(stderr, "OK.\n");
+    fprintf(stderr, "*** OK.\n");
     return 0;
 }
 
@@ -23,11 +23,11 @@ int test_n_strip_tags()
 {
     char * p;
 
-    fprintf(stderr, "Testing n_strip_tags\n");
+    fprintf(stderr, "*** Testing n_strip_tags\n");
     p = malloc(strlen(body));
     n_strip_tags(p, body);
     assert(strchr(p, '<') == NULL && strchr(p, '>') == NULL);
-    fprintf(stderr, "OK.\n");
+    fprintf(stderr, "*** OK.\n");
     free(p);
 }
 

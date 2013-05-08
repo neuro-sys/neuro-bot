@@ -11,6 +11,7 @@ OBJS	   =config.o \
 		   socket_unix.o \
 		   socket_win.o \
 		   utils.o \
+		   irc_cmd.o \
 		   main.o
 
 MOD_DIR    = ./modules

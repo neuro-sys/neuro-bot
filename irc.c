@@ -1,33 +1,14 @@
 #include "global.h"
 #include "irc.h"
 #include "py_wrap.h"
+#include "module.h"
+#include "irc_cmd.h"
 
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
 
-#include "module.h"
 
-void irc_set_nick(char * nickname, char * buffer)
-{
-    snprintf(buffer, MAX_IRC_MSG, "NICK %s\r\n", nickname); 
-}
-
-void irc_set_user(char * user, char * host, char * buffer)
-{
-    snprintf(buffer, MAX_IRC_MSG, "USER %s 8 * :%s\r\n\r\n",
-            user, host); 
-}
-
-void irc_identify_to_auth(char * password, char * buffer)
-{
-    sprintf(buffer, "PRIVMSG NickServ :identify %s\r\n", password);
-}
-
-void irc_join_channel(char * channel, char * buffer)
-{
-    sprintf(buffer, "JOIN %s\r\n", channel);
-}
 
 static void irc_proc_cmd_privmsg_user_cmd_admin (struct irc_t * irc)
 {
@@ -147,13 +128,19 @@ static void irc_proc_cmd (struct irc_t * irc)
         char message[MAX_IRC_MSG];
         char ** t;
 
+        for (t = irc->session->channels_ajoin; *t != NULL; t++) {
+            irc_join_channel(*t, message);
+            network_send_message(&irc->session->network, message);
+        }
+    } 
+    else if ( !strncmp("NOTICE", irc->srv_msg.command, strlen("NOTICE")) 
+            && strstr(irc->request, "registered" ) ) {
+        char message[MAX_IRC_MSG];
+            
+        fprintf(stderr, "Auth to nickserv request received.\n");
         if (strcmp(irc->session->password, "")) {
             fprintf(stderr, "Authing to nickserv\n");
             irc_identify_to_auth(irc->session->password, message);
-            network_send_message(&irc->session->network, message);
-        }
-        for (t = irc->session->channels_ajoin; *t != NULL; t++) {
-            irc_join_channel(*t, message);
             network_send_message(&irc->session->network, message);
         }
     }

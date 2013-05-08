@@ -14,7 +14,6 @@ static char * parse_json_wiki(char * data)
     temp = malloc(MAX_IRC_MSG);
 
     root = json_parse(data);
-
     if (!root)
       return NULL;
 

@@ -11,18 +11,14 @@ static int validate_http(char * line)
     char * ret, * t, * p;
 
     ret = strstr(line, "http");
-    
     if (!ret)
         return -1;
-
     /* This is the same as a switch-case, in case you don't know */
     t =   (p = strchr(ret, ' '))  ? p 
         : (p = strchr(ret, '\r')) ? p
         : (p = strchr(ret, '\n')) ? p
         : 0;
-
     if (t) *t = '\0'; else return -1;
-
     memmove(line, ret, strlen(ret) + 1);
 
     return 1;
@@ -37,7 +33,6 @@ static int parse_title(char * dest, char * src)
         strcpy(dest, t); 
         return 1;
     }
-
     return -1;
 }
 
@@ -51,11 +46,8 @@ void mod_title(struct irc_t * irc, char * reply_msg)
 
     if (validate_http(irc->request) < 0 )
         return;
-
     content = curl_perform(irc->request);
-
     if (!content) return;
-
     if ( parse_title(reply_msg, content) > 0 ) {
         t = reply_msg;
         while (*t != '\0') { 
@@ -64,7 +56,6 @@ void mod_title(struct irc_t * irc, char * reply_msg)
 			t++;
 		}
     }
-
     free(content);
     return;
 }

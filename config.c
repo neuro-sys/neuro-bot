@@ -5,11 +5,6 @@
 
 #define CONFIG_FILE "neurobot.conf"
 
-#define NICKNAME "neurobot"
-#define PASSWORD ""
-#define ADMIN    "neuro_sys"
-#define HOST     "irc.freenode.net"
-#define PORT     "6667"
 
 void config_load(struct session_t * session)
 {

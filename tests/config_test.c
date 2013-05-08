@@ -11,7 +11,7 @@ int main(int argc, char *argv[])
 
     fprintf(stderr, "*** Test for config.c\n");
     config_load(&session);
-
+    fprintf(stderr, "*** OK?\n");
     return 0;
 }
 

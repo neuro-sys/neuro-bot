@@ -2,6 +2,7 @@
 #include "network.h"
 #include "irc.h"
 #include "global.h"
+#include "irc_cmd.h"
 
 #include <stdio.h>
 #include <stdlib.h>

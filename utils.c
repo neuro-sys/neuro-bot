@@ -10,18 +10,15 @@ void n_strip_tags(char * dest, char * src)
 
     while (*src != '\0')
     {
-
         if (*src == '>') {
             inside = 0;
             src++;
         } 
-
         if (*src == '<' || inside) {
             inside = 1;
             src++;
             continue;
         }
-
         *dest++ = *src++;
     }
     *dest = '\0';
@@ -42,7 +39,7 @@ char * n_get_tag_value(char * body, const char * tagname)
     sprintf(pattern, "<%s.*>(.*)</%s>", tagname, tagname);
     if (regcomp(&re, pattern, REG_ICASE|REG_EXTENDED) != 0) {
         fprintf(stderr, "Coult not compile regex pattern: %s\n", pattern);
-        return NULL;
+        abort();
     }
     if ((status = regexec(&re, body, 2, pmatch, 0)) != 0)
         return NULL;

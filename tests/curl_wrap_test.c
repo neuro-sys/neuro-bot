@@ -16,9 +16,9 @@ int main(int argc, char *argv[])
     fprintf(stderr, "*** Test for curl_wrap.c\n");
 
     for (p = test_urls; *p != NULL; p++) {
-        fprintf(stderr, "Performing %s\n", *p);
+        fprintf(stderr, "*** Performing %s\n", *p);
         curl_perform(*p);
-        fprintf(stderr, "OK.\n");
+        fprintf(stderr, "*** OK.\n");
     }
     return 0;
 }
