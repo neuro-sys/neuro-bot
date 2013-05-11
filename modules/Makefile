@@ -10,7 +10,7 @@ all: mod_wiki.so mod_youtube.so mod_title.so mod_time.so mod_whereis.so
 
 # UTILITIES 
 curl_wrap.o: curl_wrap.c curl_wrap.h
-	$(CC) -c $< -o -fPIC $@ $(shell pkg-config libcurl --cflags)
+	$(CC) -c $< -o $@ -fPIC $(shell pkg-config libcurl --cflags)
 
 # PLUGINS
 
