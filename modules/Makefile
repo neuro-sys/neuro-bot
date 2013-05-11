@@ -13,6 +13,10 @@ curl_wrap.o: curl_wrap.c curl_wrap.h
 	$(CC) -c $< -o $@ -fPIC -shared $(shell pkg-config libcurl --cflags)
 
 # PLUGINS
+
+%.o: %.c
+	$(CC) -c $< -o $@ -fPIC -shared
+
 mod_wiki.o: mod_wiki.c
 	$(CC) -c $< -o $@ -fPIC -shared 
 
