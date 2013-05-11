@@ -5,7 +5,6 @@
 
 #define CONFIG_FILE "neurobot.conf"
 
-
 void config_load(struct session_t * session)
 {
     FILE * file;
@@ -76,9 +75,7 @@ void config_load(struct session_t * session)
             }
             session->channels_ajoin[i] = '\0';
         }
-
     }
-
     fclose(file);
 }
 

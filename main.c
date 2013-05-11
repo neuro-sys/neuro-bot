@@ -1,5 +1,6 @@
-#include "session.h"
 #include "global.h"
+
+#include "session.h"
 #include "config.h"
 #include "module.h"
 

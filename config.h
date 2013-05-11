@@ -6,8 +6,6 @@
 
 void config_load(struct session_t * session);
 
-extern char * config_channels[50];
-
 #define NICKNAME "neurobot"
 #define PASSWORD ""
 #define ADMIN    "neuro_sys"

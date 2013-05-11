@@ -40,3 +40,4 @@ missing
 *.lo
 stamp-h1
 *.pyc
+tags

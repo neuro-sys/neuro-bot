@@ -1,3 +1,11 @@
+#include "module.h"
+
+#include "global.h"
+#include "irc.h"
+#include "py_wrap.h"
+#include "curl_wrap.h"
+#include "utils.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/types.h>
@@ -12,13 +20,6 @@
 #include <direct.h>
 #endif
 
-#include "config.h"
-#include "global.h"
-#include "irc.h"
-#include "module.h"
-#include "py_wrap.h"
-#include "curl_wrap.h"
-#include "utils.h"
 
 static       char       * mod_dir;
 

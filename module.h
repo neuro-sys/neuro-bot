@@ -11,8 +11,6 @@ struct mod_c_t {
     char ** keywords;
 };
 
-extern char * ** keywords;
-
 extern void             module_init(void);
 extern struct mod_c_t * module_find(const char * cmd);
 extern struct mod_c_t * module_find_by_keyword(const char * line);

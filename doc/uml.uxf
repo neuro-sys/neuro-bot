@@ -1,0 +1,546 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<diagram program="umlet" version="11.5.1">
+  <zoom_level>5</zoom_level>
+  <element>
+    <type>com.umlet.element.Class</type>
+    <coordinates>
+      <x>390</x>
+      <y>420</y>
+      <w>135</w>
+      <h>35</h>
+    </coordinates>
+    <panel_attributes>config.h
+--
++config_load(struct session_t *): void
++char * config_channels[50]</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <type>com.umlet.element.Class</type>
+    <coordinates>
+      <x>605</x>
+      <y>520</y>
+      <w>130</w>
+      <h>35</h>
+    </coordinates>
+    <panel_attributes>curl_wrap.h
+--
++curl_perform(char * url): char *
+
+</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <type>com.umlet.element.Class</type>
+    <coordinates>
+      <x>585</x>
+      <y>280</y>
+      <w>165</w>
+      <h>70</h>
+    </coordinates>
+    <panel_attributes>irc.h
+--
++struct irc_t irc;
++irc_process_line(struct irc_t *, char *): void
+</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <type>com.umlet.element.Class</type>
+    <coordinates>
+      <x>630</x>
+      <y>200</y>
+      <w>210</w>
+      <h>50</h>
+    </coordinates>
+    <panel_attributes>irc_cmd.h
+--
++irc_set_nick(char * nickname, char * buffer): void
++irc_set_user(char *user, char * host, char * buffer): void
++irc_identify_to_auth(char * pass, char * buf): void
++irc_join_channel(char * chan, char * buf): void
+</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <type>com.umlet.element.Relation</type>
+    <coordinates>
+      <x>645</x>
+      <y>235</y>
+      <w>24</w>
+      <h>49</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;.</panel_attributes>
+    <additional_attributes>15;15;15;40</additional_attributes>
+  </element>
+  <element>
+    <type>com.umlet.element.Class</type>
+    <coordinates>
+      <x>580</x>
+      <y>400</y>
+      <w>195</w>
+      <h>70</h>
+    </coordinates>
+    <panel_attributes>module.h
+--
++struct mod_c_t
++module_init(void): void
++module_find(char * cmd): struct mod_c_t
++module_find_by_keyword(char * line): struct mod_c_t
++module_load(void): void
++module_iterate_files(callback): void</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <type>com.umlet.element.Relation</type>
+    <coordinates>
+      <x>660</x>
+      <y>335</y>
+      <w>24</w>
+      <h>69</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;.</panel_attributes>
+    <additional_attributes>15;60;15;15</additional_attributes>
+  </element>
+  <element>
+    <type>com.umlet.element.Relation</type>
+    <coordinates>
+      <x>670</x>
+      <y>335</y>
+      <w>24</w>
+      <h>69</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;.</panel_attributes>
+    <additional_attributes>15;15;15;60</additional_attributes>
+  </element>
+  <element>
+    <type>com.umlet.element.Class</type>
+    <coordinates>
+      <x>190</x>
+      <y>285</y>
+      <w>175</w>
+      <h>55</h>
+    </coordinates>
+    <panel_attributes>network.h
+--
++struct network_t
++network_connect():void
++network_read_line(char * buf):void
++network_send_message(char * message): void
+
+</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <type>com.umlet.element.Class</type>
+    <coordinates>
+      <x>405</x>
+      <y>285</y>
+      <w>115</w>
+      <h>65</h>
+    </coordinates>
+    <panel_attributes>session.h
+--
++struct session_t
++session_create(): void
++session_destroy(): void
++session_run(): void</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <type>com.umlet.element.Relation</type>
+    <coordinates>
+      <x>350</x>
+      <y>295</y>
+      <w>64</w>
+      <h>24</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;.</panel_attributes>
+    <additional_attributes>15;15;55;15</additional_attributes>
+  </element>
+  <element>
+    <type>com.umlet.element.Relation</type>
+    <coordinates>
+      <x>505</x>
+      <y>300</y>
+      <w>89</w>
+      <h>24</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;.</panel_attributes>
+    <additional_attributes>80;15;65;15;15;15</additional_attributes>
+  </element>
+  <element>
+    <type>com.umlet.element.Relation</type>
+    <coordinates>
+      <x>450</x>
+      <y>215</y>
+      <w>189</w>
+      <h>79</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;.</panel_attributes>
+    <additional_attributes>180;15;15;70</additional_attributes>
+  </element>
+  <element>
+    <type>com.umlet.element.Relation</type>
+    <coordinates>
+      <x>510</x>
+      <y>425</y>
+      <w>79</w>
+      <h>24</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;.</panel_attributes>
+    <additional_attributes>15;15;70;15</additional_attributes>
+  </element>
+  <element>
+    <type>com.umlet.element.Relation</type>
+    <coordinates>
+      <x>665</x>
+      <y>455</y>
+      <w>24</w>
+      <h>74</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;.</panel_attributes>
+    <additional_attributes>15;65;15;15</additional_attributes>
+  </element>
+  <element>
+    <type>com.umlet.element.Class</type>
+    <coordinates>
+      <x>380</x>
+      <y>520</y>
+      <w>200</w>
+      <h>40</h>
+    </coordinates>
+    <panel_attributes>utils.h
+--
++n_strip_tags(char * dest, char * src): void
++n_get_tag_value(char * body, char * tagname): char *
+</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <type>com.umlet.element.Relation</type>
+    <coordinates>
+      <x>460</x>
+      <y>455</y>
+      <w>129</w>
+      <h>74</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;.</panel_attributes>
+    <additional_attributes>15;65;120;15</additional_attributes>
+  </element>
+  <element>
+    <type>com.umlet.element.Class</type>
+    <coordinates>
+      <x>815</x>
+      <y>295</y>
+      <w>125</w>
+      <h>40</h>
+    </coordinates>
+    <panel_attributes>py_wrap.h
+--
++py_load_modules(char *): int
+</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <type>com.umlet.element.Relation</type>
+    <coordinates>
+      <x>735</x>
+      <y>300</y>
+      <w>89</w>
+      <h>24</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;.</panel_attributes>
+    <additional_attributes>15;15;80;15</additional_attributes>
+  </element>
+  <element>
+    <type>com.umlet.element.Relation</type>
+    <coordinates>
+      <x>760</x>
+      <y>320</y>
+      <w>134</w>
+      <h>134</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;.</panel_attributes>
+    <additional_attributes>15;125;125;15</additional_attributes>
+  </element>
+  <element>
+    <type>com.umlet.element.Relation</type>
+    <coordinates>
+      <x>655</x>
+      <y>235</y>
+      <w>24</w>
+      <h>54</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;.</panel_attributes>
+    <additional_attributes>15;45;15;15</additional_attributes>
+  </element>
+  <element>
+    <type>com.umlet.element.Relation</type>
+    <coordinates>
+      <x>435</x>
+      <y>335</y>
+      <w>55</w>
+      <h>94</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;.
+session_t</panel_attributes>
+    <additional_attributes>30;15;30;85</additional_attributes>
+  </element>
+  <element>
+    <type>com.umlet.element.Relation</type>
+    <coordinates>
+      <x>735</x>
+      <y>310</y>
+      <w>89</w>
+      <h>24</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;.</panel_attributes>
+    <additional_attributes>80;15;15;15</additional_attributes>
+  </element>
+  <element>
+    <type>com.umlet.element.Relation</type>
+    <coordinates>
+      <x>760</x>
+      <y>320</y>
+      <w>119</w>
+      <h>119</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;.</panel_attributes>
+    <additional_attributes>110;15;15;110</additional_attributes>
+  </element>
+  <element>
+    <type>com.umlet.element.Class</type>
+    <coordinates>
+      <x>250</x>
+      <y>415</y>
+      <w>85</w>
+      <h>55</h>
+    </coordinates>
+    <panel_attributes>main
+--
+START
+bg=green
+</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <type>com.umlet.element.Relation</type>
+    <coordinates>
+      <x>320</x>
+      <y>425</y>
+      <w>79</w>
+      <h>24</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;.</panel_attributes>
+    <additional_attributes>70;15;15;15</additional_attributes>
+  </element>
+  <element>
+    <type>com.umlet.element.Relation</type>
+    <coordinates>
+      <x>320</x>
+      <y>335</y>
+      <w>144</w>
+      <h>109</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;.</panel_attributes>
+    <additional_attributes>135;15;15;100</additional_attributes>
+  </element>
+  <element>
+    <type>com.umlet.element.Relation</type>
+    <coordinates>
+      <x>320</x>
+      <y>445</y>
+      <w>269</w>
+      <h>24</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;.</panel_attributes>
+    <additional_attributes>260;15;15;15</additional_attributes>
+  </element>
+  <element>
+    <type>com.umlet.element.Relation</type>
+    <coordinates>
+      <x>140</x>
+      <y>295</y>
+      <w>59</w>
+      <h>24</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;.</panel_attributes>
+    <additional_attributes>15;15;50;15</additional_attributes>
+  </element>
+  <element>
+    <type>com.umlet.element.Note</type>
+    <coordinates>
+      <x>410</x>
+      <y>475</y>
+      <w>85</w>
+      <h>25</h>
+    </coordinates>
+    <panel_attributes>neurobot.conf
+...
+bg=yellow</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <type>com.umlet.element.Relation</type>
+    <coordinates>
+      <x>440</x>
+      <y>440</y>
+      <w>24</w>
+      <h>44</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;.</panel_attributes>
+    <additional_attributes>15;15;15;35</additional_attributes>
+  </element>
+  <element>
+    <type>com.umlet.element.Note</type>
+    <coordinates>
+      <x>35</x>
+      <y>295</y>
+      <w>120</w>
+      <h>35</h>
+    </coordinates>
+    <panel_attributes>IRC Realm
+&lt;dude&gt; .title http://..
+&lt;neurobot&gt; Title is foobar.
+bg=blue</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <type>com.umlet.element.Relation</type>
+    <coordinates>
+      <x>140</x>
+      <y>305</y>
+      <w>59</w>
+      <h>24</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;.</panel_attributes>
+    <additional_attributes>50;15;15;15</additional_attributes>
+  </element>
+  <element>
+    <type>com.umlet.element.Package</type>
+    <coordinates>
+      <x>805</x>
+      <y>525</y>
+      <w>70</w>
+      <h>35</h>
+    </coordinates>
+    <panel_attributes>native plugins
+bg=orange</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <type>com.umlet.element.Package</type>
+    <coordinates>
+      <x>895</x>
+      <y>525</y>
+      <w>70</w>
+      <h>35</h>
+    </coordinates>
+    <panel_attributes>python plugins
+bg=red</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <type>com.umlet.element.Relation</type>
+    <coordinates>
+      <x>895</x>
+      <y>320</y>
+      <w>24</w>
+      <h>214</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;.</panel_attributes>
+    <additional_attributes>15;205;15;15</additional_attributes>
+  </element>
+  <element>
+    <type>com.umlet.element.Relation</type>
+    <coordinates>
+      <x>760</x>
+      <y>455</y>
+      <w>54</w>
+      <h>79</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;.</panel_attributes>
+    <additional_attributes>45;70;15;15</additional_attributes>
+  </element>
+  <element>
+    <type>com.umlet.element.custom.Text</type>
+    <coordinates>
+      <x>190</x>
+      <y>190</y>
+      <w>140</w>
+      <h>50</h>
+    </coordinates>
+    <panel_attributes>Neurobot 0.1
+IRC Bot
+http://github.com/neuro-sys/neuro-bot
+</panel_attributes>
+    <additional_attributes/>
+  </element>
+  <element>
+    <type>com.umlet.element.Relation</type>
+    <coordinates>
+      <x>720</x>
+      <y>530</y>
+      <w>94</w>
+      <h>24</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;.</panel_attributes>
+    <additional_attributes>15;15;85;15</additional_attributes>
+  </element>
+  <element>
+    <type>com.umlet.element.Relation</type>
+    <coordinates>
+      <x>455</x>
+      <y>545</y>
+      <w>389</w>
+      <h>44</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;.</panel_attributes>
+    <additional_attributes>15;15;15;35;380;35;380;15</additional_attributes>
+  </element>
+  <element>
+    <type>com.umlet.element.Relation</type>
+    <coordinates>
+      <x>650</x>
+      <y>540</y>
+      <w>284</w>
+      <h>39</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;.</panel_attributes>
+    <additional_attributes>15;15;15;30;275;30;275;20</additional_attributes>
+  </element>
+  <element>
+    <type>com.umlet.element.Relation</type>
+    <coordinates>
+      <x>485</x>
+      <y>300</y>
+      <w>99</w>
+      <h>24</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;.</panel_attributes>
+    <additional_attributes>15;15;90;15</additional_attributes>
+  </element>
+  <element>
+    <type>com.umlet.element.Relation</type>
+    <coordinates>
+      <x>485</x>
+      <y>300</y>
+      <w>99</w>
+      <h>24</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;.</panel_attributes>
+    <additional_attributes>15;15;90;15</additional_attributes>
+  </element>
+  <element>
+    <type>com.umlet.element.Relation</type>
+    <coordinates>
+      <x>475</x>
+      <y>545</y>
+      <w>469</w>
+      <h>54</h>
+    </coordinates>
+    <panel_attributes>lt=&lt;.</panel_attributes>
+    <additional_attributes>15;15;15;45;460;45;460;15</additional_attributes>
+  </element>
+</diagram>
