@@ -20,7 +20,7 @@ int main(int argc, char *argv[])
     while (1)
     {
         session_create(&session);
-        session.run(&session);
+        session_run(&session);
     }
 
     session_destroy(&session);

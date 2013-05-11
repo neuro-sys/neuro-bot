@@ -20,7 +20,7 @@ static void session_init_irc(struct session_t * session)
 
 }
 
-static void session_run(struct session_t * session)
+void session_run(struct session_t * session)
 { 
     char          line[MAX_IRC_MSG];
     struct irc_t  irc;
@@ -32,7 +32,8 @@ static void session_run(struct session_t * session)
     {
         irc.response[0] = '\0';
 
-        network_read_line(&session->network, line);
+        if ( network_read_line(&session->network, line) < 0)
+            break;
         irc_process_line(&irc, line);
         
         if (irc.response[0])
@@ -44,8 +45,6 @@ static void session_run(struct session_t * session)
 void session_create(struct session_t * session)
 { 
     network_connect(&session->network);
-        
-    session->run = &session_run;
 }
 
 void session_destroy(struct session_t * session)
