@@ -1,4 +1,5 @@
 #include "neurobotapi.h"
+#include "curl_wrap.h"
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -41,14 +42,14 @@ __declspec(dllexport)
 #endif
 void mod_title(struct irc_t * irc, char * reply_msg)
 {
-    char * content = NULL;
+    struct http_req * http;
     char * t;
 
     if (validate_http(irc->request) < 0 )
         return;
-    content = curl_perform(irc->request);
-    if (!content) return;
-    if ( parse_title(reply_msg, content) > 0 ) {
+    http = curl_perform(irc->request);
+    if (!http->body) return;
+    if ( parse_title(reply_msg, http->body) > 0 ) {
         t = reply_msg;
         while (*t != '\0') { 
 			if (*t == '\n' || *t == '\t') 
@@ -56,7 +57,8 @@ void mod_title(struct irc_t * irc, char * reply_msg)
 			t++;
 		}
     }
-    free(content);
+    free(http->base);
+    free(http);
     return;
 }
 

@@ -2,16 +2,9 @@
 #define __NEUROBOTAPI_H
 
 #define MAX_IRC_MSG 510
-
-/* Helper functions */
-char *  (*curl_perform)(char * url);
-void    (*n_strip_tags)(char * dest, char * src);
-char *  (*n_get_tag_value)(char * body, char * tagname);
-
 #define MAX_KEYWORDS 10
 
 char * keywords[MAX_KEYWORDS];
-
 
 struct network_t {
     char        * host_name;

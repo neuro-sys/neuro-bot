@@ -3,8 +3,6 @@
 #include "global.h"
 #include "irc.h"
 #include "py_wrap.h"
-#include "curl_wrap.h"
-#include "utils.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -67,8 +65,7 @@ void module_load_callback(void * data)
     char file_full_path[250];
     void * mod;
     void * initializer;
-    void (* init_fp) (void ** fp_list, char ***);
-    void * fp_list[3];
+    void (* init_fp) (char ***);
     char * t;
     struct mod_c_t * mod_c;
     char ** keywords;
@@ -114,16 +111,12 @@ void module_load_callback(void * data)
         return;
     }
 
-    fp_list[0] = curl_perform;
-    fp_list[1] = n_strip_tags;
-    fp_list[2] = n_get_tag_value;
-
 #ifdef _WIN32
     init_fp = (void (__cdecl *)(void **, char ***))GetProcAddress((HMODULE) mod, "init");
 #else
     init_fp = dlsym(mod, "init");
 #endif
-    init_fp(fp_list, &keywords);
+    init_fp(&keywords);
 
     mod_c->keywords = keywords;
     mod_c->func = (void (*)(struct irc_t *, char *)) initializer;

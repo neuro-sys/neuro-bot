@@ -1,5 +1,6 @@
 #include "neurobotapi.h"
 #include "json.h"
+#include "curl_wrap.h"
 
 #include <string.h>
 #include <stdlib.h>
@@ -34,7 +35,7 @@ __declspec(dllexport)
 void mod_wiki(struct irc_t * irc, char * reply_msg)
 {
     char * p, * t;
-    char * content;
+    struct http_req * http;
     char url_path[512];
     int i;
 
@@ -56,20 +57,21 @@ void mod_wiki(struct irc_t * irc, char * reply_msg)
 
     sprintf(url_path, "http://en.wikipedia.org/w/api.php?action=query&prop=extracts&exchars=350&titles=%s&format=json&redirects", p);
 
-    content = curl_perform(url_path);
+    http = curl_perform(url_path);
 
-    t = content;
+    t = http->body;
     while ( (t = strstr(t, "\\n")) != NULL) {
         t[0] = '-';
         t[1] = ' ';
     }
 
-    p = parse_json_wiki(content);
+    p = parse_json_wiki(http->body);
    
     if (!p)
         return;
 
     n_strip_tags(reply_msg, p);
 
-    free(content);
+    free(http->base);
+    free(http);
 }

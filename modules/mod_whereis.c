@@ -1,8 +1,10 @@
 #include "neurobotapi.h"
 #include "json.h"
+#include "curl_wrap.h"
 
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 
 char * api_url = "http://api.ipinfodb.com/v3/ip-city/?key="
                  "0312bdbd898c56675f30f9239ff380a1165946795e94be5074bc57f1870749b0"
@@ -41,7 +43,7 @@ __declspec(dllexport)
 #endif
 char * mod_whereis(struct irc_t * irc, char * reply_msg)
 {
-    char * content;
+    struct http_req * http;
     char url[500];
     char * ip;
 
@@ -49,6 +51,8 @@ char * mod_whereis(struct irc_t * irc, char * reply_msg)
     if (!ip) return NULL;
 
     snprintf(url, 500, api_url, ip);
-    content = curl_perform(url);
-    json(reply_msg, content);
+    http = curl_perform(url);
+    json(reply_msg, http->body);
+    free(http->base);
+    free(http);
 }

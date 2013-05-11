@@ -1,5 +1,5 @@
 #include "neurobotapi.h"
-
+#include "curl_wrap.h"
 #include "json.h"
 
 #include <string.h>
@@ -45,7 +45,7 @@ static void parse_json_youtube(char * data, struct youtube_t * youtube)
 static void proc_info_youtube(struct irc_t * irc, struct youtube_t * youtube)
 {
     char        url_path[512];
-    char        * content;
+    struct http_req * http;
     char *t;
 
     t = strstr(irc->request, "v=");
@@ -54,9 +54,10 @@ static void proc_info_youtube(struct irc_t * irc, struct youtube_t * youtube)
 
     sprintf(url_path, "http://gdata.youtube.com/feeds/api/videos/%s?alt=json&ver=2", t);
 
-    content = curl_perform(url_path);
-    parse_json_youtube(content, youtube);
-    free(content);
+    http = curl_perform(url_path);
+    parse_json_youtube(http->body, youtube);
+    free(http->base);
+    free(http);
 }
 
 #ifdef _WIN32
