@@ -10,17 +10,17 @@ all: mod_wiki.so mod_youtube.so mod_title.so mod_time.so mod_whereis.so
 
 # UTILITIES 
 curl_wrap.o: curl_wrap.c curl_wrap.h
-	$(CC) -fPIC -c $< -o $@ $(shell pkg-config libcurl --cflags)
+	$(CC) -c $< -o $@ -fPIC -shared $(shell pkg-config libcurl --cflags)
 
 utils.o: utils.c utils.h
-	$(CC) -fPIC -c $< -o $@
+	$(CC) -c $< -o $@ -fPIC -shared
 # PLUGINS
 
 %.o: %.c
-	$(CC) -fPIC -c $< -o $@ 
+	$(CC) -c $< -o $@ -fPIC -shared
 
 mod_wiki.o: mod_wiki.c
-	$(CC) -fPIC -c $< -o $@ 
+	$(CC) -c $< -o $@ -fPIC -shared
 
 mod_wiki.so: mod_wiki.o $(UTILS) $(DEPS)
 	$(CC) $(CFLAGS) $(LDFLAGS) $(DEPS) $(UTILS) mod_wiki.o -o $@ $(AFTERFLAGS) $(UTIL_LDFLAGS)
