@@ -57,7 +57,7 @@ void mod_wiki(struct irc_t * irc, char * reply_msg)
 
     sprintf(url_path, "http://en.wikipedia.org/w/api.php?action=query&prop=extracts&exchars=350&titles=%s&format=json&redirects", p);
 
-    http = curl_perform(url_path);
+    http = curl_perform(url_path, NULL);
 
     t = http->body;
     while ( (t = strstr(t, "\\n")) != NULL) {

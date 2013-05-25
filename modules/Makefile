@@ -6,7 +6,7 @@ DEPS		= neurobotapi.o json.o
 UTILS		= curl_wrap.o utils.o
 UTIL_LDFLAGS = $(shell pkg-config libcurl --libs)
 
-all: mod_wiki.so mod_youtube.so mod_title.so mod_time.so mod_whereis.so
+all: mod_wiki.so mod_youtube.so mod_title.so mod_time.so mod_whereis.so mod_git.so
 
 # UTILITIES 
 curl_wrap.o: curl_wrap.c curl_wrap.h
@@ -34,9 +34,11 @@ mod_title.so: mod_title.o $(UTILS) $(DEPS)
 mod_whereis.so: mod_whereis.o $(UTILS) $(DEPS) 
 	$(CC) $(CFLAGS) $(LDFLAGS) $(UTILS) $(DEPS) mod_whereis.o -o $@ $(AFTERFLAGS) $(UTIL_LDFLAGS)
 
-
 mod_time.so: mod_time.o $(DEPS)
 	$(CC) $(CFLAGS) $(LDFLAGS) $(DEPS) mod_time.o -o $@ $(AFTERFLAGS)
+
+mod_git.so: mod_git.o $(UTILS) $(DEPS)
+	$(CC) $(CFLAGS) $(LDFLAGS) $(DEPS) $(UTILS) mod_git.o -o $@ $(AFTERFLAGS) $(UTIL_LDFLAGS)
 
 clean:
 	rm -fv *.o *.so *.pyc

@@ -15,7 +15,7 @@ int main(int argc, char *argv[])
 
     for (p = test_urls; *p != NULL; p++) {
         fprintf(stderr, "*** Performing %s\n", *p);
-        curl_perform(*p);
+        curl_perform(*p, NULL);
         fprintf(stderr, "*** OK.\n");
     }
     return 0;

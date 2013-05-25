@@ -5,6 +5,7 @@
 #define MAX_KEYWORDS 10
 
 char * keywords[MAX_KEYWORDS];
+extern int looper;
 
 struct network_t {
     char        * host_name;

@@ -54,7 +54,7 @@ static void proc_info_youtube(struct irc_t * irc, struct youtube_t * youtube)
 
     sprintf(url_path, "http://gdata.youtube.com/feeds/api/videos/%s?alt=json&ver=2", t);
 
-    http = curl_perform(url_path);
+    http = curl_perform(url_path, NULL);
     parse_json_youtube(http->body, youtube);
     free(http->base);
     free(http);

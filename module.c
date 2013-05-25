@@ -18,7 +18,6 @@
 #include <direct.h>
 #endif
 
-
 static       char       * mod_dir;
 
 #define MOD_MAX_NUM 50
@@ -34,7 +33,8 @@ struct mod_c_t * module_find(const char * cmd)
     snprintf(t, sizeof t, "mod_%s", cmd);
 
     for (k = 0; mod_array[k][0] != NULL; k++)
-        if (!strcmp((char *) mod_array[k][mod_array_t_mod_name], t))
+        if (!((struct mod_c_t *) mod_array[k][mod_array_t_mod_c])->looper
+        && !strcmp((char *) mod_array[k][mod_array_t_mod_name], t))
             return (struct mod_c_t *) mod_array[k][mod_array_t_mod_c];
 
     return NULL;
@@ -65,10 +65,11 @@ void module_load_callback(void * data)
     char file_full_path[250];
     void * mod;
     void * initializer;
-    void (* init_fp) (char ***);
+    void (* init_fp) (char ***, int *);
     char * t;
     struct mod_c_t * mod_c;
     char ** keywords;
+    int looper;
 
     int k;
 
@@ -112,11 +113,13 @@ void module_load_callback(void * data)
     }
 
 #ifdef _WIN32
-    init_fp = (void (__cdecl *)(void **, char ***))GetProcAddress((HMODULE) mod, "init");
+    init_fp = (void (__cdecl *)(char ***, int *))GetProcAddress((HMODULE) mod, "init");
 #else
     init_fp = dlsym(mod, "init");
 #endif
-    init_fp(&keywords);
+    init_fp(&keywords, &looper);
+    if (looper)
+        mod_c->looper = 1;
 
     mod_c->keywords = keywords;
     mod_c->func = (void (*)(struct irc_t *, char *)) initializer;
@@ -137,8 +140,12 @@ void module_load_callback(void * data)
         }
         fprintf(stderr, ".");
     }
-
     fprintf(stderr, "\n");
+
+    if (mod_c->looper) { 
+        fprintf(stderr, "The plugin is a looper, starting it.\n");
+        mod_c->func(NULL, NULL);
+    }
 }
 
 void module_unload_all(void)
@@ -182,10 +189,10 @@ void module_iterate_files(void (*callback)(void * data))
   snprintf(dir_buf, 1024, "%s\\*", mod_dir);
   hFile = FindFirstFile(dir_buf, &findData);
   if (hFile == INVALID_HANDLE_VALUE)
-	{
-		fprintf(stderr, "no modules found, skipping.\n");
-		return;
-	}
+  {
+      fprintf(stderr, "no modules found, skipping.\n");
+      return;
+  }
   do {
       callback(findData.cFileName);
   } while (FindNextFile(hFile, &findData));
@@ -205,13 +212,9 @@ void module_init()
     char buf[1024];
 
     getcwd(cur_dir, 1024);
-
     sprintf(buf, "%s/%s", cur_dir, "modules");
-    
     mod_dir = strdup(buf);
-
     module_load();
-
 #ifdef USE_PYTHON_MODULES
     if ( py_load_modules(mod_dir) < 0 )
         fprintf(stderr, "Could not load python modules, going on without them.\n");

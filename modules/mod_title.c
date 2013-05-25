@@ -47,7 +47,7 @@ void mod_title(struct irc_t * irc, char * reply_msg)
 
     if (validate_http(irc->request) < 0 )
         return;
-    http = curl_perform(irc->request);
+    http = curl_perform(irc->request, NULL);
     if (!http->body) return;
     if ( parse_title(reply_msg, http->body) > 0 ) {
         t = reply_msg;

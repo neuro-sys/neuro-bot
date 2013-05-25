@@ -9,6 +9,7 @@ struct mod_c_t {
     char * mod_name;
     void (* func)(struct irc_t * irc, char * reply_msg);
     char ** keywords;
+    int looper;
 };
 
 extern void             module_init(void);

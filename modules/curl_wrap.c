@@ -49,7 +49,7 @@ struct http_req * parse_header(char * content)
     return http;
 }
 
-struct http_req * curl_perform(char * url)
+struct http_req * curl_perform(char * url, struct curl_slist * slist)
 {
     CURL * curl;
     struct mem_block_t chunk;
@@ -66,6 +66,8 @@ struct http_req * curl_perform(char * url)
     curl_easy_setopt(curl, CURLOPT_USERAGENT, "neuro_irc_bot");
     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteMemoryCallback);
     curl_easy_setopt(curl, CURLOPT_WRITEDATA, &chunk);
+    if (NULL != slist)
+        curl_easy_setopt(curl, CURLOPT_HEADER, slist);
     curl_easy_perform(curl);
     curl_easy_cleanup(curl);
 
