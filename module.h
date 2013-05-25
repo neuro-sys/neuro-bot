@@ -18,5 +18,6 @@ extern struct mod_c_t * module_find_by_keyword(const char * line);
 extern void             module_load(void);
 extern void             module_iterate_files(void (*callback)(void * data));
 extern int              py_load_modules(char * mod_dir);
+extern struct mod_c_t ** module_get_loopers(void);
 #endif
 

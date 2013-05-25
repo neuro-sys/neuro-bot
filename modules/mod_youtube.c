@@ -56,7 +56,8 @@ static void proc_info_youtube(struct irc_t * irc, struct youtube_t * youtube)
 
     http = curl_perform(url_path, NULL);
     parse_json_youtube(http->body, youtube);
-    free(http->base);
+    free(http->header);
+    free(http->body);
     free(http);
 }
 

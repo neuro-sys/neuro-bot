@@ -53,6 +53,7 @@ char * mod_whereis(struct irc_t * irc, char * reply_msg)
     snprintf(url, 500, api_url, ip);
     http = curl_perform(url, NULL);
     json(reply_msg, http->body);
-    free(http->base);
+    free(http->header);
+    free(http->body);
     free(http);
 }

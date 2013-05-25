@@ -72,6 +72,7 @@ void mod_wiki(struct irc_t * irc, char * reply_msg)
 
     n_strip_tags(reply_msg, p);
 
-    free(http->base);
+    free(http->header);
+    free(http->body);
     free(http);
 }

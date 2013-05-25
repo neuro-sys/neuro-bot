@@ -5,7 +5,7 @@
 #define MAX_KEYWORDS 10
 
 char * keywords[MAX_KEYWORDS];
-extern int looper;
+int looper;
 
 struct network_t {
     char        * host_name;
@@ -35,5 +35,7 @@ struct irc_t {
     char                 from[100];
     struct session_t     * session;
 };
+
+void (*network_send_message) (struct network_t * network, char * message);
 
 #endif

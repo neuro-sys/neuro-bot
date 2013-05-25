@@ -5,74 +5,61 @@
 #include <stdlib.h>
 #include <string.h>
 
-struct mem_block_t {
-    char * memory;
-    size_t size;
-};
-
-static size_t WriteMemoryCallback(void * contents, size_t size, size_t nmemb, void * userp)
-{
-    size_t realsize; 
-    struct mem_block_t * mem;
-
-    realsize = size * nmemb;
-    mem = (struct mem_block_t *) userp;
-
-    mem->memory = realloc(mem->memory, mem->size + realsize + 1);
-    if (mem->memory == NULL) {
-        printf("not enough memory (realloc returned NULL)\n");
-        exit(-1);
-    }
-
-    memcpy(&(mem->memory[mem->size]), contents, realsize);
-    mem->size += realsize;
-    mem->memory[mem->size] = 0;
-    if (mem->size > 16*1024) {
-        fprintf(stderr, "Passed chunking limit: %zu\n", mem->size);
-        return -1;
-    }
-    return realsize;
-}
-
-struct http_req * parse_header(char * content)
+static size_t header_callback(void * ptr, size_t size, size_t nmemb, void * userdata)
 {
     struct http_req * http;
-    char line[1024];
-    char * t;
-    int i = 0;
 
-    http = malloc(sizeof (struct http_req));
+    http = (struct http_req *) userdata;
 
-    http->base = content;
-    http->body = strstr(content, "\r\n\r\n");
+    http->header = realloc(http->header, http->header_len + size * nmemb);
+    memcpy(http->header + http->header_len, ptr, size * nmemb);
+    http->header_len += size * nmemb;
+    
+    return size * nmemb;
+}
 
-    return http;
+static size_t body_callback(void * contents, size_t size, size_t nmemb, void * userp)
+{
+    struct http_req * http;
+
+    http = (struct http_req *) userp;
+
+    http->body = realloc(http->body, http->body_len + size * nmemb);
+    memcpy(http->body + http->body_len, contents, size * nmemb);
+    http->body_len += size * nmemb;
+
+    if (http->body_len > 100000) {
+        fprintf(stderr, "Passed the body size limit\n");
+        return -1;
+    }
+    return size * nmemb;
 }
 
 struct http_req * curl_perform(char * url, struct curl_slist * slist)
 {
     CURL * curl;
-    struct mem_block_t chunk;
-    char * url_content = NULL;
+    struct http_req * http;
 
-    memset(&chunk, 0, sizeof (struct mem_block_t));
+    http = malloc(sizeof (struct http_req));
+    memset(http, 0, sizeof (struct http_req));
 
     curl = curl_easy_init();
     curl_easy_setopt(curl, CURLOPT_URL, url);
     curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1);
-    curl_easy_setopt(curl, CURLOPT_HEADER, 1);
     //curl_easy_setopt(curl, CURLOPT_VERBOSE, 1);
     curl_easy_setopt(curl, CURLOPT_POSTREDIR, CURL_REDIR_POST_ALL );
     curl_easy_setopt(curl, CURLOPT_USERAGENT, "neuro_irc_bot");
-    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, WriteMemoryCallback);
-    curl_easy_setopt(curl, CURLOPT_WRITEDATA, &chunk);
-    if (NULL != slist)
-        curl_easy_setopt(curl, CURLOPT_HEADER, slist);
+    curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, body_callback);
+    curl_easy_setopt(curl, CURLOPT_HEADERFUNCTION, header_callback);
+    curl_easy_setopt(curl, CURLOPT_WRITEHEADER, http);
+    curl_easy_setopt(curl, CURLOPT_WRITEDATA, http);
+    if (NULL != slist) {
+        fprintf(stderr, "There are curl_slits's\n");
+        curl_easy_setopt(curl, CURLOPT_HTTPHEADER, slist);
+    }
     curl_easy_perform(curl);
     curl_easy_cleanup(curl);
 
-    url_content = chunk.memory;
-
-    return parse_header(url_content);
+    return http;
 }
 

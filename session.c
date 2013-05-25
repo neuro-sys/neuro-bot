@@ -3,6 +3,7 @@
 #include "irc.h"
 #include "global.h"
 #include "irc_cmd.h"
+#include "module.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -20,20 +21,41 @@ static void session_init_irc(struct session_t * session)
 
 }
 
+static void start_loopers(struct irc_t * irc)
+{
+    struct mod_c_t ** loopers, ** iterator;
+
+    loopers = module_get_loopers();
+    if (!loopers)
+        return;
+    
+    iterator = loopers;
+    while (*iterator) {
+       struct mod_c_t * mod;
+
+       mod = *iterator++;
+
+       puts(mod->mod_name);
+       mod->func(irc, NULL);
+    }
+
+}
 void session_run(struct session_t * session)
 { 
     char          line[MAX_IRC_MSG];
     struct irc_t  irc;
-
     session_init_irc(session);
     irc.session = session;        
+
+    start_loopers(&irc);
 
     while (1) 
     {
         irc.response[0] = '\0';
 
-        if ( network_read_line(&session->network, line) < 0)
+        if (network_read_line(&session->network, line) < 0)
             break;
+
         irc_process_line(&irc, line);
         
         if (irc.response[0])

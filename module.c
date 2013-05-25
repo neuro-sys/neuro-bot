@@ -3,6 +3,7 @@
 #include "global.h"
 #include "irc.h"
 #include "py_wrap.h"
+#include "network.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -40,6 +41,25 @@ struct mod_c_t * module_find(const char * cmd)
     return NULL;
 }
 
+struct mod_c_t ** module_get_loopers(void)
+{
+    struct mod_c_t ** array = NULL;
+    int i, k;
+
+    array = malloc(sizeof (struct mod_c_t **) * 10);
+
+    for (i = 0, k = 0; mod_array[k][0] != NULL; k++) {
+        struct mod_c_t * mod = (struct mod_c_t *) mod_array[k][mod_array_t_mod_c];
+        if (mod->looper) {
+            array[i++] = mod;
+        }
+    }
+    if (i)
+        array[i] = NULL;
+
+    return array;
+}
+
 struct mod_c_t * module_find_by_keyword(const char * line)
 {
     char ** keywords;
@@ -65,7 +85,7 @@ void module_load_callback(void * data)
     char file_full_path[250];
     void * mod;
     void * initializer;
-    void (* init_fp) (char ***, int *);
+    void (* init_fp) (char ***, void (*)(struct network_t *, char *), int *);
     char * t;
     struct mod_c_t * mod_c;
     char ** keywords;
@@ -113,11 +133,11 @@ void module_load_callback(void * data)
     }
 
 #ifdef _WIN32
-    init_fp = (void (__cdecl *)(char ***, int *))GetProcAddress((HMODULE) mod, "init");
+    init_fp = (void (__cdecl *)(char ***, void (*)(struct network_t *, char *), int *))GetProcAddress((HMODULE) mod, "init");
 #else
     init_fp = dlsym(mod, "init");
 #endif
-    init_fp(&keywords, &looper);
+    init_fp(&keywords, &network_send_message, &looper);
     if (looper)
         mod_c->looper = 1;
 
@@ -141,11 +161,6 @@ void module_load_callback(void * data)
         fprintf(stderr, ".");
     }
     fprintf(stderr, "\n");
-
-    if (mod_c->looper) { 
-        fprintf(stderr, "The plugin is a looper, starting it.\n");
-        mod_c->func(NULL, NULL);
-    }
 }
 
 void module_unload_all(void)

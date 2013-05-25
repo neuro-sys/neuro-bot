@@ -57,7 +57,8 @@ void mod_title(struct irc_t * irc, char * reply_msg)
 			t++;
 		}
     }
-    free(http->base);
+    free(http->header);
+    free(http->body);
     free(http);
     return;
 }
