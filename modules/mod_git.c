@@ -102,13 +102,11 @@ void mod_git(struct irc_t * irc, char * reply_msg)
         }
         parse_etag(http->header);
 
-        puts(http->header);
         if (!strstr(http->header, "304 Not Modified")) {
             char message[510], response[510];
             int i;
 
             parse_json_event(http->body, message);
-            fprintf(stderr, "*** WE GOT UPDATE **\n");
             for (i = 0; i < irc->channels_siz; i++) {
                 char * chan = irc->channels[i];
                 sprintf(response, "PRIVMSG %s :%s\r\n", chan, message);
