@@ -41,3 +41,7 @@ missing
 stamp-h1
 *.pyc
 tags
+*.out
+*.class
+*.so
+
