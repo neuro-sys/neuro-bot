@@ -91,6 +91,7 @@ void mod_git(struct irc_t * irc, char * reply_msg)
         if (0 == strcmp(etag_last, "")) {
             http = curl_perform(GIT_EVENT_API_URL, NULL);
         } else {
+            /* Other times set the ETag header to check for 304 Notified in the response. */
             struct curl_slist * slist = NULL;
             char reqbuf[256];
 

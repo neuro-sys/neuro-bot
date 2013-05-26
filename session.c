@@ -22,7 +22,6 @@ static void session_init_irc(struct session_t * session)
 
     irc_set_user("ircbot", "github.com/neuro-sys/neuro-bot", message);
     network_send_message(&session->network, message);
-
 }
 
 struct thread_struct {
@@ -55,7 +54,7 @@ static void start_loopers(struct irc_t * irc)
         struct thread_struct * ts;
 
         if (i == 10) {
-            fprintf(stderr, "Passed the looper number limit...\n");
+            fprintf(stderr, "Passed the maximum number of loopers limit.\n");
             break;
         }
         ts = malloc(sizeof (struct thread_struct));
