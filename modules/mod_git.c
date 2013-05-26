@@ -11,7 +11,7 @@
 #include <pthread.h>
 #include <unistd.h>
 
-#define GIT_EVENT_API_URL "https://api.github.com/repos/neuro-sys/neuro-bot/events"
+#define GIT_EVENT_API_URL "https://api.github.com/repos/neuro-sys/dotfiles/events"
 
 int looper = 1;
 
