@@ -54,7 +54,6 @@ struct http_req * curl_perform(char * url, struct curl_slist * slist)
     curl_easy_setopt(curl, CURLOPT_WRITEHEADER, http);
     curl_easy_setopt(curl, CURLOPT_WRITEDATA, http);
     if (NULL != slist) {
-        fprintf(stderr, "There are curl_slits's\n");
         curl_easy_setopt(curl, CURLOPT_HTTPHEADER, slist);
     }
     curl_easy_perform(curl);
