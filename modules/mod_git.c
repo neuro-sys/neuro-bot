@@ -84,42 +84,42 @@ void mod_git(struct irc_t * irc, char * reply_msg)
 {
     memset(etag_last, 0, sizeof (etag_last));
 
-        while (1) { 
-            struct http_req * http;
+    while (1) { 
+        struct http_req * http;
 
-            fprintf(stderr, "channels_siz %d\n", irc->channels_siz);
-            /* The first time coming if there's no etag is set. */
-            if (0 == strcmp(etag_last, "")) {
-                fprintf(stderr, "first coming\n");
-                http = curl_perform(GIT_EVENT_API_URL, NULL);
-            } else {
-                struct curl_slist * slist = NULL;
-                char reqbuf[256];
+        fprintf(stderr, "channels_siz %d\n", irc->channels_siz);
+        /* The first time coming if there's no etag is set. */
+        if (0 == strcmp(etag_last, "")) {
+            fprintf(stderr, "first coming\n");
+            http = curl_perform(GIT_EVENT_API_URL, NULL);
+        } else {
+            struct curl_slist * slist = NULL;
+            char reqbuf[256];
 
-                snprintf(reqbuf, 256, "If-None-Match: %s", etag_last);
-                fprintf(stderr, reqbuf);
-                slist = curl_slist_append(slist, reqbuf); 
-                http = curl_perform(GIT_EVENT_API_URL, slist);
-            }
-            parse_etag(http->header);
-
-            if (!strstr(http->header, "304 Not Modified")) {
-                char message[510], response[510];
-                int i;
-
-                parse_json_event(http->body, message);
-
-                for (i = 0; i < irc->channels_siz; i++) {
-                   char * chan = irc->channels[i];
-                   sprintf(response, "PRIVMSG %s :%s\r\n", chan, message);
-                   network_send_message(&irc->session->network, response);
-                }
-            }
-
-            free(http->header);
-            free(http->body);
-            free(http);
-
-            usleep(x_rate_limit *1000*1000);
+            snprintf(reqbuf, 256, "If-None-Match: %s", etag_last);
+            slist = curl_slist_append(slist, reqbuf); 
+            http = curl_perform(GIT_EVENT_API_URL, slist);
         }
+        parse_etag(http->header);
+
+        puts(http->header);
+        if (!strstr(http->header, "304 Not Modified")) {
+            char message[510], response[510];
+            int i;
+
+            parse_json_event(http->body, message);
+            fprintf(stderr, "*** WE GOT UPDATE **\n");
+            for (i = 0; i < irc->channels_siz; i++) {
+                char * chan = irc->channels[i];
+                sprintf(response, "PRIVMSG %s :%s\r\n", chan, message);
+                network_send_message(&irc->session->network, response);
+            }
+        }
+
+        free(http->header);
+        free(http->body);
+        free(http);
+
+        usleep(x_rate_limit *1000*1000);
+    }
 }

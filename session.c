@@ -32,36 +32,41 @@ struct thread_struct {
 
 static void *looper_thread(void * pdata)
 {
-   struct thread_struct * ts;
+    struct thread_struct * ts;
 
-   ts = (struct thread_struct *) pdata;
+    ts = (struct thread_struct *) pdata;
+    ts->mod->func(ts->irc, NULL);
 
-   ts->mod->func(ts->irc, NULL);
-   return 0;
+    return 0;
 }
 
 static void start_loopers(struct irc_t * irc)
 {
     struct mod_c_t ** loopers, ** iterator;
+    int i = 0;
 
     loopers = module_get_loopers();
     if (!loopers)
         return;
-    
+
     iterator = loopers;
     while (*iterator) {
-       struct mod_c_t * mod;
-       struct thread_struct * ts;
+        struct mod_c_t * mod;
+        struct thread_struct * ts;
 
-       ts = malloc(sizeof (struct thread_struct));
+        if (i == 10) {
+            fprintf(stderr, "Passed the looper number limit...\n");
+            break;
+        }
+        ts = malloc(sizeof (struct thread_struct));
 
-       mod = *iterator++;
+        mod = *iterator++;
 
-       ts->mod = mod;
-       ts->irc = irc;
+        ts->mod = mod;
+        ts->irc = irc;
 
-       fprintf(stderr, "Looper %s is started\n", mod->mod_name);
-       pthread_create(&threads[0], NULL, looper_thread, ts);
+        fprintf(stderr, "Looper %s is started\n", mod->mod_name);
+        pthread_create(&threads[i++], NULL, looper_thread, ts);
     }
 
     free(loopers);
