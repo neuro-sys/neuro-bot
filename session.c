@@ -9,6 +9,10 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <pthread.h>
+
+pthread_t threads[10];
+
 static void session_init_irc(struct session_t * session)
 {
     char message[MAX_IRC_MSG];
@@ -19,6 +23,21 @@ static void session_init_irc(struct session_t * session)
     irc_set_user("ircbot", "github.com/neuro-sys/neuro-bot", message);
     network_send_message(&session->network, message);
 
+}
+
+struct thread_struct {
+    struct mod_c_t * mod;
+    struct irc_t * irc;
+};
+
+static void *looper_thread(void * pdata)
+{
+   struct thread_struct * ts;
+
+   ts = (struct thread_struct *) pdata;
+
+   ts->mod->func(ts->irc, NULL);
+   return 0;
 }
 
 static void start_loopers(struct irc_t * irc)
@@ -32,18 +51,28 @@ static void start_loopers(struct irc_t * irc)
     iterator = loopers;
     while (*iterator) {
        struct mod_c_t * mod;
+       struct thread_struct * ts;
+
+       ts = malloc(sizeof (struct thread_struct));
 
        mod = *iterator++;
 
-       puts(mod->mod_name);
-       mod->func(irc, NULL);
+       ts->mod = mod;
+       ts->irc = irc;
+
+       fprintf(stderr, "Looper %s is started\n", mod->mod_name);
+       pthread_create(&threads[0], NULL, looper_thread, ts);
     }
 
+    free(loopers);
 }
+
 void session_run(struct session_t * session)
 { 
     char          line[MAX_IRC_MSG];
     struct irc_t  irc;
+
+    memset(&irc, 0, sizeof(struct irc_t));
     session_init_irc(session);
     irc.session = session;        
 
@@ -57,7 +86,7 @@ void session_run(struct session_t * session)
             break;
 
         irc_process_line(&irc, line);
-        
+
         if (irc.response[0])
             network_send_message(&session->network, irc.response);
     }

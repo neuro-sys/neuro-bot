@@ -165,7 +165,7 @@ static int irc_parse_prefix (struct irc_t * irc, char * line)
     strncpy(tokens[1], t, MAX_IRC_MSG);
 
     /* params */
-    if ( !(t = strtok(NULL, " ")) )
+    if ( !(t = strtok(NULL, ":")) )
         return -1;
 
     strncpy(tokens[2], t, MAX_IRC_MSG);
@@ -185,12 +185,12 @@ static int irc_parse_prefix (struct irc_t * irc, char * line)
 
         /* the rest is request and optional */
         if ( tokens[3] != '\0' ) 
-            strcpy (irc->request, tokens[3]+1);
+            strcpy (irc->request, tokens[3]);
 
     } 
     else 
     {
-        strcpy (irc->request, tokens[2]+1);
+        strcpy (irc->request, tokens[2]);
     }
 
     return 1;
@@ -218,10 +218,31 @@ static void irc_parse_other (struct irc_t * irc, char * line)
     }
 }
 
+void check_channel_join(struct irc_t * irc)
+{
+    char * t;
+    char buf[250];
+    int i;
+
+    if (!strstr(irc->srv_msg.command, "353"))
+        return;
+
+    strcpy(buf, irc->srv_msg.params);
+
+    t = strtok(buf, "=");
+    t = strtok(NULL, "");
+
+    irc->channels = realloc(irc->channels, sizeof (irc->channels) * irc->channels_siz+1);
+    irc->channels[irc->channels_siz] = strdup(t+1);
+    irc->channels_siz++;
+
+    for (i = 0; i < irc->channels_siz; i++)
+        puts(irc->channels[i]);
+}
+
 /* message    =  [ ":" prefix SPACE ] command [ params ] crlf */
 void irc_process_line(struct irc_t * irc, char * line)
 {  
-    fprintf(stderr, "%s\n", line);
     if ( line[0] == ':' ) {
         if (irc_parse_prefix(irc, line) < 0)
             return;
@@ -229,6 +250,16 @@ void irc_process_line(struct irc_t * irc, char * line)
         irc_parse_other(irc, line);   
     }
 
+    check_channel_join(irc);
+
+    fprintf(stderr, "%s => [%s] [%s] [%s] : %s\n", 
+                                  irc->from,
+                                  irc->srv_msg.prefix,
+                                  irc->srv_msg.command, 
+                                  irc->srv_msg.params,
+                                  irc->request);
     irc_proc_cmd(irc);
+    if (irc->response[0])
+        fprintf(stderr, "%s\n", irc->response);
 }
 

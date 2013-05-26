@@ -8,6 +8,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <pthread.h>
 #include <unistd.h>
 
 #define GIT_EVENT_API_URL "https://api.github.com/repos/neuro-sys/neuro-bot/events"
@@ -19,7 +20,7 @@ static int x_rate_limit;
 
 void parse_json_event(char * body, char * dest)
 {
-    json_value * root, * payload, * comitter_name, * message, * url;
+    json_value * root, * payload, * comitter_name, * message, * sha;
 
     root = json_parse(body);
     if (!root) return;
@@ -27,11 +28,11 @@ void parse_json_event(char * body, char * dest)
     payload = n_json_find_object(root, "payload");
     comitter_name = n_json_find_object(payload, "name");
     message = n_json_find_object(payload, "message");
-    url = n_json_find_object(payload, "url");
+    sha = n_json_find_object(payload, "sha");
 
-    sprintf(dest, "[%s] [%s] [%s]\n", comitter_name->u.string.ptr,
+    sprintf(dest, "Commiter: [%s] - Msg: [%s] Sha: [%s]", comitter_name->u.string.ptr,
                                   message->u.string.ptr,
-                                  url->u.string.ptr);
+                                  sha->u.string.ptr);
     json_value_free(root);
 }
 
@@ -81,24 +82,16 @@ __declspec(dllexport)
 #endif
 void mod_git(struct irc_t * irc, char * reply_msg)
 {
-    pid_t childPID;
-    int var_lcl = 0;
-
     memset(etag_last, 0, sizeof (etag_last));
 
-    fprintf(stderr, "looper started\n");
-    childPID = fork();
-
-    if (childPID == 0)
-    {
         while (1) { 
             struct http_req * http;
 
+            fprintf(stderr, "channels_siz %d\n", irc->channels_siz);
             /* The first time coming if there's no etag is set. */
-            //if (0 == strcmp(etag_last, "")) {
+            if (0 == strcmp(etag_last, "")) {
                 fprintf(stderr, "first coming\n");
                 http = curl_perform(GIT_EVENT_API_URL, NULL);
-#if 0
             } else {
                 struct curl_slist * slist = NULL;
                 char reqbuf[256];
@@ -108,16 +101,20 @@ void mod_git(struct irc_t * irc, char * reply_msg)
                 slist = curl_slist_append(slist, reqbuf); 
                 http = curl_perform(GIT_EVENT_API_URL, slist);
             }
-#endif
             parse_etag(http->header);
 
-            //if (!strstr(http->header, "304 Not Modified")) {
+            if (!strstr(http->header, "304 Not Modified")) {
                 char message[510], response[510];
+                int i;
 
                 parse_json_event(http->body, message);
-                sprintf(response, "PRIVMSG #gameover :%s\r\n", message);
-                network_send_message(&irc->session->network, response);
-            //}
+
+                for (i = 0; i < irc->channels_siz; i++) {
+                   char * chan = irc->channels[i];
+                   sprintf(response, "PRIVMSG %s :%s\r\n", chan, message);
+                   network_send_message(&irc->session->network, response);
+                }
+            }
 
             free(http->header);
             free(http->body);
@@ -125,9 +122,4 @@ void mod_git(struct irc_t * irc, char * reply_msg)
 
             usleep(x_rate_limit *1000*1000);
         }
-    } else if (childPID == -1) {
-        fprintf(stderr, "The plugin mod_git is failed to fork\n");
-    } else { 
-        fprintf(stderr, "The plugin mod_git has started.\n");
-    }
 }

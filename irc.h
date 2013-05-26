@@ -17,6 +17,8 @@ struct irc_t {
     char                 response[MAX_IRC_MSG];
     char                 nick_to_msg[100];
     char                 from[100];
+    char                 ** channels;
+    int                  channels_siz;
     struct session_t     * session;
 };
 

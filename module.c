@@ -57,6 +57,10 @@ struct mod_c_t ** module_get_loopers(void)
     if (i)
         array[i] = NULL;
 
+    if (i == 0) {
+        free(array);
+        array = NULL;
+    }
     return array;
 }
 

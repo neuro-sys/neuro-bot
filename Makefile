@@ -1,5 +1,5 @@
-CFLAGS	   = -I. -Wall -g -O0 -DUSE_PYTHON_MODULES
-LDFLAGS	   = -ldl -g -O0 
+CFLAGS	   = -I. -Wall -g -O0 -pthread -DUSE_PYTHON_MODULES
+LDFLAGS	   = -ldl -g -O0  -pthread
 OBJS	   =config.o \
 		   irc.o \
 		   module.o \

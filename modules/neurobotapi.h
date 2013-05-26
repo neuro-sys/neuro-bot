@@ -14,11 +14,11 @@ struct network_t {
 };
 
 struct session_t {
-    void                (* run) (struct session_t * session);
     struct network_t    network;
     char                * nickname;
     char                * password;
     char                * admin;
+    char                * channels_ajoin[50];
 };
 
 struct srv_message_t {
@@ -33,6 +33,8 @@ struct irc_t {
     char                 response[MAX_IRC_MSG];
     char                 nick_to_msg[100];
     char                 from[100];
+    char                 ** channels;
+    int                  channels_siz;
     struct session_t     * session;
 };
 

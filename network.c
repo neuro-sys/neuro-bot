@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <errno.h>
 #ifndef _WIN32
 #include <sys/socket.h>
 #include <unistd.h>
@@ -14,7 +15,7 @@
 #endif
 #include <sys/types.h>
 
-static int errno;
+int errno;
 
 /* K&R 8.2 */
 int getchar_buf(int sockfd)
@@ -67,6 +68,6 @@ void network_send_message(struct network_t * network, char * message)
     if (message[len-2] == '\r' && message[len-1] != '\n')
         strcat(message, "\r\n");
 
-    send(network->sockfd, message, strlen(message), 0);
+    len = send(network->sockfd, message, strlen(message), 0);
 }
 
