@@ -155,6 +155,9 @@ void module_load_callback(void * data)
 
     fprintf(stderr, "Shared-lib Module loaded: [%s]", file_name);
 
+    if (looper)
+        fprintf(stderr, " (looper)");
+
     if (*keywords) {
         fprintf(stderr, " with keywords: ");
         while (*keywords != NULL) {
