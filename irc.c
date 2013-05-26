@@ -255,10 +255,9 @@ void check_channel_part(struct irc_t * irc)
     t = strtok(buf, "\r\n");
     new_channels = malloc(sizeof (irc->channels) * irc->channels_siz-1);
 
-    for (i = 0; i < irc->channels_siz; i++) {
+    for (i = 0; i < irc->channels_siz; i++) 
         if (!strstr(irc->channels[i], t))
             *new_channels++ = irc->channels[i];
-    }
 
     free(irc->channels);
     irc->channels = new_channels;

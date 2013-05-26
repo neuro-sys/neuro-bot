@@ -87,10 +87,8 @@ void mod_git(struct irc_t * irc, char * reply_msg)
     while (1) { 
         struct http_req * http;
 
-        fprintf(stderr, "channels_siz %d\n", irc->channels_siz);
         /* The first time coming if there's no etag is set. */
         if (0 == strcmp(etag_last, "")) {
-            fprintf(stderr, "first coming\n");
             http = curl_perform(GIT_EVENT_API_URL, NULL);
         } else {
             struct curl_slist * slist = NULL;
