@@ -85,8 +85,11 @@ void session_run(struct session_t * session)
 
     while (1) 
     {
-        memset(&irc, 0, sizeof(struct irc_t));
-        irc.session = session;
+        irc.response[0] = 0;
+        irc.nick_to_msg[0] = 0;
+        irc.from[0] = 0;
+        irc.request[0] = 0;
+        memset(&irc.srv_msg, 0, sizeof(irc.srv_msg));
 
         if (network_read_line(&session->network, line) < 0)
             break;
