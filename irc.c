@@ -249,6 +249,10 @@ static void check_channel_part(struct irc_t * irc)
     if (!strstr(irc->srv_msg.command, "PART"))
         return;
 
+    t = strtok(irc->srv_msg.prefix, "!");
+    if (!strstr(t, irc->session->nickname))
+        return;
+
     strcpy(buf, irc->srv_msg.params);
 
     t = strtok(buf, "\r\n");

@@ -22,7 +22,7 @@ int getchar_buf(int sockfd)
 {
     static char buf[1024];
     static char * bufp;
-    static unsigned int n;
+    static int n;
 
     if (n == 0) {
         if ( (n = recv(sockfd, buf, 1024, 0)) <= 0 ) { 

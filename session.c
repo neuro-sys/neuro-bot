@@ -43,6 +43,7 @@ static void start_loopers(struct irc_t * irc)
 {
     struct mod_c_t ** loopers, ** iterator;
     int i = 0;
+    int err;
 
     loopers = module_get_loopers();
     if (!loopers)
@@ -65,9 +66,10 @@ static void start_loopers(struct irc_t * irc)
         ts->irc = irc;
 
         fprintf(stderr, "Looper %s is started\n", mod->mod_name);
-        pthread_create(&threads[i++], NULL, looper_thread, ts);
+        if ((err = pthread_create(&threads[i++], NULL, looper_thread, ts)) != 0) {
+            fprintf(stderr, "Thread could not be started. pthread_create, errno = %d\n", err);
+        }
     }
-
     free(loopers);
 }
 
@@ -76,7 +78,6 @@ void session_run(struct session_t * session)
     char          line[MAX_IRC_MSG];
     struct irc_t  irc;
 
-    memset(&irc, 0, sizeof(struct irc_t));
     session_init_irc(session);
     irc.session = session;        
 
@@ -84,7 +85,8 @@ void session_run(struct session_t * session)
 
     while (1) 
     {
-        irc.response[0] = '\0';
+        memset(&irc, 0, sizeof(struct irc_t));
+        irc.session = session;
 
         if (network_read_line(&session->network, line) < 0)
             break;
