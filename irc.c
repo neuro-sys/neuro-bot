@@ -218,10 +218,10 @@ static void irc_parse_other (struct irc_t * irc, char * line)
     }
 }
 
-void check_channel_join(struct irc_t * irc)
+static void check_channel_join(struct irc_t * irc)
 {
     char * t;
-    char buf[250];
+    char buf[MAX_IRC_MSG];
     int i;
 
     if (!strstr(irc->srv_msg.command, "353"))
@@ -239,11 +239,11 @@ void check_channel_join(struct irc_t * irc)
         puts(irc->channels[i]);
 }
 
-void check_channel_part(struct irc_t * irc)
+static void check_channel_part(struct irc_t * irc)
 {
     char * t;
-    char buf[250];
-    int i;
+    char buf[MAX_IRC_MSG];
+    int i, j;
     char ** new_channels;
 
     if (!strstr(irc->srv_msg.command, "PART"))
@@ -254,9 +254,11 @@ void check_channel_part(struct irc_t * irc)
     t = strtok(buf, "\r\n");
     new_channels = malloc(sizeof (irc->channels) * irc->channels_siz-1);
 
-    for (i = 0; i < irc->channels_siz; i++) 
+    for (j = 0, i = 0; i < irc->channels_siz; i++) 
         if (!strstr(irc->channels[i], t))
-            *new_channels++ = irc->channels[i];
+            new_channels[j] = irc->channels[i];
+        else
+            free(irc->channels[i]);
 
     free(irc->channels);
     irc->channels = new_channels;
