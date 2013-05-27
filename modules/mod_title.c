@@ -1,11 +1,23 @@
 #include "neurobotapi.h"
 #include "curl_wrap.h"
 
+#include <libxml/HTMLparser.h>
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 
 char * keywords[MAX_KEYWORDS] = { "http", "https" };
+
+#ifdef _MSC_VER
+#define COMPARE(a, b) (!stricmp((a), (b)))
+#else
+#define COMPARE(a, b) (!strcasecmp((a), (b)))
+#endif
+
+static char title_buffer[512];
+static int title_len = 0;
+static int in_title = 0;
 
 static int validate_http(char * line)
 {
@@ -25,16 +37,35 @@ static int validate_http(char * line)
     return 1;
 }
 
-static int parse_title(char * dest, char * src)
-{
-    char * t;
 
-    t = n_get_tag_value(src, "title");
-    if (t) {
-        strcpy(dest, t); 
-        return 1;
-    }
-    return -1;
+static void    
+startTag (void * ctx, 
+          const xmlChar * name, 
+          const xmlChar ** atts)
+{
+    if (COMPARE((char *) name, "TITLE"))
+        in_title = 1;
+}
+
+static void 
+endTag (void * ctx, 
+        const xmlChar * name)
+{
+    if (COMPARE((char *) name, "TITLE"))
+        in_title = 0;
+}
+
+static void
+characters_callback (void * ctx, 
+            const xmlChar * ch, 
+            int len)
+{
+    if (!in_title)
+        return;
+    title_len += len;
+    if (len > MAX_IRC_MSG)
+        return;
+    strcat(title_buffer, (char *) ch);
 }
 
 #ifdef _WIN32
@@ -44,22 +75,38 @@ void mod_title(struct irc_t * irc, char * reply_msg)
 {
     struct http_req * http;
     char * t;
+    htmlSAXHandler saxHandler;
+    htmlParserCtxt * ctx_ptr;
+
+    title_buffer[0] = 0;
+    title_len = 0;
+    in_title = 0;
+
+    memset(&saxHandler, 0, sizeof (htmlSAXHandler));
+
+    saxHandler.startElement = startTag;
+    saxHandler.endElement = endTag;
+    saxHandler.characters = characters_callback;
+    saxHandler.cdataBlock = characters_callback;
 
     if (validate_http(irc->request) < 0 )
         return;
     http = curl_perform(irc->request, NULL);
     if (!http->body) return;
-    if ( parse_title(reply_msg, http->body) > 0 ) {
-        t = reply_msg;
-        while (*t != '\0') { 
-			if (*t == '\n' || *t == '\t') 
-				t[0] = ' '; 
-			t++;
-		}
-    }
+
+
+    ctx_ptr = htmlCreatePushParserCtxt(&saxHandler, NULL, "", 0, "", XML_CHAR_ENCODING_NONE);
+    htmlParseChunk(ctx_ptr, http->body, http->body_len, 0);
+    htmlParseChunk(ctx_ptr, "", 0, 1);
+    
+    htmlFreeParserCtxt(ctx_ptr);
+
+    sprintf(reply_msg, "Title: %s", title_buffer);
+
     free(http->header);
     free(http->body);
     free(http);
+
     return;
 }
 

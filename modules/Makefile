@@ -28,8 +28,11 @@ mod_wiki.so: mod_wiki.o $(UTILS) $(DEPS)
 mod_youtube.so: mod_youtube.o $(UTILS) $(DEPS)
 	$(CC) $(CFLAGS) $(LDFLAGS) $(DEPS) $(UTILS) mod_youtube.o -o $@ $(UTIL_LDFLAGS) $(AFTERFLAGS)
 
+mod_title.o: mod_title.c neurobotapi.h
+	$(CC) $(CFLAGS) -c $< -o $@ -fPIC -shared $(shell pkg-config libxml-2.0 --cflags)
+
 mod_title.so: mod_title.o $(UTILS) $(DEPS)
-	$(CC) $(CFLAGS) $(LDFLAGS) $(DEPS) $(UTILS) mod_title.o -o $@ $(UTIL_LDFLAGS) $(AFTERFLAGS)
+	$(CC) $(CFLAGS) $(LDFLAGS) $(DEPS) $(UTILS) mod_title.o -o $@ $(UTIL_LDFLAGS) $(AFTERFLAGS) $(shell pkg-config libxml-2.0 --libs)
 
 mod_whereis.so: mod_whereis.o $(UTILS) $(DEPS) 
 	$(CC) $(CFLAGS) $(LDFLAGS) $(UTILS) $(DEPS) mod_whereis.o -o $@ $(UTIL_LDFLAGS) $(AFTERFLAGS)
