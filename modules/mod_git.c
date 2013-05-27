@@ -19,18 +19,22 @@ int looper = 1;
 static char etag_last[1024];
 static int x_rate_limit;
 
-static void strip_json_body_dirt(char *body)
+static void sanitize_json_response(char *body)
 {
-    while (*body++ != '[') {}
-    while ( !(*body == ']' && body[1] != '}') ) *body++;
-    body[1] = 0;
+    size_t len = strlen(body);
+    int i = 0;
+ 
+    while (i < len && body[i++] != '[') {}
+    while (i+1 < len && !(body[i] == ']' && body[i+1] != '}')) i++;
+
+    body[i+1] = 0;
 }
 
 static void parse_json_event(char * body, char * dest)
 {
     json_value * root, * payload, * comitter_name, * message, *name, * sha;
 
-    strip_json_body_dirt(body);
+    //sanitize_json_response(body);
     root = json_parse(body);
     if (!root) return;
 
@@ -118,9 +122,9 @@ void mod_git(struct irc_t * irc, char * reply_msg)
             }
         }
 
-        free(http->header);
-        free(http->body);
-        free(http);
+        if (http->header != NULL) free(http->header);
+        if (http->body != NULL) free(http->body);
+        if (http != NULL) free(http);
 
         usleep(x_rate_limit *1000*1000);
     }
