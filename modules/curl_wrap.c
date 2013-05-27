@@ -11,9 +11,10 @@ static size_t header_callback(void * ptr, size_t size, size_t nmemb, void * user
 
     http = (struct http_req *) userdata;
 
-    http->header = realloc(http->header, http->header_len + size * nmemb);
+    http->header = realloc(http->header, http->header_len + size * nmemb + 1);
     memcpy(http->header + http->header_len, ptr, size * nmemb);
     http->header_len += size * nmemb;
+    http->header[http->header_len] = 0;
     
     return size * nmemb;
 }
@@ -24,10 +25,11 @@ static size_t body_callback(void * contents, size_t size, size_t nmemb, void * u
 
     http = (struct http_req *) userp;
 
-    http->body = realloc(http->body, http->body_len + size * nmemb);
+    http->body = realloc(http->body, http->body_len + size * nmemb + 1);
     memcpy(http->body + http->body_len, contents, size * nmemb);
     http->body_len += size * nmemb;
-
+    http->body[http->body_len] = 0;
+ 
     if (http->body_len > 100000) {
         fprintf(stderr, "Passed the body size limit\n");
         return -1;
