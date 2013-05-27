@@ -34,7 +34,7 @@ clean:
 modules:
 	$(MAKE) --directory=$(MOD_DIR)
 
-unit_tests:
-	$(MAKE) --directory=$(TEST_DIR)
+#unit_tests:
+#	$(MAKE) --directory=$(TEST_DIR)
 
 
