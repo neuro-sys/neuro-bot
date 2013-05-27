@@ -23,18 +23,10 @@ static void strip_json_body_dirt(char *body)
 {
     while (*body++ != '[') {}
     while ( !(*body == ']' && body[1] != '}') ) *body++;
-
     body[1] = 0;
-#if 0
-    while (*body) {
-        if  (!isascii(*body))
-            *body = ' ';
-        *body++;
-    }
-#endif
 }
 
-void parse_json_event(char * body, char * dest)
+static void parse_json_event(char * body, char * dest)
 {
     json_value * root, * payload, * comitter_name, * message, *name, * sha;
 
@@ -48,14 +40,15 @@ void parse_json_event(char * body, char * dest)
     name = n_json_find_object(root, "name");
     sha = n_json_find_object(payload, "sha");
 
-    sprintf(dest, "Commiter: [%s] - Msg: [%s] Url: [http://github.com/%s/commit/%s]", comitter_name->u.string.ptr,
+    sprintf(dest, "* Commiter: [%s] - Msg: [%s] Url: [http://github.com/%s/commit/%s]", 
+                                  comitter_name->u.string.ptr,
                                   message->u.string.ptr,
                                   name->u.string.ptr,
                                   sha->u.string.ptr);
     json_value_free(root);
 }
 
-int parse_etag(char * _text)
+static void parse_etag(char * _text)
 {
     char * t;
     char text[1024];
@@ -63,37 +56,30 @@ int parse_etag(char * _text)
     strncpy(text, _text, 1024);
 
     t = strstr(text, "X-RateLimit-Limit");
-    if (NULL == t)
-        goto SKIP;
+    if (NULL != t) {
+        t = strtok(t, ":");
+        if (NULL != t) {
+            t = strtok(NULL, "\r\n");
+            if (NULL != t)
+                x_rate_limit = atoi(t+1);
+        }
+    }
 
-    t = strtok(t, ":");
-    if (NULL == t)
-        goto SKIP;
-
-    t = strtok(NULL, "\r\n");
-    if (NULL == t)
-        goto SKIP;
-
-    x_rate_limit = atoi(t+1);
-
-SKIP:
     strncpy(text, _text, 1024);
 
     t = strstr(text, "ETag");
     if (NULL == t)
-        return -1;
+        return;
 
     t = strtok(t, ":");
     if (NULL == t)
-        return -1;
+        return;
 
     t = strtok(NULL, "\r\n");
     if (NULL == t)
-        return -1;
+        return;
 
     strcpy(etag_last, t+1);
-
-    return 0;
 }
 
 #ifdef _WIN32
@@ -127,7 +113,7 @@ void mod_git(struct irc_t * irc, char * reply_msg)
             parse_json_event(http->body, message);
             for (i = 0; i < irc->channels_siz; i++) {
                 char * chan = irc->channels[i];
-                sprintf(response, "PRIVMSG %s :neuro-sys/neuro-bot => %s\r\n", chan, message);
+                sprintf(response, "PRIVMSG %s :%s\r\n", chan, message);
                 network_send_message(&irc->session->network, response);
             }
         }
