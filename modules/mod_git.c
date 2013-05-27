@@ -36,7 +36,7 @@ static void strip_json_body_dirt(char *body)
 
 void parse_json_event(char * body, char * dest)
 {
-    json_value * root, * payload, * comitter_name, * message, * sha;
+    json_value * root, * payload, * comitter_name, * message, *name, * sha;
 
     strip_json_body_dirt(body);
     root = json_parse(body);
@@ -45,13 +45,12 @@ void parse_json_event(char * body, char * dest)
     payload = n_json_find_object(root, "payload");
     comitter_name = n_json_find_object(payload, "name");
     message = n_json_find_object(payload, "message");
+    name = n_json_find_object(root, "name");
     sha = n_json_find_object(payload, "sha");
 
-    sprintf(dest, "Commiter: [%s] - Msg: [%s] Sha: [%s]", comitter_name->u.string.ptr,
+    sprintf(dest, "Commiter: [%s] - Msg: [%s] Url: [http://github.com/%s/commit/%s]", comitter_name->u.string.ptr,
                                   message->u.string.ptr,
-                                  sha->u.string.ptr);
-    fprintf(stderr, "Commiter: [%s] - Msg: [%s] Sha: [%s]", comitter_name->u.string.ptr,
-                                  message->u.string.ptr,
+                                  name->u.string.ptr,
                                   sha->u.string.ptr);
     json_value_free(root);
 }
