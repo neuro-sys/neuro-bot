@@ -7,21 +7,38 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 
 #include <pthread.h>
 #include <unistd.h>
 
-#define GIT_EVENT_API_URL "https://api.github.com/repos/neuro-sys/dotfiles/events"
+#define GIT_EVENT_API_URL "https://api.github.com/repos/neuro-sys/neuro-bot/events"
 
 int looper = 1;
 
 static char etag_last[1024];
 static int x_rate_limit;
 
+static void strip_json_body_dirt(char *body)
+{
+    while (*body++ != '[') {}
+    while ( !(*body == ']' && body[1] != '}') ) *body++;
+
+    body[1] = 0;
+#if 0
+    while (*body) {
+        if  (!isascii(*body))
+            *body = ' ';
+        *body++;
+    }
+#endif
+}
+
 void parse_json_event(char * body, char * dest)
 {
     json_value * root, * payload, * comitter_name, * message, * sha;
 
+    strip_json_body_dirt(body);
     root = json_parse(body);
     if (!root) return;
 
@@ -31,6 +48,9 @@ void parse_json_event(char * body, char * dest)
     sha = n_json_find_object(payload, "sha");
 
     sprintf(dest, "Commiter: [%s] - Msg: [%s] Sha: [%s]", comitter_name->u.string.ptr,
+                                  message->u.string.ptr,
+                                  sha->u.string.ptr);
+    fprintf(stderr, "Commiter: [%s] - Msg: [%s] Sha: [%s]", comitter_name->u.string.ptr,
                                   message->u.string.ptr,
                                   sha->u.string.ptr);
     json_value_free(root);
@@ -108,7 +128,7 @@ void mod_git(struct irc_t * irc, char * reply_msg)
             parse_json_event(http->body, message);
             for (i = 0; i < irc->channels_siz; i++) {
                 char * chan = irc->channels[i];
-                sprintf(response, "PRIVMSG %s :%s\r\n", chan, message);
+                sprintf(response, "PRIVMSG %s :neuro-sys/neuro-bot => %s\r\n", chan, message);
                 network_send_message(&irc->session->network, response);
             }
         }
