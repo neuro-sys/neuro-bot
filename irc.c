@@ -229,11 +229,10 @@ void check_channel_join(struct irc_t * irc)
 
     strcpy(buf, irc->srv_msg.params);
 
-    t = strtok(buf, "=");
-    t = strtok(NULL, "");
+    t = strchr(buf, '#');
 
     irc->channels = realloc(irc->channels, sizeof (irc->channels) * irc->channels_siz+1);
-    irc->channels[irc->channels_siz] = strdup(t+1);
+    irc->channels[irc->channels_siz] = strdup(t);
     irc->channels_siz++;
 
     for (i = 0; i < irc->channels_siz; i++)
