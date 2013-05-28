@@ -4,7 +4,7 @@ as either standalone shared libraries (e.g. .dll or .so), or python at the momen
 
 ###### Features:
  - Loading of plugins at runtime without having to restart the bot.
- - Plugins can also be written in python through the embedded python interpreter.
+ - Plugins that are written in Python are run through the embedded Python interpreter.
 
 ###### How to build & run:
 	$ make && ./neurobot
@@ -24,3 +24,4 @@ Define USE_PYTHON_MODULES in order to build with Python plugin support.
 
 ###### Build status:
 [![Build Status](https://secure.travis-ci.org/neuro-sys/neuro-bot.png)](http://travis-ci.org/neuro-sys/neuro-bot)
+
