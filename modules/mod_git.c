@@ -126,6 +126,7 @@ void mod_git(struct irc_t * irc, char * reply_msg)
         if (http->body != NULL) free(http->body);
         if (http != NULL) free(http);
 
+        fprintf(stderr, "mod_git: I'm alive!\n");
         usleep(x_rate_limit *1000*1000);
     }
 }
