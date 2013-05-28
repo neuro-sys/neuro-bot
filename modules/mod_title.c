@@ -60,12 +60,19 @@ characters_callback (void * ctx,
             const xmlChar * ch, 
             int len)
 {
+    char * t;
+    size_t offset;
+
     if (!in_title)
         return;
     title_len += len;
     if (len > MAX_IRC_MSG)
         return;
-    strcat(title_buffer, (char *) ch);
+
+    t = (char *) ch;
+    while (*t) { if (*t == '\n' || *t == '\t') *t = ' '; t++; }
+    offset = strspn(ch, " \t\r\n");
+    strcat(title_buffer, (char *) ch + offset);
 }
 
 #ifdef _WIN32
