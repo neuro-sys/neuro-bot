@@ -84,6 +84,8 @@ void mod_title(struct irc_t * irc, char * reply_msg)
     char * t;
     htmlSAXHandler saxHandler;
     htmlParserCtxt * ctx_ptr;
+    struct curl_slist * slist = NULL;
+    char reqbuf[256];
 
     title_buffer[0] = 0;
     title_len = 0;
@@ -98,7 +100,10 @@ void mod_title(struct irc_t * irc, char * reply_msg)
 
     if (validate_http(irc->request) < 0 )
         return;
-    http = curl_perform(irc->request, NULL);
+
+    snprintf(reqbuf, 256, "Accept: text/plain, text/html");
+    slist = curl_slist_append(slist, reqbuf);
+    http = curl_perform(irc->request, slist);
     if (!http->body) return;
 
 
@@ -108,7 +113,8 @@ void mod_title(struct irc_t * irc, char * reply_msg)
     
     htmlFreeParserCtxt(ctx_ptr);
 
-    sprintf(reply_msg, "Title: %s", title_buffer);
+    if (title_len > 1)
+        sprintf(reply_msg, "Title: %s", title_buffer);
 
     free(http->header);
     free(http->body);
