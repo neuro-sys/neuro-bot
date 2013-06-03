@@ -1,26 +1,30 @@
-CC			= gcc
-CFLAGS		= -g -O0
-LDFLAGS		= -fPIC -g -O0 -Wall -Wl,--no-undefined -shared
-AFTERFLAGS  = -lm -O0
-DEPS		= neurobotapi.o json.o
-UTILS		= curl_wrap.o utils.o
-UTIL_LDFLAGS = $(shell pkg-config libcurl --libs)
+CC				= gcc
+CFLAGS			= -g -O0
+LDFLAGS			= -g -O0 -Wall -Wl,--no-undefined -shared
+AFTERFLAGS  	= -lm -O0
+DEPS			= neurobotapi.o json.o
+UTILS			= curl_wrap.o utils.o
+UTIL_LDFLAGS 	= $(shell pkg-config libcurl --libs)
+
+ifneq ($(OS), Windows_NT)
+	CFLAGS		 	+= -fPIC
+endif
 
 all: mod_wiki.so mod_youtube.so mod_title.so mod_time.so mod_whereis.so mod_git.so
 
 # UTILITIES 
 curl_wrap.o: curl_wrap.c curl_wrap.h
-	$(CC) -c $< -o $@ -fPIC -shared $(shell pkg-config libcurl --cflags)
+	$(CC) -c $< -o $@ $(CFLAGS) -shared $(shell pkg-config libcurl --cflags)
 
 utils.o: utils.c utils.h
-	$(CC) -c $< -o $@ -fPIC -shared
+	$(CC) -c $< -o $@ $(CFLAGS) -shared
 # PLUGINS
 
 %.o: %.c
-	$(CC) -c $< -o $@ -fPIC -shared -g
+	$(CC) -c $< -o $@ $(CFLAGS) -shared -g
 
 mod_wiki.o: mod_wiki.c
-	$(CC) -c $< -o $@ -fPIC -shared
+	$(CC) -c $< -o $@ $(CFLAGS) -shared
 
 mod_wiki.so: mod_wiki.o $(UTILS) $(DEPS)
 	$(CC) $(CFLAGS) $(LDFLAGS) $(DEPS) $(UTILS) mod_wiki.o -o $@  $(UTIL_LDFLAGS) $(AFTERFLAGS)
@@ -29,7 +33,7 @@ mod_youtube.so: mod_youtube.o $(UTILS) $(DEPS)
 	$(CC) $(CFLAGS) $(LDFLAGS) $(DEPS) $(UTILS) mod_youtube.o -o $@ $(UTIL_LDFLAGS) $(AFTERFLAGS)
 
 mod_title.o: mod_title.c neurobotapi.h
-	$(CC) $(CFLAGS) -c $< -o $@ -fPIC -shared $(shell pkg-config libxml-2.0 --cflags)
+	$(CC) $(CFLAGS) -c $< -o $@ $(CFLAGS) -shared $(shell pkg-config libxml-2.0 --cflags)
 
 mod_title.so: mod_title.o $(UTILS) $(DEPS)
 	$(CC) $(CFLAGS) $(LDFLAGS) $(DEPS) $(UTILS) mod_title.o -o $@ $(UTIL_LDFLAGS) $(AFTERFLAGS) $(shell pkg-config libxml-2.0 --libs)

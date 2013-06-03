@@ -1,5 +1,5 @@
-#include "global.h"
 #include "irc.h"
+#include "global.h"
 #include "py_wrap.h"
 #include "module.h"
 #include "irc_cmd.h"
@@ -8,9 +8,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-
-
-static void irc_proc_cmd_privmsg_user_cmd_admin (struct irc_t * irc)
+static void control_admin_commands (struct irc_t * irc)
 {
     char * t;
     char tokens[2][MAX_IRC_MSG];
@@ -40,7 +38,7 @@ static void irc_proc_cmd_privmsg_user_cmd_admin (struct irc_t * irc)
     }
 }
 
-static void irc_proc_cmd_privmsg_user_cmd (struct irc_t * irc)
+static void control_user_commands (struct irc_t * irc)
 {
     struct mod_c_t * mod_c;
     char token[MAX_IRC_MSG];
@@ -77,10 +75,10 @@ static void irc_proc_cmd_privmsg_user_cmd (struct irc_t * irc)
     }
 #endif
     if ( !strncmp (irc->session->admin, irc->nick_to_msg, strlen(irc->session->admin)) ) 
-        irc_proc_cmd_privmsg_user_cmd_admin (irc);
+        control_admin_commands (irc);
 }
 
-static void irc_proc_cmd_privmsg (struct irc_t * irc)
+static void control_message_line (struct irc_t * irc)
 {
     char token[MAX_IRC_MSG];
     char str[MAX_IRC_MSG];
@@ -101,7 +99,7 @@ static void irc_proc_cmd_privmsg (struct irc_t * irc)
         strcpy(irc->from, irc->nick_to_msg);
 
     if ( irc->request[0] == '.' ) 
-        irc_proc_cmd_privmsg_user_cmd (irc);
+        control_user_commands (irc);
     else {
         struct mod_c_t * mod;
         char ret[MAX_IRC_MSG];
@@ -118,13 +116,13 @@ static void irc_proc_cmd_privmsg (struct irc_t * irc)
     }  
 }
 
-static void irc_proc_cmd (struct irc_t * irc)
+static void control_protocol_commands (struct irc_t * irc)
 {
-    if ( !strncmp ("PRIVMSG", irc->srv_msg.command, strlen("PRIVMSG")) ) 
-        irc_proc_cmd_privmsg (irc);
-    else if ( !strncmp ("PING", irc->srv_msg.command, strlen("PING")) )
+    if ( !strncmp ("PRIVMSG", irc->srv_msg.command, 7) ) 
+        control_message_line (irc);
+    else if ( !strncmp ("PING", irc->srv_msg.command, 4))  
         snprintf (irc->response, MAX_IRC_MSG, "PONG %s\r\n", irc->request);
-    else if ( !strncmp ("001", irc->srv_msg.command, strlen("001")) ) {
+    else if ( !strncmp ("001", irc->srv_msg.command, 3) ) {
         char message[MAX_IRC_MSG];
         char ** t;
 
@@ -133,7 +131,7 @@ static void irc_proc_cmd (struct irc_t * irc)
             network_send_message(&irc->session->network, message);
         }
     } 
-    else if ( !strncmp("NOTICE", irc->srv_msg.command, strlen("NOTICE")) 
+    else if ( !strncmp("NOTICE", irc->srv_msg.command, 6) 
             && strstr(irc->request, "registered" ) ) {
         char message[MAX_IRC_MSG];
             
@@ -147,6 +145,14 @@ static void irc_proc_cmd (struct irc_t * irc)
 }
 
 /*     message    =  [ ":" prefix SPACE ] command [ params ] crlf */
+static void irc_parser(struct irc_t * irc, char * line)
+{
+    if (line[0] == ':') {
+        
+    }
+
+}
+
 static int irc_parse_prefix (struct irc_t * irc, char * line)
 {
     char tokens[4][MAX_IRC_MSG];
@@ -288,7 +294,7 @@ void irc_process_line(struct irc_t * irc, char * line)
                                   irc->srv_msg.command, 
                                   irc->srv_msg.params,
                                   irc->request);
-    irc_proc_cmd(irc);
+    control_protocol_commands(irc);
     if (irc->response[0])
         fprintf(stderr, "%s\n", irc->response);
 }

@@ -57,6 +57,9 @@ static void parse_etag(char * _text)
     char * t;
     char text[1024];
 
+    if (_text == NULL || strlen(_text) < 1)
+        return;
+
     strncpy(text, _text, 1024);
 
     t = strstr(text, "X-RateLimit-Limit");
@@ -108,6 +111,9 @@ void mod_git(struct irc_t * irc, char * reply_msg)
             slist = curl_slist_append(slist, reqbuf); 
             http = curl_perform(GIT_EVENT_API_URL, slist);
         }
+        if (http == NULL || http->body == NULL || http->header == NULL)
+            goto SKIP;
+
         parse_etag(http->header);
 
         if (!strstr(http->header, "304 Not Modified")) {
@@ -126,6 +132,7 @@ void mod_git(struct irc_t * irc, char * reply_msg)
         if (http->body != NULL) free(http->body);
         if (http != NULL) free(http);
 
+SKIP:
         fprintf(stderr, "mod_git: I'm alive!\n");
         usleep(x_rate_limit *1000*1000);
     }

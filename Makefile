@@ -1,5 +1,5 @@
-CFLAGS	   = -I. -Wall -g -O0 -pthread -DUSE_PYTHON_MODULES
-LDFLAGS	   = -ldl -g -O0  -pthread
+CFLAGS	   = -I. -Wall -g -O0 -lpthread 
+LDFLAGS	   = -ldl -g -O0  -lpthread
 OBJS	   =config.o \
 		   irc.o \
 		   module.o \
@@ -29,7 +29,7 @@ neurobot: $(OBJS)
 clean:
 	rm -fv $(OBJS) neurobot; $(MAKE) --directory=$(MOD_DIR) clean; $(MAKE) --directory=$(TEST_DIR) clean;
 
-.PHONY: modules unit_tests
+.PHONY: modules unit_tests 
 
 modules:
 	$(MAKE) --directory=$(MOD_DIR)

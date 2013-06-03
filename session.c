@@ -11,7 +11,7 @@
 
 #include <pthread.h>
 
-pthread_t threads[10];
+static pthread_t threads[10];
 
 static void session_init_irc(struct session_t * session)
 {
