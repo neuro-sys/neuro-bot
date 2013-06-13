@@ -5,14 +5,35 @@
 
 #define MAX_IRC_MSG 510
 
-struct srv_message_t {
-    char prefix[100];
-    char command[100];
-    char params[100];
+
+/** 
+ *( nickname [ [ "!" user ] "@" host ] )
+ *
+ */
+struct nickname_t {
+    char nickname[100];
+    char user[100];
+    char host[100];
+};
+
+struct prefix_t {
+    char servername[100];
+    struct nickname_t nickname;
+};
+
+struct params_t {
+    char list[14][50];
+};
+
+struct message_t {
+    struct prefix_t prefix;
+    char command[10];
+    struct params_t params;
+    char trailing[500];
 };
 
 struct irc_t {
-    struct srv_message_t srv_msg;
+    struct message_t     message;
     char                 request[MAX_IRC_MSG];
     char                 response[MAX_IRC_MSG];
     char                 nick_to_msg[100];

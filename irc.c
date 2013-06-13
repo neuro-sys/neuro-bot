@@ -1,4 +1,5 @@
 #include "irc.h"
+
 #include "global.h"
 #include "py_wrap.h"
 #include "module.h"
@@ -8,13 +9,141 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+/* IRC PARSER */
+static void parse_prefix_nickname(struct nickname_t * nickname, const char * src)
+{
+    char * c;
+    size_t n;
+
+    if (src == NULL)
+        return;
+
+    if ( (c = strchr(src, '@')) ) {
+        char * k;
+        size_t len;
+
+        len = strcspn(src, " ");
+        strncpy(nickname->host, c+1, len);
+        nickname->host[len] = '\0';
+        if ( (k = strchr(src, '!')) ) {
+            strncpy(nickname->user, k+1, (c - k - 1));
+            nickname->user[c - k - 1] = '\0';
+        }
+    } 
+    n = strcspn(src, "!@ ");
+    strncpy(nickname->nickname, src, n);
+}
+
+static void parse_prefix_servername(char * servername, const char * src)
+{
+    if (src == NULL)
+        return;
+
+    strcpy(servername, src);
+}
+
+/**
+ * prefix     =  servername / ( nickname [ [ "!" user ] "@" host ] )
+ * Notes:
+ * [21:26] < grawity> Server names always have a "." – nicknames never do.
+ *
+ */
+static void parse_prefix(struct prefix_t * prefix, const char * src)
+{
+    if (src == NULL)
+        return;
+
+    if (!strchr(src, '@') && strchr(src, '.'))
+        parse_prefix_servername(prefix->servername, src);
+    else
+        parse_prefix_nickname(&prefix->nickname, src);
+}
+
+/* 
+ * message    =  [ ":" prefix SPACE ] command [ params ] crlf 
+ *
+ */
+static void irc_parser(struct message_t * message, const char * line)
+{
+    char buffer[510];
+    size_t n;
+
+    if (line == NULL)
+        return;
+
+    /* If starts with ':', then has prefix. */
+    if (line[0] == ':') {
+        n = strcspn(line, " ");
+        strncpy(buffer, line, n);
+        buffer[n] = '\0';
+        parse_prefix(&message->prefix, buffer+1);
+        line += n + 1;
+    } 
+
+    /* Then get the command. */
+    n = strcspn(line, " ");
+    strncpy(message->command, line, n);
+    message->command[n] = '\0';
+    line += n+1;
+
+    /* Get params if there's. */
+    if ( (n = strcspn(line, " \r\n")) ) {
+        int i = 0;
+        char params[200];
+        char * t;
+
+        strcpy(params, line);
+        /* Get the trailing if there is. */
+        if ( (t = strchr(params, ':')) ) { 
+            strcpy(message->trailing, t+1);
+            *t = '\0';
+        }
+        t = strtok(params, " \r\n");
+        strcpy(message->params.list[i++], t);
+        while ( (t = strtok(NULL, " ")) && i <= 14) {
+            strcpy(message->params.list[i++], t);
+        }
+        message->params.list[i][0] = '\0';
+    }
+}
+
+void print_message_t(struct message_t * message)
+{
+    if (message->prefix.servername[0])
+        printf("Serv: (%s) ", message->prefix.servername);
+    else
+        printf("Nick: (%s!%s@%s) ", message->prefix.nickname.nickname
+                                , message->prefix.nickname.user
+                                , message->prefix.nickname.host);
+
+    if (message->command[0])
+        printf("(%s) ", message->command);
+
+    if (message->params.list[0][0]) {
+        int i = 0;
+
+        printf("{");
+        while ( message->params.list[i][0] ) {
+            printf("\"%s\"", message->params.list[i++]);
+            if (message->params.list[i][0])
+                printf(", ");
+        }
+        printf("}");
+    }
+    if (message->trailing[0])
+        printf(" => %s", message->trailing);
+
+    printf("\n");
+}
+
+/* Controllers */
 static void control_admin_commands (struct irc_t * irc)
 {
     char * t;
     char tokens[2][MAX_IRC_MSG];
     char str[MAX_IRC_MSG];
 
-    strncpy(str, irc->request, MAX_IRC_MSG);
+    strncpy(str, irc->message.trailing, MAX_IRC_MSG);
     
     if ( !(t = strtok(str, " ")) )
         return;
@@ -80,23 +209,11 @@ static void control_user_commands (struct irc_t * irc)
 
 static void control_message_line (struct irc_t * irc)
 {
-    char token[MAX_IRC_MSG];
-    char str[MAX_IRC_MSG];
-    char * t;
+    strcpy(irc->from, irc->message.params.list[0]);
+    strcpy(irc->nick_to_msg, irc->message.prefix.nickname.nickname);
 
-    strncpy(str, irc->srv_msg.prefix, MAX_IRC_MSG);
-
-    if ( !(t = strtok(str, "!")) )
-        return;
-    
-    strncpy(token, t, MAX_IRC_MSG);
-
-    strcpy(irc->from, irc->srv_msg.params);
-    strcpy(irc->nick_to_msg, token);
-
-    /* If the message sent in private, then reply to the sender instead */
-    if (!strncmp(irc->srv_msg.params, irc->session->nickname, strlen(irc->srv_msg.params)))
-        strcpy(irc->from, irc->nick_to_msg);
+    if (!strncmp(irc->message.params.list[0], irc->session->nickname, strlen(irc->message.params.list[0])));
+        strcpy(irc->from, irc->message.prefix.nickname.nickname);
 
     if ( irc->request[0] == '.' ) 
         control_user_commands (irc);
@@ -118,11 +235,11 @@ static void control_message_line (struct irc_t * irc)
 
 static void control_protocol_commands (struct irc_t * irc)
 {
-    if ( !strncmp ("PRIVMSG", irc->srv_msg.command, 7) ) 
+    if ( !strncmp ("PRIVMSG", irc->message.command, 7) ) 
         control_message_line (irc);
-    else if ( !strncmp ("PING", irc->srv_msg.command, 4))  
-        snprintf (irc->response, MAX_IRC_MSG, "PONG %s\r\n", irc->request);
-    else if ( !strncmp ("001", irc->srv_msg.command, 3) ) {
+    else if ( !strncmp ("PING", irc->message.command, 4))  
+        snprintf (irc->response, MAX_IRC_MSG, "PONG %s\r\n", irc->message.trailing);
+    else if ( !strncmp ("001", irc->message.command, 3) ) {
         char message[MAX_IRC_MSG];
         char ** t;
 
@@ -131,8 +248,8 @@ static void control_protocol_commands (struct irc_t * irc)
             network_send_message(&irc->session->network, message);
         }
     } 
-    else if ( !strncmp("NOTICE", irc->srv_msg.command, 6) 
-            && strstr(irc->request, "registered" ) ) {
+    else if ( !strncmp("NOTICE", irc->message.command, 6) 
+            && strstr(irc->message.trailing, "registered" ) ) {
         char message[MAX_IRC_MSG];
             
         fprintf(stderr, "Auth to nickserv request received.\n");
@@ -144,101 +261,19 @@ static void control_protocol_commands (struct irc_t * irc)
     }
 }
 
-/*     message    =  [ ":" prefix SPACE ] command [ params ] crlf */
-static void irc_parser(struct irc_t * irc, char * line)
-{
-    if (line[0] == ':') {
-        
-    }
-
-}
-
-static int irc_parse_prefix (struct irc_t * irc, char * line)
-{
-    char tokens[4][MAX_IRC_MSG];
-    char * t;
-
-    tokens[0][0] = tokens[1][0] = tokens[2][0] = tokens[3][0] = '\0';
-
-    /* prefix */
-    if ( !(t = strtok(line, " ")) )
-        return -1;
-    strncpy(tokens[0], t, MAX_IRC_MSG);
-
-    /* command */
-    if ( !(t = strtok(NULL, " ")) )
-        return -1;
-    strncpy(tokens[1], t, MAX_IRC_MSG);
-
-    /* params */
-    if ( !(t = strtok(NULL, ":")) )
-        return -1;
-
-    strncpy(tokens[2], t, MAX_IRC_MSG);
-
-    if ( (t = strtok(NULL, "")) )
-        strncpy(tokens[3], t, MAX_IRC_MSG);
-
-    strcpy (irc->srv_msg.prefix, tokens[0]+1); /* skip ':' from the prefix */
-    strcpy (irc->srv_msg.command, tokens[1]);
-
-    /* if the 3rd token does not start with a ':', there are params */
-    if ( tokens[2][0] != ':' ) 
-    { 
-
-        /* this copies only the first param */
-        strcpy(irc->srv_msg.params, tokens[2]);         
-
-        /* the rest is request and optional */
-        if ( tokens[3] != '\0' ) 
-            strcpy (irc->request, tokens[3]);
-
-    } 
-    else 
-    {
-        strcpy (irc->request, tokens[2]);
-    }
-
-    return 1;
-}
-
-static void irc_parse_other (struct irc_t * irc, char * line)
-{
-    char tokens[2][MAX_IRC_MSG];
-    char * t;
-
-    if ( !(t = strtok(line, ":")) )
-        return;
-
-    strncpy(tokens[0], t, MAX_IRC_MSG);
-
-    if ( !(t = strtok(NULL, "\r\n")) )
-        return;
-
-    strncpy(tokens[1], t, MAX_IRC_MSG);
-
-    if ( !strncmp("PING", tokens[0], 4) ) 
-    {
-        strcpy (irc->srv_msg.command, tokens[0]);
-        strcpy (irc->request, tokens[1]);
-    }
-}
 
 static void check_channel_join(struct irc_t * irc)
 {
-    char * t;
-    char buf[MAX_IRC_MSG];
     int i;
+    char * channel;
 
-    if (!strstr(irc->srv_msg.command, "353"))
+    if (!strstr(irc->message.command, "353"))
         return;
 
-    strcpy(buf, irc->srv_msg.params);
-
-    t = strchr(buf, '#');
+    channel = irc->message.params.list[0];
 
     irc->channels = realloc(irc->channels, sizeof (irc->channels) * irc->channels_siz+1);
-    irc->channels[irc->channels_siz] = strdup(t);
+    irc->channels[irc->channels_siz] = strdup(channel);
     irc->channels_siz++;
 
     for (i = 0; i < irc->channels_siz; i++)
@@ -247,25 +282,19 @@ static void check_channel_join(struct irc_t * irc)
 
 static void check_channel_part(struct irc_t * irc)
 {
-    char * t;
-    char buf[MAX_IRC_MSG];
     int i, j;
     char ** new_channels;
+    char * channel;
 
-    if (!strstr(irc->srv_msg.command, "PART"))
+    if (!strstr(irc->message.command, "PART"))
         return;
 
-    t = strtok(irc->srv_msg.prefix, "!");
-    if (!strstr(t, irc->session->nickname))
-        return;
+    channel = irc->message.params.list[0];
 
-    strcpy(buf, irc->srv_msg.params);
-
-    t = strtok(buf, "\r\n");
     new_channels = malloc(sizeof (irc->channels) * irc->channels_siz-1);
 
     for (j = 0, i = 0; i < irc->channels_siz; i++) 
-        if (!strstr(irc->channels[i], t))
+        if (!strstr(irc->channels[i], channel))
             new_channels[j] = irc->channels[i];
         else
             free(irc->channels[i]);
@@ -278,24 +307,14 @@ static void check_channel_part(struct irc_t * irc)
 /* message    =  [ ":" prefix SPACE ] command [ params ] crlf */
 void irc_process_line(struct irc_t * irc, char * line)
 {  
-    if ( line[0] == ':' ) {
-        if (irc_parse_prefix(irc, line) < 0)
-            return;
-    } else {
-        irc_parse_other(irc, line);   
-    }
+    irc_parser(&irc->message, line);
+    strcpy(irc->request, irc->message.trailing);
+    print_message_t(&irc->message);
 
     check_channel_join(irc);
     check_channel_part(irc);
-
-    fprintf(stderr, "%s => [%s] [%s] [%s] : %s\n", 
-                                  irc->from,
-                                  irc->srv_msg.prefix,
-                                  irc->srv_msg.command, 
-                                  irc->srv_msg.params,
-                                  irc->request);
     control_protocol_commands(irc);
+
     if (irc->response[0])
         fprintf(stderr, "%s\n", irc->response);
 }
-
