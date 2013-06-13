@@ -212,7 +212,7 @@ static void control_message_line (struct irc_t * irc)
     strcpy(irc->from, irc->message.params.list[0]);
     strcpy(irc->nick_to_msg, irc->message.prefix.nickname.nickname);
 
-    if (!strncmp(irc->message.params.list[0], irc->session->nickname, strlen(irc->message.params.list[0])));
+    if (!strcmp(irc->message.params.list[0], irc->session->nickname))
         strcpy(irc->from, irc->message.prefix.nickname.nickname);
 
     if ( irc->request[0] == '.' ) 
