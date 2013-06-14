@@ -145,7 +145,7 @@ static void check_channel_join(struct irc_t * irc)
     if (!strstr(irc->message.command, "353"))
         return;
 
-    channel = irc->message.params.list[0];
+    channel = irc->message.params.list[2]; /* 353 nickname = #channel */
 
     irc->channels = realloc(irc->channels, sizeof (irc->channels) * irc->channels_siz+1);
     irc->channels[irc->channels_siz] = strdup(channel);
