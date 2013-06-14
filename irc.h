@@ -17,6 +17,6 @@ struct irc_t {
     struct session_t     * session;
 };
 
-extern void irc_process_line(struct irc_t * irc, char * line);
+extern void irc_process_line(struct irc_t * irc, const char * line);
 
 #endif

@@ -11,11 +11,11 @@
 #include <stdio.h>
 
 
-/* Controllers */
-static void control_admin_commands (struct irc_t * irc)
+/* Control bot commands */
+static void control_bot_command_admin (struct irc_t * irc)
 {
     char * t;
-    char tokens[2][MAX_IRC_MSG];
+    char command[MAX_IRC_MSG], argument[MAX_IRC_MSG];
     char str[MAX_IRC_MSG];
 
     strncpy(str, irc->message.trailing, MAX_IRC_MSG);
@@ -23,18 +23,18 @@ static void control_admin_commands (struct irc_t * irc)
     if ( !(t = strtok(str, " ")) )
         return;
 
-    strncpy(tokens[0], t, MAX_IRC_MSG);
+    strncpy(command, t, MAX_IRC_MSG);
 
     if ( (t = strtok(NULL, "\r\n")) )
-        strncpy(tokens[1], t, MAX_IRC_MSG);
+        strncpy(argument, t, MAX_IRC_MSG);
         
-    if ( !strncmp(".join", tokens[0], strlen(".join")) )
-        sprintf(irc->response, "JOIN %s\r\n", tokens[1]);
-    else if (!strncmp(".part", tokens[0], strlen(".part")))
-        sprintf(irc->response, "PART %s\r\n", tokens[1] );
-    else if ( !strncmp(".raw", tokens[0], strlen(".raw")) )
-        sprintf(irc->response, "%s\r\n", tokens[1]);
-    else if ( !strncmp(".reload", tokens[0], strlen(".reload")) ) {
+    if ( !strncmp(".join", command, strlen(".join")) )
+        sprintf(irc->response, "JOIN %s\r\n", argument);
+    else if (!strncmp(".part", command, strlen(".part")))
+        sprintf(irc->response, "PART %s\r\n", argument);
+    else if ( !strncmp(".raw", command, strlen(".raw")) )
+        sprintf(irc->response, "%s\r\n", argument);
+    else if ( !strncmp(".reload", command, strlen(".reload")) ) {
         module_load();
 #ifdef USE_PYTHON_MODULES
         py_load_mod_hash();
@@ -42,7 +42,7 @@ static void control_admin_commands (struct irc_t * irc)
     }
 }
 
-static void control_user_commands (struct irc_t * irc)
+static void control_bot_command_user (struct irc_t * irc)
 {
     struct mod_c_t * mod_c;
     char token[MAX_IRC_MSG];
@@ -79,10 +79,11 @@ static void control_user_commands (struct irc_t * irc)
     }
 #endif
     if ( !strncmp (irc->session->admin, irc->nick_to_msg, strlen(irc->session->admin)) ) 
-        control_admin_commands (irc);
+        control_bot_command_admin (irc);
 }
 
-static void control_message_line (struct irc_t * irc)
+/* Control IRC commands */
+static void control_command_privmsg (struct irc_t * irc)
 {
     strcpy(irc->from, irc->message.params.list[0]);
     strcpy(irc->nick_to_msg, irc->message.prefix.nickname.nickname);
@@ -91,7 +92,7 @@ static void control_message_line (struct irc_t * irc)
         strcpy(irc->from, irc->message.prefix.nickname.nickname);
 
     if ( irc->request[0] == '.' ) 
-        control_user_commands (irc);
+        control_bot_command_user (irc);
     else {
         struct mod_c_t * mod;
         char ret[MAX_IRC_MSG];
@@ -108,42 +109,10 @@ static void control_message_line (struct irc_t * irc)
     }  
 }
 
-static void control_protocol_commands (struct irc_t * irc)
-{
-    if ( !strncmp ("PRIVMSG", irc->message.command, 7) ) 
-        control_message_line (irc);
-    else if ( !strncmp ("PING", irc->message.command, 4))  
-        snprintf (irc->response, MAX_IRC_MSG, "PONG %s\r\n", irc->message.trailing);
-    else if ( !strncmp ("001", irc->message.command, 3) ) {
-        char message[MAX_IRC_MSG];
-        char ** t;
-
-        for (t = irc->session->channels_ajoin; *t != NULL; t++) {
-            irc_join_channel(*t, message);
-            network_send_message(&irc->session->network, message);
-        }
-    } 
-    else if ( !strncmp("NOTICE", irc->message.command, 6) 
-            && strstr(irc->message.trailing, "registered" ) ) {
-        char message[MAX_IRC_MSG];
-            
-        fprintf(stderr, "Auth to nickserv request received.\n");
-        if (strcmp(irc->session->password, "")) {
-            fprintf(stderr, "Authing to nickserv\n");
-            irc_identify_to_auth(irc->session->password, message);
-            network_send_message(&irc->session->network, message);
-        }
-    }
-}
-
-
-static void check_channel_join(struct irc_t * irc)
+static void control_command_353_join(struct irc_t * irc)
 {
     int i;
     char * channel;
-
-    if (!strstr(irc->message.command, "353"))
-        return;
 
     channel = irc->message.params.list[2]; /* 353 nickname = #channel */
 
@@ -155,16 +124,13 @@ static void check_channel_join(struct irc_t * irc)
         puts(irc->channels[i]);
 }
 
-static void check_channel_part(struct irc_t * irc)
+static void control_command_part(struct irc_t * irc)
 {
     int i, j;
     char ** new_channels;
     char * channel;
 
-    if (!strstr(irc->message.command, "PART"))
-        return;
-
-    channel = irc->message.params.list[0];
+    channel = irc->message.params.list[2];
 
     new_channels = malloc(sizeof (irc->channels) * irc->channels_siz-1);
 
@@ -178,16 +144,47 @@ static void check_channel_part(struct irc_t * irc)
     irc->channels = new_channels;
     irc->channels_siz--;
 }
+static void control_protocol_commands (struct irc_t * irc)
+{
+    if ( !strncmp ("PRIVMSG", irc->message.command, 7) ) 
+        control_command_privmsg (irc);
+    else if ( !strncmp ("PING", irc->message.command, 4))  
+        snprintf (irc->response, MAX_IRC_MSG, "PONG %s\r\n", irc->message.trailing);
+    else if ( !strncmp ("001", irc->message.command, 3) ) {
+        char message[MAX_IRC_MSG];
+        char ** t;
 
-/* message    =  [ ":" prefix SPACE ] command [ params ] crlf */
-void irc_process_line(struct irc_t * irc, char * line)
+        for (t = irc->session->channels_ajoin; *t != NULL; t++) {
+            irc_join_channel(*t, message);
+            network_send_message(&irc->session->network, message);
+        }
+    } else if ( !strncmp("NOTICE", irc->message.command, 6) ) {
+        if (strstr(irc->message.trailing, "registered" ) ) {
+            char message[MAX_IRC_MSG];
+
+            fprintf(stderr, "Auth to nickserv request received.\n");
+            if (strcmp(irc->session->password, "")) {
+                fprintf(stderr, "Authing to nickserv\n");
+                irc_identify_to_auth(irc->session->password, message);
+                network_send_message(&irc->session->network, message);
+            }
+        }
+    } else if (strstr(irc->message.command, "353")) {
+        control_command_353_join(irc);
+
+    } else if (strstr(irc->message.command, "PART")) {
+        control_command_part(irc);
+    }
+}
+
+
+/* Main entry point */
+void irc_process_line(struct irc_t * irc, const char * line)
 {  
     irc_parser(&irc->message, line);
     strcpy(irc->request, irc->message.trailing);
     print_message_t(&irc->message);
 
-    check_channel_join(irc);
-    check_channel_part(irc);
     control_protocol_commands(irc);
 
     if (irc->response[0])
