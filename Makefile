@@ -9,6 +9,7 @@ OBJS	   =config.o \
 		   socket_unix.o \
 		   socket_win.o \
 		   irc_cmd.o \
+		   irc_parser.o \
 		   main.o
 
 MOD_DIR    = ./modules
