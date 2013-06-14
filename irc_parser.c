@@ -85,15 +85,15 @@ void irc_parser(struct message_t * message, const char * line)
     line += pos + 1;
 
     /* Get the multiple params or trailing line if there is both or either. */
-    if ( strlen(line) ) { /* If there's any chars left in the string so far, we have params and/or the trailing. */
-        int i = 0;
+    if ( strlen(line) ) { /* If there's any chars left in the string so far,    */
+        int i = 0;        /* They are: `param1 param2 ... [:Trailing ...]CRLF'  */
         char params[200];
         char * t;
 
         strcpy(params, line); /* Copy the line in a buffer to tokenize it. */
         /* Get the `trailing' first, which marks the ending of params, if there is. */
-        if ( (t = strchr(params, ':')) ) { 
-            strcpy(message->trailing, t+1); /* Skip `:' character by one. */
+        if ( (t = strstr(params, " :")) ) { /* It starts with a SPACE preceding a ':'. */ 
+            strcpy(message->trailing, t+2); /* Skip " :" character by two. */
             *t = '\0'; /* Put a NUL terminator where the trailing begins, and params end.*/
         }
         t = strtok(params, " \r\n");
@@ -111,7 +111,7 @@ void print_message_t(struct message_t * message)
 {
     if (message->prefix.servername[0])
         printf("Serv: (%s) ", message->prefix.servername);
-    else
+    else if (message->prefix.nickname.nickname[0])
         printf("Nick: (%s!%s@%s) ", message->prefix.nickname.nickname
                                 , message->prefix.nickname.user
                                 , message->prefix.nickname.host);
