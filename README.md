@@ -3,15 +3,16 @@ neurobot is an IRC bot written in C with extensibility in mind. Plugins can be w
 as either standalone shared libraries (e.g. .dll or .so), or python at the moment.
 
 ###### Features:
- - Loading of plugins at runtime without having to restart the bot.
- - Plugins that are written in Python are run through the embedded Python interpreter.
+ - Admin management
+ - Load or unoad plugins in runtime without having to restart the bot.
+ - Run python code through the embedded python interpreter.
 
 ###### How to build & run:
 	$ make && ./neurobot
 
-###### Dependencies: 
- - *[cURL](http://curl.haxx.se/libcurl/)*
- - python2 (Optional)
+###### Linkage dependencies: 
+ - python2 (Optional for plugins)
+ - *[cURL](http://curl.haxx.se/libcurl/)* (Optional for plugins)
  - *[Gnu Regex for Windows](http://gnuwin32.sourceforge.net/packages/regex.htm)* (<i>Not required in POSIX environments</i>)
 
 ###### Python Plugin support:
