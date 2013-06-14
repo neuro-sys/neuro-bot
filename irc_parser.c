@@ -84,24 +84,26 @@ void irc_parser(struct message_t * message, const char * line)
     message->command[pos] = '\0';
     line += pos + 1;
 
-    /* Get the multiple params if there is any. */
-    if ( strlen(line) ) { /* If there's any chars left in the string, we have params. */
+    /* Get the multiple params or trailing line if there is both or either. */
+    if ( strlen(line) ) { /* If there's any chars left in the string so far, we have params and/or the trailing. */
         int i = 0;
         char params[200];
         char * t;
 
-        strcpy(params, line); /* Tokenize them in a buffer */
+        strcpy(params, line); /* Copy the line in a buffer to tokenize it. */
         /* Get the `trailing' first, which marks the ending of params, if there is. */
         if ( (t = strchr(params, ':')) ) { 
             strcpy(message->trailing, t+1); /* Skip `:' character by one. */
-            *t = '\0'; /* Clam the string for params only without the trailing. */
+            *t = '\0'; /* Put a NUL terminator where the trailing begins, and params end.*/
         }
         t = strtok(params, " \r\n");
-        strcpy(message->params.list[i++], t);
-        while ( (t = strtok(NULL, " ")) && i <= 14) {
+        if (t) { /* Are there any params? */
             strcpy(message->params.list[i++], t);
+            while ( (t = strtok(NULL, " ")) && i <= 14) {
+                strcpy(message->params.list[i++], t);
+            }
+            message->params.list[i][0] = '\0';
         }
-        message->params.list[i][0] = '\0';
     }
 }
 
