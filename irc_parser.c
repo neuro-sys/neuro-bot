@@ -82,7 +82,7 @@ void irc_parser(struct message_t * message, const char * line)
     pos = strcspn(line, " \r\n"); /* It ends with a SPACE or CRLF */
     strncpy(message->command, line, pos);
     message->command[pos] = '\0';
-    line += pos + 1;
+    line += pos;
 
     /* Get the multiple params or trailing line if there is both or either. */
     if ( strlen(line) ) { /* If there's any chars left in the string so far,    */
