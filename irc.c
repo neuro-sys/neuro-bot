@@ -130,7 +130,7 @@ static void control_command_part(struct irc_t * irc)
     char ** new_channels;
     char * channel;
 
-    channel = irc->message.params.list[2];
+    channel = irc->message.params.list[0];
 
     new_channels = malloc(sizeof (irc->channels) * irc->channels_siz-1);
 
