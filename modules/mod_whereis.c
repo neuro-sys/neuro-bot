@@ -46,8 +46,10 @@ char * mod_whereis(struct irc_t * irc, char * reply_msg)
     struct http_req * http;
     char url[500];
     char * ip;
+    char request[512];
 
-    ip = parse_ip(irc->request);
+    strcpy(request, irc->message.trailing);
+    ip = parse_ip(request);
     if (!ip) return NULL;
 
     snprintf(url, 500, api_url, ip);

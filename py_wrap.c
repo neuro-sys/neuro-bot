@@ -67,11 +67,11 @@ char * py_call_module(struct py_module_t * mod, struct irc_t * irc)
     char        * t;
 
     p_args = PyTuple_New(2);                          
-    t = strchr(irc->request, '\r');                   
+    t = strchr(irc->message.trailing, '\r');                   
     *t = '\0';
     p_val = PyString_FromString(irc->from);           
     PyTuple_SetItem(p_args, 0, p_val);            
-    p_val = PyString_FromString(irc->request);        
+    p_val = PyString_FromString(irc->message.trailing);        
     PyTuple_SetItem(p_args, 1, p_val);            
 
     p_val = PyObject_CallObject(mod->pFunc, p_args);  

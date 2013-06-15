@@ -47,8 +47,10 @@ static void proc_info_youtube(struct irc_t * irc, struct youtube_t * youtube)
     char        url_path[512];
     struct http_req * http;
     char *t;
+    char request[512];
 
-    t = strstr(irc->request, "v=");
+    strcpy(request, irc->message.trailing);
+    t = strstr(request, "v=");
     if (t) t +=2;
     t = strtok(t, " &\r\n\\");
 

@@ -87,9 +87,7 @@ void session_run(struct session_t * session)
     while (1) 
     {
         irc.response[0] = 0;
-        irc.nick_to_msg[0] = 0;
         irc.from[0] = 0;
-        irc.request[0] = 0;
         memset(&irc.message, 0, sizeof (irc.message));
 
         if (network_read_line(&session->network, line) < 0)

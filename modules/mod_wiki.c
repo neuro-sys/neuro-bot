@@ -38,9 +38,12 @@ void mod_wiki(struct irc_t * irc, char * reply_msg)
     struct http_req * http;
     char url_path[512];
     int i;
+    char request[512];
+
+    strcpy(request, irc->message.trailing);
 
     /* strip the leading command prefix (.wiki) */
-    p = strchr(irc->request, ' ');
+    p = strchr(request, ' ');
 
     if (!p++)
         return;

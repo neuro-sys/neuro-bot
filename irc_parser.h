@@ -19,14 +19,10 @@ struct prefix_t {
     struct nickname_t nickname;
 };
 
-struct params_t {
-    char list[14][50];
-};
-
 struct message_t {
     struct prefix_t prefix;
     char command[10];
-    struct params_t params;
+    char params[14][50];
     char trailing[500];
 };
 

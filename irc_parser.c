@@ -93,16 +93,18 @@ void irc_parser(struct message_t * message, const char * line)
         strcpy(params, line); /* Copy the line in a buffer to tokenize it. */
         /* Get the `trailing' first, which marks the ending of params, if there is. */
         if ( (t = strstr(params, " :")) ) { /* It starts with a SPACE preceding a ':'. */ 
+            char * end = strchr(t, '\r');
+            *end = '\0';
             strcpy(message->trailing, t+2); /* Skip " :" character by two. */
             *t = '\0'; /* Put a NUL terminator where the trailing begins, and params end.*/
         }
         t = strtok(params, " \r\n");
         if (t) { /* Are there any params? */
-            strcpy(message->params.list[i++], t);
+            strcpy(message->params[i++], t);
             while ( (t = strtok(NULL, " \r\n")) && i <= 14) {
-                strcpy(message->params.list[i++], t);
+                strcpy(message->params[i++], t);
             }
-            message->params.list[i][0] = '\0';
+            message->params[i][0] = '\0';
         }
     }
 }
@@ -119,13 +121,13 @@ void print_message_t(struct message_t * message)
     if (message->command[0])
         fprintf(stderr, "(%s) ", message->command);
 
-    if (message->params.list[0][0]) {
+    if (message->params[0][0]) {
         int i = 0;
 
         fprintf(stderr, "{");
-        while ( message->params.list[i][0] ) {
-            fprintf(stderr, "\"%s\"", message->params.list[i++]);
-            if (message->params.list[i][0])
+        while ( message->params[i][0] ) {
+            fprintf(stderr, "\"%s\"", message->params[i++]);
+            if (message->params[i][0])
                 fprintf(stderr, ", ");
         }
         fprintf(stderr, "}");

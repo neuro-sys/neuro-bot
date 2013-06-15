@@ -8,9 +8,7 @@
 
 struct irc_t {
     struct message_t     message;
-    char                 request[MAX_IRC_MSG];
     char                 response[MAX_IRC_MSG];
-    char                 nick_to_msg[100];
     char                 from[100];
     char                 ** channels;
     int                  channels_siz;
