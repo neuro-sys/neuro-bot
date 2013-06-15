@@ -112,7 +112,7 @@ static void control_command_353_join(struct irc_t * irc)
     int i;
     char * channel;
 
-    channel = irc->message.params[2]; /* 353 nickname = #channel */
+    channel = irc->message.params[0]; 
 
     irc->channels = realloc(irc->channels, sizeof (irc->channels) * irc->channels_siz+1);
     irc->channels[irc->channels_siz] = strdup(channel);
