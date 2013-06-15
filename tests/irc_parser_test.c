@@ -4,12 +4,13 @@
 #include <string.h>
 
 char *irc_lines[] = {
-    ":kokobot!~ircbot@88.240.45.200 JOIN #gameover",
-    ":leguin.freenode.net 353 kokobot = #gameover :kokobot @ChanServ",
-    ":leguin.freenode.net 366 kokobot #gameover :End of /NAMES list",
-    ":ChanServ!ChanServ@services. NOTICE kokobot :[#gameover] sikerim",
-    ":fooobar KOMUT param1 param2 :test",
-    "PING :foo.bar",
+    ":kokobot!~ircbot@88.240.45.200 JOIN #gameover\r\n",
+    ":leguin.freenode.net 353 kokobot = #gameover :kokobot @ChanServ\r\n",
+    ":leguin.freenode.net 366 kokobot #gameover :End of /NAMES list\r\n",
+    ":ChanServ!ChanServ@services. NOTICE kokobot :[#gameover] sikerim\r\n",
+    ":fooobar KOMUT param1 param2 :test\r\n",
+    "PING :foo.bar\r\n",
+    ":ChanServ!ChanServ@services. MODE #botwar +o KOKBOT\r\n",
     NULL
 };
 

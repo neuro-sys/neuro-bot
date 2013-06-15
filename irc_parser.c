@@ -99,7 +99,7 @@ void irc_parser(struct message_t * message, const char * line)
         t = strtok(params, " \r\n");
         if (t) { /* Are there any params? */
             strcpy(message->params.list[i++], t);
-            while ( (t = strtok(NULL, " ")) && i <= 14) {
+            while ( (t = strtok(NULL, " \r\n")) && i <= 14) {
                 strcpy(message->params.list[i++], t);
             }
             message->params.list[i][0] = '\0';
@@ -110,28 +110,28 @@ void irc_parser(struct message_t * message, const char * line)
 void print_message_t(struct message_t * message)
 {
     if (message->prefix.servername[0])
-        printf("Serv: (%s) ", message->prefix.servername);
+        fprintf(stderr, "Serv: (%s) ", message->prefix.servername);
     else if (message->prefix.nickname.nickname[0])
-        printf("Nick: (%s!%s@%s) ", message->prefix.nickname.nickname
+        fprintf(stderr, "Nick: (%s!%s@%s) ", message->prefix.nickname.nickname
                                 , message->prefix.nickname.user
                                 , message->prefix.nickname.host);
 
     if (message->command[0])
-        printf("(%s) ", message->command);
+        fprintf(stderr, "(%s) ", message->command);
 
     if (message->params.list[0][0]) {
         int i = 0;
 
-        printf("{");
+        fprintf(stderr, "{");
         while ( message->params.list[i][0] ) {
-            printf("\"%s\"", message->params.list[i++]);
+            fprintf(stderr, "\"%s\"", message->params.list[i++]);
             if (message->params.list[i][0])
-                printf(", ");
+                fprintf(stderr, ", ");
         }
-        printf("}");
+        fprintf(stderr, "}");
     }
     if (message->trailing[0])
-        printf(" => %s", message->trailing);
+        fprintf(stderr, " => %s", message->trailing);
 
-    printf("\n");
+    fprintf(stderr, "\n");
 }

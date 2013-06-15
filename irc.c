@@ -169,11 +169,13 @@ static void control_protocol_commands (struct irc_t * irc)
                 network_send_message(&irc->session->network, message);
             }
         }
-    } else if (strstr(irc->message.command, "353")) {
-        control_command_353_join(irc);
+    } else if (strstr(irc->message.command, "JOIN")) {
+        if (!strcmp(irc->message.prefix.nickname.nickname, irc->session->nickname))
+            control_command_353_join(irc);
 
     } else if (strstr(irc->message.command, "PART")) {
-        control_command_part(irc);
+        if (!strcmp(irc->message.prefix.nickname.nickname, irc->session->nickname))
+            control_command_part(irc);
     }
 }
 
