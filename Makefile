@@ -1,14 +1,13 @@
-CFLAGS	   = -I. -Wall -g -O0 -lpthread 
+CFLAGS	   = -I. -Wall -g -O0 -lpthread -DUSE_PYTHON_MODULES
 LDFLAGS	   = -ldl -g -O0  -lpthread
 OBJS	   =config.o \
 		   irc.o \
 		   module.o \
-		   network.o \
+		   socket.o \
 		   py_wrap.o \
 		   session.o \
 		   socket_unix.o \
 		   socket_win.o \
-		   irc_cmd.o \
 		   irc_parser.o \
 		   main.o
 

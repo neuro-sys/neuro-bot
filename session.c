@@ -1,8 +1,7 @@
 #include "session.h"
-#include "network.h"
+#include "socket.h"
 #include "irc.h"
 #include "global.h"
-#include "irc_cmd.h"
 #include "module.h"
 
 #include <stdio.h>
@@ -18,10 +17,10 @@ static void session_init_irc(struct session_t * session)
     char message[MAX_IRC_MSG];
 
     irc_set_nick(session->nickname, message);
-    network_send_message(&session->network, message);
+    socket_send_message(&session->socket, message);
 
     irc_set_user("ircbot", "github.com/neuro-sys/neuro-bot", message);
-    network_send_message(&session->network, message);
+    socket_send_message(&session->socket, message);
 }
 
 struct thread_struct {
@@ -90,20 +89,20 @@ void session_run(struct session_t * session)
         irc.from[0] = 0;
         memset(&irc.message, 0, sizeof (irc.message));
 
-        if (network_read_line(&session->network, line) < 0)
+        if (socket_read_line(&session->socket, line) < 0)
             break;
 
         irc_process_line(&irc, line);
 
         if (irc.response[0])
-            network_send_message(&session->network, irc.response);
+            socket_send_message(&session->socket, irc.response);
     }
 }
 
 
 void session_create(struct session_t * session)
 { 
-    network_connect(&session->network);
+    socket_connect(&session->socket);
 }
 
 void session_destroy(struct session_t * session)

@@ -3,13 +3,33 @@
 #include "global.h"
 #include "py_wrap.h"
 #include "module.h"
-#include "irc_cmd.h"
 #include "irc_parser.h"
 
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
 
+/* Send misc user commands. */
+void irc_set_nick(char * nickname, char * buffer)
+{
+    snprintf(buffer, MAX_IRC_MSG, "NICK %s\r\n", nickname); 
+}
+
+void irc_set_user(char * user, char * host, char * buffer)
+{
+    snprintf(buffer, MAX_IRC_MSG, "USER %s 8 * :%s\r\n\r\n",
+            user, host); 
+}
+
+void irc_identify_to_auth(char * password, char * buffer)
+{
+    sprintf(buffer, "PRIVMSG NickServ :identify %s\r\n", password);
+}
+
+void irc_join_channel(char * channel, char * buffer)
+{
+    sprintf(buffer, "JOIN %s\r\n", channel);
+}
 
 /* Control bot commands */
 static void control_bot_command_admin (struct irc_t * irc)
@@ -154,7 +174,7 @@ static void control_protocol_commands (struct irc_t * irc)
 
         for (t = irc->session->channels_ajoin; *t != NULL; t++) {
             irc_join_channel(*t, message);
-            network_send_message(&irc->session->network, message);
+            socket_send_message(&irc->session->socket, message);
         }
     } else if ( !strncmp("NOTICE", irc->message.command, 6) ) {
         if (strstr(irc->message.trailing, "registered" ) ) {
@@ -164,7 +184,7 @@ static void control_protocol_commands (struct irc_t * irc)
             if (strcmp(irc->session->password, "")) {
                 fprintf(stderr, "Authing to nickserv\n");
                 irc_identify_to_auth(irc->session->password, message);
-                network_send_message(&irc->session->network, message);
+                socket_send_message(&irc->session->socket, message);
             }
         }
     } else if (strstr(irc->message.command, "JOIN")) {

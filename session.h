@@ -1,10 +1,10 @@
 #ifndef __SESSION_H
 #define __SESSION_H
 
-#include "network.h"
+#include "socket.h"
 
 struct session_t {
-    struct network_t    network;
+    struct socket_t    socket;
     char                * nickname;
     char                * password;
     char                * admin;

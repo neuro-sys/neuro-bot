@@ -3,7 +3,7 @@
 #include "global.h"
 #include "irc.h"
 #include "py_wrap.h"
-#include "network.h"
+#include "socket.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -88,7 +88,7 @@ void module_load_callback(void * data)
     char file_full_path[250];
     void * mod;
     void * initializer;
-    void (* init_fp) (char ***, void (*)(struct network_t *, char *), int *);
+    void (* init_fp) (char ***, void (*)(struct socket_t *, char *), int *);
     char * t;
     struct mod_c_t * mod_c;
     char ** keywords;
@@ -136,11 +136,11 @@ void module_load_callback(void * data)
     }
 
 #ifdef _WIN32
-    init_fp = (void (__cdecl *)(char ***, void (*)(struct network_t *, char *), int *))GetProcAddress((HMODULE) mod, "init");
+    init_fp = (void (__cdecl *)(char ***, void (*)(struct socket_t *, char *), int *))GetProcAddress((HMODULE) mod, "init");
 #else
     init_fp = dlsym(mod, "init");
 #endif
-    init_fp(&keywords, &network_send_message, &looper);
+    init_fp(&keywords, &socket_send_message, &looper);
     if (looper)
         mod_c->looper = 1;
 

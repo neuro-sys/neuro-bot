@@ -22,7 +22,6 @@ int main(int argc, char *argv)
     memset(&message, 0, sizeof (message));
 
     for (i = 0; irc_lines[i] != NULL; i++) {
-        printf("[RAW LINE: %s]\n", irc_lines[i]);
         memset(&message, 0, sizeof (message));
         irc_parser(&message, irc_lines[i]);
         print_message_t(&message);

@@ -124,7 +124,7 @@ void mod_git(struct irc_t * irc, char * reply_msg)
             for (i = 0; i < irc->channels_siz; i++) {
                 char * chan = irc->channels[i];
                 sprintf(response, "PRIVMSG %s :%s\r\n", chan, message);
-                network_send_message(&irc->session->network, response);
+                irc_send(&irc->session->socket, response);
             }
         }
 

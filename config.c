@@ -18,8 +18,8 @@ void config_load(struct session_t * session)
         session->nickname = NICKNAME;
         session->password = PASSWORD;
         session->admin = ADMIN;
-        session->network.host_name = HOST;
-        session->network.port = PORT;
+        session->socket.host_name = HOST;
+        session->socket.port = PORT;
 
         return;
     }
@@ -50,16 +50,16 @@ void config_load(struct session_t * session)
         else if (!strcmp(token, "server"))
         {
             token = strtok(NULL, " \r\n");
-            if (token) session->network.host_name = strdup(token);
-            else session->network.host_name = HOST;
-            fprintf(stderr, "host_name: %s\n", session->network.host_name);
+            if (token) session->socket.host_name = strdup(token);
+            else session->socket.host_name = HOST;
+            fprintf(stderr, "host_name: %s\n", session->socket.host_name);
         }
         else if (!strcmp(token, "port"))
         {
             token = strtok(NULL, " \r\n");
-            if (token) session->network.port = strdup(token); 
-            else session->network.port = PORT;
-            fprintf(stderr, "port: %s\n", session->network.port);
+            if (token) session->socket.port = strdup(token); 
+            else session->socket.port = PORT;
+            fprintf(stderr, "port: %s\n", session->socket.port);
         }
         else if (!strcmp(token, "channels"))
         {
