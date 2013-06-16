@@ -6,8 +6,6 @@ OBJS	   =config.o \
 		   socket.o \
 		   py_wrap.o \
 		   session.o \
-		   socket_unix.o \
-		   socket_win.o \
 		   irc_parser.o \
 		   main.o
 
