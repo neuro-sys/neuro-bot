@@ -9,7 +9,12 @@
 
 #define PLUGIN_DIR "plugins"
 
+/*
+ * Python library functions.
+ */
+
 typedef     void *                      PyObject;
+void        (*Py_Initialize)            (void);
 void        (*PyList_Append)            (PyObject *, PyObject *);
 PyObject    (*PySys_GetObject)          (char *);
 PyObject    (*PyString_FromString)      (char *);
@@ -44,31 +49,31 @@ void insert(struct py_module_t * p)
         it->next->cur = p;
         it->next->next = NULL;
     }
-    fprintf(stderr, "Inserted plugin %s\n", p->name);
+    fprintf(stderr, "%s:%d:Inserted plugin %s to list. \n", __FILE__, __LINE__, p->name);
 }
 
 void plugin_load_file(char * fpath)
 {
     struct py_module_t * mod;
     char mod_name[50];
+    char mod_command_name[50];
     char * file_name;
     int k;
 
-    file_name = fpath;
-
-    if (!strstr(file_name, ".py") || file_name[strlen(file_name)-1] == 'c') 
+    if (!strstr(fpath, ".py") || fpath[strlen(fpath)-1] == 'c') 
         return;
 
-    strcpy(mod_name, file_name);
-    *strchr(mod_name, '.') = '\0';
+    strncpy(mod_name, strchr(fpath, '/')+1, strcspn(fpath, "."));
+    puts(mod_name);
 
     mod = malloc(sizeof (struct py_module_t));
 
     mod->pName = PyString_FromString(mod_name);
+    *strchr(mod_name, '.') = 0;
     mod->pModule = PyImport_ImportModule(mod_name);
 
     if (!mod->pModule) {
-        fprintf(stderr, "Can't load module: %s\n", mod_name);
+        fprintf(stderr, "%s:%d:Can't load module: %s\n", __FILE__, __LINE__, mod_name);
         free(mod);
         return;
     }
@@ -76,15 +81,18 @@ void plugin_load_file(char * fpath)
     mod->pFunc = PyObject_GetAttrString(mod->pModule, mod_name);
 
     if (!mod->pFunc || !PyCallable_Check(mod->pFunc)) {
-        fprintf(stderr, "Error python call method check.\n");
+        fprintf(stderr, "%s:%d:Error python call method check.\n", __FILE__, __LINE__);
         free(mod);
         return;
     }
 
-    mod->name = mod_name;
+
+    mod_command_name[0] = 0;
+    strncpy(mod_command_name, strchr(mod_name, '_')+1, strcspn(mod_name, ".")); 
+    mod->name = strdup(mod_command_name);
     insert(mod);
 
-    fprintf(stderr, "Python module loaded: [%s]\n", mod_name);
+    fprintf(stderr, "%s:%d:Python module loaded: [%s]\n", __FILE__, __LINE__, mod_name);
 }
 
 static void load_python_plugins()
@@ -96,7 +104,7 @@ static void load_python_plugins()
 
 	if (!dir)
 	{
-		fprintf(stderr, "no modules found, skipping.\n");
+		fprintf(stderr, "%s:%d: no modules found, skipping.\n", __FILE__, __LINE__);
 		return;
 	}
     
@@ -127,22 +135,93 @@ static struct plugin_t * plugin;
 
 void run (char * msg, char * res)
 {
-
+    puts("pyplugin run");
 }
 
 int manager_find (char * name) 
 {
+    struct plugin_list_t * it;
 
+    puts("searching...")
+    for (it = head; it->next != NULL; it = it->next) {
+        if (!strcmp(it->cur->name, name))
+            return 0;
+    }
+
+    return -1;
 }
 
-void init_python(void)
+int init_python(void)
 {
+    char buf[100];
+    char pwd[100];
     void * sym;
     void * handle;
 
-    handle = dlopen(NULL, RTLD_NOW|RTLD_GLOBAL);
-    sym = dlsym(handle, "kernel32.dll");
-    fprintf(stderr, "%p\n%p\n", handle, sym);
+    buf[0] = 0;
+
+    if ( (handle = dlopen("python27.dll", RTLD_NOW|RTLD_GLOBAL)) == NULL) {
+        return -1;
+    }
+    fprintf(stderr, "%s:%d:Python found.\n", __FILE__, __LINE__);
+
+    if ( (sym = dlsym(handle, "Py_Initialize")) == NULL) {
+        fprintf(stderr, "Symbol not found: Py_Initialize\n");
+        return -1;
+    }
+    fprintf(stderr, "%s:%d:Attached Py_Initailize.\n", __FILE__, __LINE__);
+    Py_Initialize = sym;
+   
+
+    if ( (sym = dlsym(handle, "PyList_Append")) == NULL) {
+        fprintf(stderr, "Symbol not found: PyList_Append\n");
+        return -1;
+    }
+    fprintf(stderr, "%s:%d:Attached PyList_Append.\n", __FILE__, __LINE__);
+    PyList_Append = sym;
+
+    if ( (sym = dlsym(handle, "PyString_FromString")) == NULL) {
+        fprintf(stderr, "Symbol not found: PyString_FromString\n");
+        return -1;
+    }
+    fprintf(stderr, "%s:%d:Attached PyString_FromString.\n", __FILE__, __LINE__);
+    PyString_FromString = sym;
+
+    if ( (sym = dlsym(handle, "PySys_GetObject")) == NULL) {
+        fprintf(stderr, "Symbol not found: PySys_GetObject\n");
+        return -1;
+    }
+    fprintf(stderr, "%s:%d:Attached PySys_GetObject.\n", __FILE__, __LINE__);
+    PySys_GetObject = sym;
+
+    if ( (sym = dlsym(handle, "PyObject_GetAttrString")) == NULL) {
+        fprintf(stderr, "Symbol not found: PyObject_GetAttrString\n");
+        return -1;
+    }
+    fprintf(stderr, "%s:%d:Attached PyObject_GetAttrString.\n", __FILE__, __LINE__);
+    PyObject_GetAttrString = sym;
+
+    if ( (sym = dlsym(handle, "PyImport_ImportModule")) == NULL) {
+        fprintf(stderr, "Symbol not found: PyImport_ImportModule\n");
+        return -1;
+    }
+    fprintf(stderr, "%s:%d:Attached PyImport_ImportModule.\n", __FILE__, __LINE__);
+    PyImport_ImportModule = sym;
+
+
+    if ( (sym = dlsym(handle, "PyCallable_Check")) == NULL) {
+        fprintf(stderr, "Symbol not found: PyCallable_Check\n");
+        return -1;
+    }
+    fprintf(stderr, "%s:%d:Attached PyCallable_Check.\n", __FILE__, __LINE__);
+    PyCallable_Check = sym;
+
+    fprintf(stderr, "%s:%d:Calling Py_Initialize.\n", __FILE__, __LINE__);
+    Py_Initialize();
+    
+    getcwd(pwd, 1024);
+    sprintf(buf, "%s/%s", pwd, PLUGIN_DIR);
+    set_pymodule_path(buf);
 }
 
 struct plugin_t * init(void)
