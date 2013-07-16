@@ -2,7 +2,6 @@
 #include "socket.h"
 #include "irc.h"
 #include "global.h"
-#include "module.h"
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -23,6 +22,7 @@ static void session_init_irc(struct session_t * session)
     socket_send_message(&session->socket, message);
 }
 
+#if 0
 struct thread_struct {
     struct mod_c_t * mod;
     struct irc_t * irc;
@@ -47,7 +47,6 @@ static void start_loopers(struct irc_t * irc)
     loopers = module_get_loopers();
     if (!loopers)
         return;
-
     iterator = loopers;
     while (*iterator) {
         struct mod_c_t * mod;
@@ -71,18 +70,21 @@ static void start_loopers(struct irc_t * irc)
     }
     free(loopers);
 }
+#endif
 
 void session_run(struct session_t * session)
 { 
     char          line[MAX_IRC_MSG];
     struct irc_t  irc;
 
+    socket_connect(&session->socket);
+
     memset(&irc, 0, sizeof(irc));
     session_init_irc(session);
     irc.session = session;        
-
+#if 0
     start_loopers(&irc);
-
+#endif
     while (1) 
     {
         irc.response[0] = 0;
@@ -97,16 +99,5 @@ void session_run(struct session_t * session)
         if (irc.response[0])
             socket_send_message(&session->socket, irc.response);
     }
-}
-
-
-void session_create(struct session_t * session)
-{ 
-    socket_connect(&session->socket);
-}
-
-void session_destroy(struct session_t * session)
-{
-
 }
 

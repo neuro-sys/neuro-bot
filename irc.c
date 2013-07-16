@@ -1,9 +1,8 @@
 #include "irc.h"
 
 #include "global.h"
-#include "py_wrap.h"
-#include "module.h"
 #include "irc_parser.h"
+#include "irc_plugin.h"
 
 #include <string.h>
 #include <stdlib.h>
@@ -31,12 +30,16 @@ void irc_join_channel(char * channel, char * buffer)
     sprintf(buffer, "JOIN %s\r\n", channel);
 }
 
-/* Control bot commands */
+/* Control bot user commands */
 static void control_bot_command_admin (struct irc_t * irc)
 {
     char * t;
     char command[MAX_IRC_MSG], argument[MAX_IRC_MSG];
     char str[MAX_IRC_MSG];
+
+    command[0] = 0;
+    argument[0] = 0;
+    str[0] = 0;
 
     strncpy(str, irc->message.trailing, MAX_IRC_MSG);
     
@@ -54,54 +57,19 @@ static void control_bot_command_admin (struct irc_t * irc)
     else if (!strncmp(".raw", command, 4))
         sprintf(irc->response, "%s\r\n", argument);
     else if (!strncmp(".reload", command, 7)) {
-        module_load();
-#ifdef USE_PYTHON_MODULES
-        py_load_mod_hash();
-#endif
+        //module_load();
     }
 }
 
 static void control_bot_command_user (struct irc_t * irc)
 {
-    struct mod_c_t * mod_c;
-    char token[MAX_IRC_MSG];
-    char str[MAX_IRC_MSG];
-    char * t;
+    handle_plugin_command(irc);
 
-    strncpy(str, irc->message.trailing, MAX_IRC_MSG);
-    if ( !(t = strtok(str, " \r\n")) )
-        return;
-
-    strncpy(token, t, MAX_IRC_MSG);
-
-    if ( (mod_c = module_find(token+1)) )
-    {
-        char reply_msg[MAX_IRC_MSG];
-
-        reply_msg[0] = '\0';
-        mod_c->func(irc, reply_msg);
-        
-        if (reply_msg[0])
-            snprintf(irc->response, MAX_IRC_MSG, "PRIVMSG %s :%s\r\n", irc->from, reply_msg);
-    }
-#ifdef USE_PYTHON_MODULES
-    else
-    {
-        char * ret;
-        struct py_module_t * mod = py_find_loaded_name (token); 
-
-        if (mod) {
-            ret = py_call_module ( mod, irc );
-            snprintf( irc->response, MAX_IRC_MSG , "PRIVMSG %s :%s\r\n", irc->from, ret );
-            free(ret);
-        }
-    }
-#endif
     if ( !strncmp (irc->session->admin, irc->message.prefix.nickname.nickname, strlen(irc->session->admin)) ) 
         control_bot_command_admin (irc);
 }
 
-/* Control IRC commands */
+/* Control IRC server commands */
 static void control_command_privmsg (struct irc_t * irc)
 {
     strcpy(irc->from, irc->message.params[0]);
@@ -111,20 +79,6 @@ static void control_command_privmsg (struct irc_t * irc)
 
     if ( irc->message.trailing[0] == '.' ) 
         control_bot_command_user (irc);
-    else {
-        struct mod_c_t * mod;
-        char ret[MAX_IRC_MSG];
-
-        mod = module_find_by_keyword(irc->message.trailing);
-
-        ret[0] = '\0';
-
-        if (mod)
-            mod->func(irc, ret); 
-
-        if (ret[0])
-            snprintf(irc->response, MAX_IRC_MSG, "PRIVMSG %s :%s\r\n", irc->from, ret);
-    }  
 }
 
 static void control_command_353_join(struct irc_t * irc)
@@ -162,6 +116,7 @@ static void control_command_part(struct irc_t * irc)
     irc->channels = new_channels;
     irc->channels_siz--;
 }
+
 static void control_protocol_commands (struct irc_t * irc)
 {
     if ( !strncmp ("PRIVMSG", irc->message.command, 7) ) 

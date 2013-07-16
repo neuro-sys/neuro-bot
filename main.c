@@ -2,7 +2,7 @@
 
 #include "session.h"
 #include "config.h"
-#include "module.h"
+#include "plugin.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -15,15 +15,13 @@ int main(int argc, char *argv[])
     setlocale(LC_CTYPE, "");
     memset(&session, 0, sizeof session);
     config_load(&session);
-    module_init();
+    
+    plugin_init();
 
     while (1)
     {
-        session_create(&session);
         session_run(&session);
     }
-
-    session_destroy(&session);
 
     return 0;
 }

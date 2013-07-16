@@ -1,12 +1,13 @@
-CFLAGS	   = -I. -Wall -g -O0 -lpthread -DUSE_PYTHON_MODULES
+CFLAGS	   = -I. -Wall -g -O0 -lpthread 
 LDFLAGS	   = -ldl -g -O0  -lpthread
 OBJS	   =config.o \
 		   irc.o \
-		   module.o \
 		   socket.o \
 		   py_wrap.o \
 		   session.o \
 		   irc_parser.o \
+		   irc_plugin.o \
+		   plugin.o\
 		   main.o
 
 MOD_DIR    = ./modules
@@ -19,7 +20,7 @@ CFLAGS     += -O0
 %.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
-all: neurobot modules unit_tests
+all: neurobot unit_tests
 
 neurobot: $(OBJS)
 	$(CC) $(OBJS) -o $@ $(CFLAGS) $(LDFLAGS)
@@ -27,10 +28,10 @@ neurobot: $(OBJS)
 clean:
 	rm -fv $(OBJS) neurobot; $(MAKE) --directory=$(MOD_DIR) clean; $(MAKE) --directory=$(TEST_DIR) clean;
 
-.PHONY: modules unit_tests 
+.PHONY: unit_tests 
 
-modules:
-	$(MAKE) --directory=$(MOD_DIR)
+#modules:
+#	$(MAKE) --directory=$(MOD_DIR)
 
 #unit_tests:
 #	$(MAKE) --directory=$(TEST_DIR)
