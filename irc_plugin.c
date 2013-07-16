@@ -14,9 +14,9 @@ void handle_plugin_command(struct irc_t * irc)
     char plugin_response[MAX_IRC_MSG];
     char irc_response[MAX_IRC_MSG];
 
-    command_name[0] = 0;
-    plugin_response[0] = 0;
-    irc_response[0] = 0;
+    command_name[0]     = 0;
+    plugin_response[0]  = 0;
+    irc_response[0]     = 0;
 
     size_t n = strcspn(irc->message.trailing+1, " \r\n");
     strncpy(command_name, irc->message.trailing+1, n);

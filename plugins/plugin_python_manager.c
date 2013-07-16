@@ -162,9 +162,15 @@ static struct plugin_t * plugin;
 void run(char * msg, char * res)
 {
     struct plugin_list_t * it;
+    char command_name[50];
+
+    command_name[0] = 0;
+
+    size_t n = strcspn(msg+1, " \r\n");
+    strncpy(command_name, msg+1, n);
 
     for (it = head; it != NULL; it = it->next) {
-        if (!strcmp(it->cur->name, name)) {
+        if (!strcmp(it->cur->name, command_name)) {
             struct py_module_t * module = it->cur;
 
             py_call_module(module, msg, res);
