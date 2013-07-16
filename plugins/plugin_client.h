@@ -11,6 +11,9 @@ struct plugin_t {
     int is_looper;
     int is_command;
     int is_grep;
+    int is_manager;
+
+    int (*manager_find)(char *);
 };
 
 #endif
