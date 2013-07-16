@@ -20,6 +20,7 @@ void handle_plugin_command(struct irc_t * irc)
 
     size_t n = strcspn(irc->message.trailing+1, " \r\n");
     strncpy(command_name, irc->message.trailing+1, n);
+    command_name[n] = 0;
 
     plugin = plugin_find_command(command_name);
 

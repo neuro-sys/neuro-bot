@@ -21,6 +21,9 @@ PyObject    (*PyString_FromString)      (char *);
 PyObject    (*PyImport_ImportModule)    (char *);
 PyObject    (*PyObject_GetAttrString)   (PyObject *, char *);
 int         (*PyCallable_Check)         (PyObject *);
+PyObject    (*PyTuple_New)              (int);
+PyObject    (*PyObject_CallObject)      (PyObject *, PyObject *);
+char *      (*PyString_AsString)        (PyObject *);
 
 struct py_module_t {
     char * name;
@@ -131,19 +134,51 @@ static void set_pymodule_path(char * py_path)
     PyList_Append(sys_path, path);
 }
 
+static void py_call_module(struct py_module_t * mod, char * msg, char * res)
+{
+    PyObject    * p_args;
+    PyObject    * p_val;
+    char        * t;
+
+    p_args = PyTuple_New(2);                          
+    t = strchr(msg, '\r');                   
+    *t = '\0';
+    p_val = PyString_FromString("");           
+    PyTuple_SetItem(p_args, 0, p_val);            
+    p_val = PyString_FromString(msg);        
+    PyTuple_SetItem(p_args, 1, p_val);            
+
+    p_val = PyObject_CallObject(mod->pFunc, p_args);  
+    if (p_val)
+        t = PyString_AsString(p_val);                     
+    else
+        t = "Python module crashed.";
+
+    strcpy(res, t);
+}
+
 static struct plugin_t * plugin;
 
-void run (char * msg, char * res)
+void run(char * msg, char * res)
 {
-    puts("pyplugin run");
+    struct plugin_list_t * it;
+
+    for (it = head; it != NULL; it = it->next) {
+        if (!strcmp(it->cur->name, name)) {
+            struct py_module_t * module = it->cur;
+
+            py_call_module(module, msg, res);
+            puts(res);
+        }
+    }
 }
 
 int manager_find (char * name) 
 {
     struct plugin_list_t * it;
 
-    puts("searching...")
-    for (it = head; it->next != NULL; it = it->next) {
+    puts("searching...");
+    for (it = head; it != NULL; it = it->next) {
         if (!strcmp(it->cur->name, name))
             return 0;
     }
@@ -216,7 +251,27 @@ int init_python(void)
     fprintf(stderr, "%s:%d:Attached PyCallable_Check.\n", __FILE__, __LINE__);
     PyCallable_Check = sym;
 
-    fprintf(stderr, "%s:%d:Calling Py_Initialize.\n", __FILE__, __LINE__);
+    if ( (sym = dlsym(handle, "PyTuple_New")) == NULL) {
+        fprintf(stderr, "Symbol not found: PyTuple_New\n");
+        return -1;
+    }
+    fprintf(stderr, "%s:%d:Attached PyTuple_New.\n", __FILE__, __LINE__);
+    PyTuple_New = sym;
+
+    if ( (sym = dlsym(handle, "PyObject_CallObject")) == NULL) {
+        fprintf(stderr, "Symbol not found: PyObject_CallObject\n");
+        return -1;
+    }
+    fprintf(stderr, "%s:%d:Attached PyObject_CallObject.\n", __FILE__, __LINE__);
+    PyObject_CallObject = sym;
+
+    if ( (sym = dlsym(handle, "PyString_AsString")) == NULL) {
+        fprintf(stderr, "Symbol not found: PyString_AsString\n");
+        return -1;
+    }
+    fprintf(stderr, "%s:%d:Attached PyString_AsString.\n", __FILE__, __LINE__);
+    PyString_AsString = sym;
+
     Py_Initialize();
     
     getcwd(pwd, 1024);
@@ -250,6 +305,8 @@ int main(int argc, char *argv[])
 
     plugin = init();
 
+    int n = manager_find("example");
+    printf("%d\n", n);
     return 0;
 }
 
