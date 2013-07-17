@@ -6,9 +6,9 @@
 
 struct plugin_t * plugin;
 
-void run(struct irc_t * irc)
+void run(void)
 {
-    sprintf(irc->response, "PRIVMSG %s :Hello!", irc->from);
+    sprintf(plugin->irc->response, "PRIVMSG %s :Hello!", plugin->irc->from);
 }
 
 struct plugin_t * init(void)

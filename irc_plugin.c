@@ -25,6 +25,6 @@ void irc_plugin_handle_command(struct irc_t * irc)
 
     fprintf(stderr, "%s:%d:Handling plugin command: %s\n", __FILE__, __LINE__, plugin->name);
 
-    plugin->run(irc);
+    plugin->run();
 }
 

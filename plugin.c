@@ -1,3 +1,4 @@
+#include "plugin.h"
 #include "plugins/plugin_client.h"
 
 #include <stdio.h>
@@ -9,12 +10,7 @@
 
 #define PLUGIN_DIR "plugins"
 
-struct plugin_list_t * head;
-
-struct plugin_list_t {
-    struct plugin_t * cur;
-    struct plugin_list_t * next;
-};
+struct plugin_list_t * plugin_list_head;
 
 /**
  * Returns a handle to the native plugin, for the given command name.
@@ -23,7 +19,7 @@ struct plugin_t * plugin_find_command(char * name)
 {
     struct plugin_list_t * it;
 
-    for (it = head; it != NULL; it = it->next) {
+    for (it = plugin_list_head; it != NULL; it = it->next) {
         if (!strcmp(it->cur->name, name))
             return it->cur;
         if (it->cur->is_manager && !it->cur->manager_find(name))
@@ -34,14 +30,14 @@ struct plugin_t * plugin_find_command(char * name)
 
 void insert(struct plugin_t * p)
 {
-    if (head == NULL) {
-        head = malloc(sizeof (struct plugin_list_t));
-        head->cur = p;
-        head->next = NULL;
+    if (plugin_list_head == NULL) {
+        plugin_list_head = malloc(sizeof (struct plugin_list_t));
+        plugin_list_head->cur = p;
+        plugin_list_head->next = NULL;
     } else {
         struct plugin_list_t * it;
 
-        for (it = head; it->next != NULL; it = it->next) {}
+        for (it = plugin_list_head; it->next != NULL; it = it->next) {}
 
         it->next = malloc(sizeof (struct plugin_list_t));
         it->next->cur = p;
@@ -57,7 +53,8 @@ void insert(struct plugin_t * p)
  */
 void send_message(struct irc_t * irc)
 {
-    puts(irc->response);
+    fprintf(stderr, "%25s:%4d:%s\n", __FILE__, __LINE__, irc->response);
+    socket_send_message(&irc->session->socket, irc->response);
 }
 
 struct plugin_t plugin_list[100];
@@ -150,7 +147,7 @@ int main()
     plugin_init();
 
     puts("Iterating the plugins...");
-    for (it = head; it != NULL; it = it->next) {
+    for (it = plugin_list_head; it != NULL; it = it->next) {
         printf("- %s\n", it->cur->name);
     }
     puts("Finished.");

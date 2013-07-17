@@ -31,28 +31,33 @@ static  char *      (*PyString_AsString)        (PyObject *);
  */
 struct py_module_t {
     char * name;
+
+    int is_command;
+    int is_grep;
+    int is_looper;
+
     PyObject * pName, * pModule, * pFunc;
 };
 
-static struct plugin_list_t * head;
+static struct python_plugin_list_t * head;
 
-struct plugin_list_t {
+struct python_plugin_list_t {
     struct py_module_t      * cur;
-    struct plugin_list_t    * next;
+    struct python_plugin_list_t    * next;
 };
 
 static void insert(struct py_module_t * p)
 {
     if (head == NULL) {
-        head = malloc(sizeof (struct plugin_list_t));
+        head = malloc(sizeof (struct python_plugin_list_t));
         head->cur = p;
         head->next = NULL;
     } else {
-        struct plugin_list_t * it;
+        struct python_plugin_list_t * it;
 
         for (it = head; it->next != NULL; it = it->next) {}
 
-        it->next = malloc(sizeof (struct plugin_list_t));
+        it->next = malloc(sizeof (struct python_plugin_list_t));
         it->next->cur = p;
         it->next->next = NULL;
     }
@@ -96,6 +101,7 @@ static void plugin_load_file(char * fpath)
     mod_command_name[0] = 0;
     strncpy(mod_command_name, strchr(mod_name, '_')+1, strcspn(mod_name, ".")); 
     mod->name = strdup(mod_command_name);
+    mod->is_command = 1;
     insert(mod);
 
     fprintf(stderr, "%25s:%4d:Python module loaded: [%s]\n", __FILE__, __LINE__, fpath);
@@ -137,6 +143,9 @@ static void set_pymodule_path(char * py_path)
     PyList_Append(sys_path, path);
 }
 
+/*
+ * Build an object to pass as a single parameter to the python plugin.
+ */
 static void py_call_module(struct py_module_t * mod, struct irc_t * irc, char * res)
 {
     PyObject    * p_args;
@@ -162,29 +171,36 @@ static void py_call_module(struct py_module_t * mod, struct irc_t * irc, char * 
 
 static struct plugin_t * plugin;
 
-static void run(struct irc_t * irc)
+static void run(void)
 {
-    struct plugin_list_t * it;
+    struct python_plugin_list_t * it;
     char command_name[50];
 
     command_name[0] = 0;
 
-    size_t n = strcspn(irc->message.trailing+1, " \r\n");
-    strncpy(command_name, irc->message.trailing+1, n);
-    command_name[n] = 0;
+    if (!plugin->irc->message.trailing[0]) {
+        size_t n = strcspn(plugin->irc->message.trailing+1, " \r\n");
+        strncpy(command_name, plugin->irc->message.trailing+1, n);
+        command_name[n] = 0;
+    }
 
     for (it = head; it != NULL; it = it->next) {
-        if (!strcmp(it->cur->name, command_name)) {
+        /* Run command. */
+        if (it->cur->is_command && !strcmp(it->cur->name, command_name)) {
             struct py_module_t * module = it->cur;
 
-            py_call_module(module, irc, irc->response);
+            py_call_module(module, plugin->irc, plugin->irc->response);
         }
+
+        /**
+         * TODO: Run python loopers.
+         */
     }
 }
 
 static int manager_find (char * name) 
 {
-    struct plugin_list_t * it;
+    struct python_plugin_list_t * it;
 
     for (it = head; it != NULL; it = it->next) {
         if (!strcmp(it->cur->name, name))

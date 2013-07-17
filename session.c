@@ -2,6 +2,7 @@
 
 #include "socket.h"
 #include "irc.h"
+#include "plugin.h"
 #include "global.h"
 
 #include <stdio.h>
@@ -10,7 +11,21 @@
 
 #include <pthread.h>
 
-static pthread_t threads[10];
+void prepare_plugins(struct irc_t * irc)
+{
+    struct plugin_list_t * it;
+
+    fprintf(stderr, "%25s:%4d:Session initializing plugins.\n", __FILE__, __LINE__);
+    for (it = plugin_list_head; it != NULL; it = it->next) {
+        fprintf(stderr, "%25s:%4d:Name:%s\n", __FILE__, __LINE__, it->cur->name);
+        it->cur->irc = irc;
+    }
+}
+
+/**
+ * TODO: Use a dynamic structure to keep track of threads.
+ */
+static pthread_t plugin_threads[10];
 
 static void session_init_irc(struct session_t * session)
 {
@@ -23,55 +38,36 @@ static void session_init_irc(struct session_t * session)
     socket_send_message(&session->socket, message);
 }
 
-#if 0
-struct thread_struct {
-    struct mod_c_t * mod;
-    struct irc_t * irc;
-};
-
-static void *looper_thread(void * pdata)
+static void *start_thread(void * pdata)
 {
-    struct thread_struct * ts;
+    ((struct plugin_t *)pdata)->run();
 
-    ts = (struct thread_struct *) pdata;
-    ts->mod->func(ts->irc, NULL);
-
-    return 0;
+    return NULL;
 }
 
 static void start_loopers(struct irc_t * irc)
 {
-    struct mod_c_t ** loopers, ** iterator;
-    int i = 0;
-    int err;
 
-    loopers = module_get_loopers();
-    if (!loopers)
-        return;
-    iterator = loopers;
-    while (*iterator) {
-        struct mod_c_t * mod;
-        struct thread_struct * ts;
+    struct plugin_list_t * it;
+    int i, err;
+
+    for (i = 0, it = plugin_list_head; it != NULL; it = it->next, i++) {
+        if (!it->cur->is_looper || it->cur->is_manager)
+            continue;
 
         if (i == 10) {
-            fprintf(stderr, "Passed the maximum number of loopers limit.\n");
+            fprintf(stderr, "%25s:%4d:Passed the maximum number of loopers limit.\n", 
+                    __FILE__, __LINE__);
             break;
         }
-        ts = malloc(sizeof (struct thread_struct));
 
-        mod = *iterator++;
-
-        ts->mod = mod;
-        ts->irc = irc;
-
-        fprintf(stderr, "Looper %s is started\n", mod->mod_name);
-        if ((err = pthread_create(&threads[i++], NULL, looper_thread, ts)) != 0) {
-            fprintf(stderr, "Thread could not be started. pthread_create, errno = %d\n", err);
+        fprintf(stderr, "%25s:%4d:Looper %s is started\n", __FILE__, __LINE__, it->cur->name);
+        if ((err = pthread_create(&plugin_threads[i], NULL, start_thread, it->cur)) != 0) {
+            fprintf(stderr, "%25s:%4d:Thread could not be started. pthread_create, errno = %d\n", 
+                    __FILE__, __LINE__, err);
         }
     }
-    free(loopers);
 }
-#endif
 
 void session_run(struct session_t * session)
 { 
@@ -80,6 +76,7 @@ void session_run(struct session_t * session)
 
     memset(&irc, 0, sizeof(irc));
     irc.session = session;        
+    prepare_plugins(&irc);
 
     /* Conect to the server specified in socket_t struct. */
     if ( socket_connect(&irc.session->socket) < 0 ) {
@@ -89,9 +86,9 @@ void session_run(struct session_t * session)
     }
     /* Do one time initialization work after connecting to the server. */
     session_init_irc(irc.session);
-#if 0
+
     start_loopers(&irc);
-#endif
+
     while (1) 
     {
 
