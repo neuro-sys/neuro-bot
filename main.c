@@ -12,10 +12,15 @@ int main(int argc, char *argv[])
 {
     struct session_t session;
 
-    setlocale(LC_CTYPE, "");
     memset(&session, 0, sizeof session);
+
+    /* Acquire system locale. */
+    setlocale(LC_CTYPE, "");
+
+    /* Load config file. */
     config_load(&session);
-    
+
+    /* Load plugin modules. */
     plugin_init();
 
     while (1)

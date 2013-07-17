@@ -1,4 +1,5 @@
 #include "session.h"
+
 #include "socket.h"
 #include "irc.h"
 #include "global.h"
@@ -77,27 +78,34 @@ void session_run(struct session_t * session)
     char          line[MAX_IRC_MSG];
     struct irc_t  irc;
 
-    socket_connect(&session->socket);
-
     memset(&irc, 0, sizeof(irc));
-    session_init_irc(session);
     irc.session = session;        
+
+    /* Conect to the server specified in socket_t struct. */
+    if ( socket_connect(&irc.session->socket) < 0 ) {
+        fprintf(stderr, "%20s:%4d:Unable to connect to %s:%s\n", __FILE__, __LINE__, 
+                    irc.session->socket.host_name, irc.session->socket.port);
+        abort();
+    }
+    /* Do one time initialization work after connecting to the server. */
+    session_init_irc(irc.session);
 #if 0
     start_loopers(&irc);
 #endif
     while (1) 
     {
+
         irc.response[0] = 0;
-        irc.from[0] = 0;
+        irc.from[0]     = 0;
         memset(&irc.message, 0, sizeof (irc.message));
 
-        if (socket_read_line(&session->socket, line) < 0)
+        if (socket_read_line(&irc.session->socket, line) < 0)
             break;
 
         irc_process_line(&irc, line);
 
         if (irc.response[0])
-            socket_send_message(&session->socket, irc.response);
+            socket_send_message(&irc.session->socket, irc.response);
     }
 }
 

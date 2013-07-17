@@ -3,7 +3,7 @@
 
 #include "irc.h"
 
-void handle_plugin_command(struct irc_t * irc);
+void irc_plugin_handle_command(struct irc_t * irc);
 
 #endif
 

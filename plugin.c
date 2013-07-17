@@ -16,6 +16,9 @@ struct plugin_list_t {
     struct plugin_list_t * next;
 };
 
+/**
+ * Returns a handle to the native plugin, for the given command name.
+ */
 struct plugin_t * plugin_find_command(char * name)
 {
     struct plugin_list_t * it;
@@ -44,12 +47,17 @@ void insert(struct plugin_t * p)
         it->next->cur = p;
         it->next->next = NULL;
     }
-    fprintf(stderr, "Inserted plugin %s\n", p->name);
 }
 
-void send_message(char *msg)
+/**
+ * Callback send raw message function for plugins.
+ *
+ * TODO: It should utilize a message queue for delivering messages to the network.
+ *
+ */
+void send_message(struct irc_t * irc)
 {
-    puts(msg);
+    puts(irc->response);
 }
 
 struct plugin_t plugin_list[100];
@@ -60,17 +68,47 @@ void plugin_load_file(char * file)
     struct plugin_t * (*init)(void);
     struct plugin_t * plugin;
 
-    plugin_file = dlopen(file, RTLD_LAZY);
-    if (!plugin_file) {
-        puts("not opened");
+    fprintf(stderr, "%25s:%4d:Loading native plugin \"%s\"\n", __FILE__, __LINE__, file);
+    if ((plugin_file = dlopen(file, RTLD_LAZY)) == NULL) {
+        fprintf(stderr, "%25s:%4d: The plugin file \"%s\" could not be opened.\n", 
+                __FILE__, __LINE__, file);
         return;
     }
 
-    init = dlsym(plugin_file, "init");
+    if ((init = dlsym(plugin_file, "init")) == NULL) { 
+        fprintf(stderr, "%25s:%4d:The plugin \"%s\" has no exported init function symbol.\n",
+                __FILE__, __LINE__, file);
+    }
 
     /* initialize and get handle to the plugin */
     plugin = init();
+
+    /* See warning message for commentary */
+    if (!plugin->is_manager && (plugin->is_command + plugin->is_grep + plugin->is_looper) > 1) {
+        fprintf(stderr, "%25s:%4d:The plugin \"%s\" is not valid."
+                    "A plugin can only be one of type `command', `grep' and `looper'.\n",
+                    __FILE__, __LINE__, file);
+        /* TODO: Clean up. */
+        return;
+    }
+
+    /* Attach callbacks to be used by plugin. */
     plugin->send_message = send_message;
+
+    /* If plugin is of type grep, acquire grep keywords. */
+    if (!plugin->is_manager && plugin->is_grep) {
+        char ** keywords;
+
+        if ((keywords = dlsym(plugin_file, "keywords"))) {
+            plugin->keywords = keywords;
+        } else { 
+            fprintf(stderr, "%25s:%4d:The plugin \"%s\" is of type `grep', but has no "
+                        "exported grep keywords symbols found. Discarding.\n",
+                        __FILE__, __LINE__, file);
+            /* TODO: Clean up. */
+            return;
+        }
+    }
 
     insert(plugin);
 }
@@ -84,7 +122,7 @@ void plugin_init()
 
 	if (!dir)
 	{
-		fprintf(stderr, "no modules found, skipping.\n");
+		fprintf(stderr, "%25s:%4d:no modules found, skipping.\n", __FILE__, __LINE__);
 		return;
 	}
     

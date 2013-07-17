@@ -82,7 +82,7 @@ int getchar_fd(int sockfd)
     return (--n >= 0) ? (unsigned char) *bufp++ : EOF;
 }
 
-void socket_connect(struct socket_t * socket)
+int socket_connect(struct socket_t * socket)
 {
     int sockfd;
 
@@ -90,6 +90,8 @@ void socket_connect(struct socket_t * socket)
     socket->sockfd = sockfd;
 
     errno = 0;
+
+    return sockfd;
 }
 
 int socket_read_line(struct socket_t * socket, char * buf)
@@ -113,7 +115,7 @@ void socket_send_message(struct socket_t * socket, char * message)
 
     /* Make sure the line ends with cr-lf */
     len = strlen(message);
-    if (message[len-2] == '\r' && message[len-1] != '\n')
+    if (message[len-2] != '\r' && message[len-1] != '\n')
         strcat(message, "\r\n");
 
     len = send(socket->sockfd, message, strlen(message), 0);

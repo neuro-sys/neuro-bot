@@ -16,7 +16,7 @@ struct socket_t {
     int         sockfd;
 };
 
-extern void     socket_connect         (struct socket_t * socket);
+extern int      socket_connect         (struct socket_t * socket);
 extern int      socket_read_line       (struct socket_t * socket, char * buf);
 extern void     socket_send_message    (struct socket_t * socket, char * message);
 

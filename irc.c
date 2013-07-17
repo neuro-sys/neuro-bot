@@ -63,8 +63,7 @@ static void control_bot_command_admin (struct irc_t * irc)
 
 static void control_bot_command_user (struct irc_t * irc)
 {
-    handle_plugin_command(irc);
-
+    irc_plugin_handle_command(irc);
     if ( !strncmp (irc->session->admin, irc->message.prefix.nickname.nickname, strlen(irc->session->admin)) ) 
         control_bot_command_admin (irc);
 }

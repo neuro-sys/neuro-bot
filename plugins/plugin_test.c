@@ -6,9 +6,9 @@
 
 struct plugin_t * plugin;
 
-void run(char * msg, char * res)
+void run(struct irc_t * irc)
 {
-    strcpy(res, "I run.");
+    sprintf(irc->response, "PRIVMSG %s :Hello!", irc->from);
 }
 
 struct plugin_t * init(void)
