@@ -20,6 +20,7 @@ static  PyObject    (*PySys_GetObject)          (char *);
 static  PyObject    (*PyString_FromString)      (char *);
 static  PyObject    (*PyImport_ImportModule)    (char *);
 static  PyObject    (*PyObject_GetAttrString)   (PyObject *, char *);
+static  PyObject    (*PyImport_AddModule)       (char *);
 static  int         (*PyTuple_SetItem)          (PyObject *, size_t pos, PyObject *);
 static  int         (*PyCallable_Check)         (PyObject *);
 static  PyObject    (*PyTuple_New)              (int);
@@ -92,7 +93,8 @@ static void plugin_load_file(char * fpath)
     mod->pFunc = PyObject_GetAttrString(mod->pModule, mod_name);
 
     if (!mod->pFunc || !PyCallable_Check(mod->pFunc)) {
-        fprintf(stderr, "%25s:%4d:Error python call method check for %s.\n", __FILE__, __LINE__, fpath);
+        fprintf(stderr, "%25s:%4d:Error python call method check for module %s and attr %s.\n", __FILE__, __LINE__, 
+                        fpath, mod_name);
         free(mod);
         return;
     }
@@ -193,7 +195,7 @@ static void run(void)
         }
 
         /**
-         * TODO: Run python loopers.
+         * TODO: Run python loopers and greps.
          */
     }
 }
@@ -212,7 +214,7 @@ static int manager_find (char * name)
 
 static int init_python(void)
 {
-    char buf[100];
+    char buf[200];
     char pwd[100];
     void * sym;
     void * handle;
@@ -296,10 +298,17 @@ static int init_python(void)
     }
     PyTuple_SetItem = sym;
 
+    if ( (sym = dlsym(handle, "PyImport_AddModule")) == NULL) {
+        fprintf(stderr, "%25s:%4d:Symbol not found: PyImport_AddModule\n", __FILE__, __LINE__);
+        return -1;
+    }
+    PyImport_AddModule = sym;
+
     Py_Initialize();
     
     getcwd(pwd, 1024);
-    sprintf(buf, "%s/%s", pwd, PLUGIN_DIR);
+    sprintf(buf, "%s/%s/", pwd, PLUGIN_DIR);
+    fprintf(stderr, "%25s:%4d:Setting python module path: %s\n", __FILE__, __LINE__, buf);
     set_pymodule_path(buf);
 }
 
@@ -317,7 +326,9 @@ struct plugin_t * init(void)
 
     plugin->manager_find = manager_find;
 
-    init_python();
+    if (init_python() != 0) {
+        return NULL;    
+    }
     load_python_plugins();
 
     return plugin;
