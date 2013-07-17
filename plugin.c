@@ -78,7 +78,11 @@ void plugin_load_file(char * file)
     }
 
     /* initialize and get handle to the plugin */
-    plugin = init();
+    if ((plugin = init()) == NULL) {
+        fprintf(stderr, "%25s:%4d:The plugin initialization is failed for reasons unknown."
+                " Hope it's last words were meaningful, if any.\n", __FILE__, __LINE__);
+        return;
+    }
 
     /* See warning message for commentary */
     if (!plugin->is_manager && (plugin->is_command + plugin->is_grep + plugin->is_looper) > 1) {

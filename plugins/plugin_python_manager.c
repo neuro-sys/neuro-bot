@@ -137,7 +137,6 @@ static void load_python_plugins()
     closedir(dir);
 }
 
-
 static void set_pymodule_path(char * py_path)
 {
     PyObject * sys_path = PySys_GetObject("path");        
@@ -224,8 +223,11 @@ static int init_python(void)
 
     if ( (handle = dlopen("python27.dll", RTLD_NOW|RTLD_GLOBAL)) == NULL
       && (handle = dlopen("python26.dll", RTLD_NOW|RTLD_GLOBAL)) == NULL
+      && (handle = dlopen("libpython2.7.so", RTLD_NOW|RTLD_GLOBAL)) == NULL
+      && (handle = dlopen("libpython2.6.so", RTLD_NOW|RTLD_GLOBAL)) == NULL
       && (handle = dlopen("python27.so", RTLD_NOW|RTLD_GLOBAL)) == NULL
       && (handle = dlopen("python26.so", RTLD_NOW|RTLD_GLOBAL)) == NULL) {
+        fprintf(stderr, "%25s:%4d:Python shared library not found.\n", __FILE__, __LINE__);
         return -1;
     }
     fprintf(stderr, "%25s:%4d:Python found.\n", __FILE__, __LINE__);
@@ -310,6 +312,8 @@ static int init_python(void)
     sprintf(buf, "%s/%s/", pwd, PLUGIN_DIR);
     fprintf(stderr, "%25s:%4d:Setting python module path: %s\n", __FILE__, __LINE__, buf);
     set_pymodule_path(buf);
+
+    return 0;
 }
 
 struct plugin_t * init(void)
