@@ -20,6 +20,7 @@ PyObject    (*PySys_GetObject)          (char *);
 PyObject    (*PyString_FromString)      (char *);
 PyObject    (*PyImport_ImportModule)    (char *);
 PyObject    (*PyObject_GetAttrString)   (PyObject *, char *);
+int         (*PyTuple_SetItem)          (PyObject *, size_t pos, PyObject *);
 int         (*PyCallable_Check)         (PyObject *);
 PyObject    (*PyTuple_New)              (int);
 PyObject    (*PyObject_CallObject)      (PyObject *, PyObject *);
@@ -277,6 +278,13 @@ int init_python(void)
     }
     fprintf(stderr, "%s:%d:Attached PyString_AsString.\n", __FILE__, __LINE__);
     PyString_AsString = sym;
+
+    if ( (sym = dlsym(handle, "PyTuple_SetItem")) == NULL) {
+        fprintf(stderr, "Symbol not found: PyTuple_SetItem\n");
+        return -1;
+    }
+    fprintf(stderr, "%s:%d:Attached PyTuple_SetItem.\n", __FILE__, __LINE__);
+    PyTuple_SetItem = sym;
 
     Py_Initialize();
     
