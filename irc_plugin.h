@@ -4,6 +4,6 @@
 #include "irc.h"
 
 void irc_plugin_handle_command(struct irc_t * irc);
-
+void irc_plugin_handle_grep(struct irc_t * irc);
 #endif
 

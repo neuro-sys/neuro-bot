@@ -78,6 +78,8 @@ static void control_command_privmsg (struct irc_t * irc)
 
     if ( irc->message.trailing[0] == '.' ) 
         control_bot_command_user (irc);
+
+    irc_plugin_handle_grep(irc);
 }
 
 static void control_command_353_join(struct irc_t * irc)

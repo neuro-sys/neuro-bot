@@ -28,3 +28,27 @@ void irc_plugin_handle_command(struct irc_t * irc)
     plugin->run();
 }
 
+void irc_plugin_handle_grep(struct irc_t * irc)
+{
+    struct plugin_list_t * it;
+
+    for (it = plugin_list_head; it != NULL; it = it->next) {
+        struct plugin_t * plugin;
+        char ** keywords;
+
+        plugin = it->cur;
+
+        if (!plugin->is_grep || plugin->is_manager)
+            continue;
+
+        keywords = plugin->keywords;
+
+        while (*keywords) {
+            char * keyword = *keywords++;
+
+            if (!strstr(irc->message.trailing, keyword))
+                plugin->run();
+        }
+    }
+}
+
