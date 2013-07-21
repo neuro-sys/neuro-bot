@@ -19,6 +19,7 @@ static  void        (*PyList_Append)            (PyObject *, PyObject *);
 static  PyObject    (*PySys_GetObject)          (char *);
 static  PyObject    (*PyString_FromString)      (char *);
 static  PyObject    (*PyImport_ImportModule)    (char *);
+static  PyObject    (*PyImport_Import)          (PyObject *);
 static  PyObject    (*PyObject_GetAttrString)   (PyObject *, char *);
 static  PyObject    (*PyImport_AddModule)       (char *);
 static  int         (*PyTuple_SetItem)          (PyObject *, size_t pos, PyObject *);
@@ -26,6 +27,8 @@ static  int         (*PyCallable_Check)         (PyObject *);
 static  PyObject    (*PyTuple_New)              (int);
 static  PyObject    (*PyObject_CallObject)      (PyObject *, PyObject *);
 static  char *      (*PyString_AsString)        (PyObject *);
+static  int         (*PyErr_Print)              (void);
+static  void        (*Py_DECREF)                (PyObject *);
 
 /**
  * Internal python plugins struct for each python plugin as all managed by this plugin. 
@@ -37,7 +40,7 @@ struct py_module_t {
     int is_grep;
     int is_looper;
 
-    PyObject * pName, * pModule, * pFunc;
+    PyObject * pModule, * pFunc;
 };
 
 static struct python_plugin_list_t * head;
@@ -65,7 +68,7 @@ static void insert(struct py_module_t * p)
     fprintf(stderr, "%25s:%4d:Inserted python plugin %s to list. \n", __FILE__, __LINE__, p->name);
 }
 
-static void plugin_load_file(char * fpath)
+static void plugin_load_file(char * full_path)
 {
     struct py_module_t * mod;
     char mod_name[50];
@@ -73,19 +76,22 @@ static void plugin_load_file(char * fpath)
     char * file_name;
     int k;
 
-    if (!strstr(fpath, ".py") || fpath[strlen(fpath)-1] == 'c') 
+    if (!strstr(full_path, ".py") || fpath[strlen(fpath)-1] != 'y') 
         return;
 
-    strncpy(mod_name, strchr(fpath, '/')+1, strcspn(fpath, "."));
-
+    {
+        char * offset = strchr(full_path, '/')+1;
+        int len = strcspn(full_path, ".") - (offset-fpath); 
+        strncpy(mod_name, offset, len);
+        mod_name[len] = 0;
+    }
     mod = malloc(sizeof (struct py_module_t));
 
-    mod->pName = PyString_FromString(mod_name);
-    *strchr(mod_name, '.') = 0;
-    mod->pModule = PyImport_ImportModule(mod_name);
+    mod->pModule = PyImport_ImportModule("mod_example");
 
     if (!mod->pModule) {
-        fprintf(stderr, "%25s:%4d:Can't load module: %s\n", __FILE__, __LINE__, fpath);
+        fprintf(stderr, "%25s:%4d:Can't load module: %s\n", __FILE__, __LINE__, full_path);
+        //PyErr_Print();
         free(mod);
         return;
     }
@@ -94,7 +100,7 @@ static void plugin_load_file(char * fpath)
 
     if (!mod->pFunc || !PyCallable_Check(mod->pFunc)) {
         fprintf(stderr, "%25s:%4d:Error python call method check for module %s and attr %s.\n", __FILE__, __LINE__, 
-                        fpath, mod_name);
+                        full_path, mod_name);
         free(mod);
         return;
     }
@@ -106,7 +112,7 @@ static void plugin_load_file(char * fpath)
     mod->is_command = 1;
     insert(mod);
 
-    fprintf(stderr, "%25s:%4d:Python module loaded: [%s]\n", __FILE__, __LINE__, fpath);
+    fprintf(stderr, "%25s:%4d:Python module loaded: [%s]\n", __FILE__, __LINE__, full_path);
 }
 
 static void load_python_plugins()
@@ -305,6 +311,26 @@ static int init_python(void)
         return -1;
     }
     PyImport_AddModule = sym;
+
+    if ( (sym = dlsym(handle, "PyErr_Print")) == NULL) {
+        fprintf(stderr, "%25s:%4d:Symbol not found: PyErr_Print\n", __FILE__, __LINE__);
+        return -1;
+    }
+    PyErr_Print = sym;
+
+    if ( (sym = dlsym(handle, "PyImport_Import")) == NULL) {
+        fprintf(stderr, "%25s:%4d:Symbol not found: PyImport_Import\n", __FILE__, __LINE__);
+        return -1;
+    }
+    PyImport_Import = sym;
+    
+#if 0
+    if ( (sym = dlsym(handle, "Py_DECREF")) == NULL) {
+        fprintf(stderr, "%25s:%4d:Symbol not found: Py_DECREF\n", __FILE__, __LINE__);
+        return -1;
+    }
+    Py_DECREF = sym;
+#endif
 
     Py_Initialize();
     
