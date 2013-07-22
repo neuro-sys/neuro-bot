@@ -28,6 +28,7 @@ static  PyObject    (*PyTuple_New)              (int);
 static  PyObject    (*PyObject_CallObject)      (PyObject *, PyObject *);
 static  char *      (*PyString_AsString)        (PyObject *);
 static  int         (*PyErr_Print)              (void);
+static  void        (*PySys_SetPath)            (char *);
 static  void        (*Py_DECREF)                (PyObject *);
 
 /**
@@ -75,21 +76,21 @@ static void plugin_load_file(char * full_path)
     char * file_name;
     int k;
 
-    if (!strstr(full_path, ".py") || fpath[strlen(fpath)-1] != 'y') 
+    if (!strstr(full_path, ".py") || full_path[strlen(full_path)-1] != 'y') 
         return;
 
     {
         char * offset = strchr(full_path, '/')+1;
-        int len = strcspn(full_path, ".") - (offset-fpath); 
+        int len = strcspn(full_path, ".") - (offset-full_path); 
         strncpy(mod_name, offset, len);
         mod_name[len] = 0;
     }
     mod = malloc(sizeof (struct py_module_t));
 
-    mod->pModule = PyImport_ImportModule("mod_example");
+    mod->pModule = PyImport_ImportModule(mod_name);
 
     if (!mod->pModule) {
-        fprintf(stderr, "%25s:%4d:Can't load module: %s\n", __FILE__, __LINE__, full_path);
+        fprintf(stderr, "%25s:%4d:Can't load module: %s at %s\n", __FILE__, __LINE__, mod_name, full_path);
         //PyErr_Print();
         free(mod);
         return;
@@ -146,6 +147,7 @@ static void set_pymodule_path(char * py_path)
     PyObject * sys_path = PySys_GetObject("path");        
     PyObject * path     = PyString_FromString(py_path);   
     PyList_Append(sys_path, path);
+    PySys_SetPath(py_path);
 }
 
 /*
@@ -322,6 +324,12 @@ static int init_python(void)
     }
     PyImport_Import = sym;
     
+    if ( (sym = dlsym(handle, "PySys_SetPath")) == NULL) {
+        fprintf(stderr, "%25s:%4d:Symbol not found: PySys_SetPath\n", __FILE__, __LINE__);
+        return -1;
+    }
+    PySys_SetPath = sym;
+
 #if 0
     if ( (sym = dlsym(handle, "Py_DECREF")) == NULL) {
         fprintf(stderr, "%25s:%4d:Symbol not found: Py_DECREF\n", __FILE__, __LINE__);
