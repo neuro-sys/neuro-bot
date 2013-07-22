@@ -1,28 +1,23 @@
 ## neurobot
-neurobot is an IRC bot written in C with extensibility in mind. Plugins can be written 
-as either standalone shared libraries (e.g. .dll or .so), or python at the moment.
+neurobot is an IRC bot written in C with an extensible plugin architecture in mind. Plugins can be loaded on runtime without need to restart the application. Plugins also may load other plugins and act as a plugin manager repository. For instance, there is one python plugin manager which is itself a plugin, and loads python plugins. Plugins for other languages are planned.
 
 ###### Features:
  - Admin management
- - Load or unoad plugins in runtime without having to restart the bot.
- - Run python code through the embedded python interpreter.
+ - Autojoin channels
+ - Reconnect on disconnect
+ - Extensible with plugins
+ - No third party dependencies
 
 ###### How to build & run:
 	$ make && ./neurobot
 
-###### Linkage dependencies: 
- - python2 (Optional for plugins)
- - *[cURL](http://curl.haxx.se/libcurl/)* (Optional for plugins)
- - *[Gnu Regex for Windows](http://gnuwin32.sourceforge.net/packages/regex.htm)* (<i>Not required in POSIX environments</i>)
+###### Linker dependencies: 
+There are no linker dependencies for the bot itself.
 
-###### Python Plugin support:
-Define USE_PYTHON_MODULES in order to build with Python plugin support.
-
-###### Binaries:
- - *[neurobot-0.1.322.rar](https://dl.dropboxusercontent.com/u/28327717/neurobot-0.1.322.rar)* i686 Cygwin build <i>without python plugin support</i>.
- - *[neurobot-0.1.332.7z](https://dl.dropboxusercontent.com/u/28327717/neurobot-0.1.332.7z)* i686 MSVC build <i>without python plugin support</i>.
- - *[neurobot-0.1.332_python.7z](https://dl.dropboxusercontent.com/u/28327717/neurobot-0.1.332_python.7z)* i686 MSVC build <i>with python plugin support</i>.
-
+##### Some of the plugins may need the libraries below for their internal use.
+ - Python (Required by the python plugin manager)
+ - *[cURL](http://curl.haxx.se/libcurl/)* 
+ 
 ###### Build status:
 [![Build Status](https://secure.travis-ci.org/neuro-sys/neuro-bot.png)](http://travis-ci.org/neuro-sys/neuro-bot)
 
