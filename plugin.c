@@ -147,7 +147,7 @@ void plugin_init()
 }
 
 
-#if 0
+#if TEST_PLUGIN
 int main()
 {
     struct plugin_list_t * it;
