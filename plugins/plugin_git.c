@@ -134,7 +134,8 @@ void run(void)
         if (http != NULL) free(http);
 
 SKIP:
-        fprintf(stderr, "mod_git: I'm alive!\n");
+        fprintf(stderr, "%25s:%4d:I'm polling every %d seconds as per github wants me to.\n",
+                    __FILE__, __LINE__, x_rate_limit);
         usleep(x_rate_limit *1000*1000);
     }
 }

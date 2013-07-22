@@ -62,7 +62,6 @@ static void insert(struct py_module_t * p)
         it->next->cur = p;
         it->next->next = NULL;
     }
-    fprintf(stderr, "%25s:%4d:Inserted python plugin %s to list. \n", __FILE__, __LINE__, p->name);
 }
 
 static void plugin_load_file(char * fpath)
@@ -73,7 +72,12 @@ static void plugin_load_file(char * fpath)
     char * file_name;
     int k;
 
-    if (!strstr(fpath, ".py") || fpath[strlen(fpath)-1] == 'c') 
+    if (!fpath) {
+        fprintf(stderr, "%25s:%4d:plugin_load_file: fpath cannot be null.\n", __FILE__, __LINE__);
+        return;
+    }
+
+    if (strcmp(fpath+strlen(fpath)-3, ".py"))
         return;
 
     strncpy(mod_name, strchr(fpath, '/')+1, strcspn(fpath, "."));
@@ -99,7 +103,6 @@ static void plugin_load_file(char * fpath)
         return;
     }
 
-
     mod_command_name[0] = 0;
     strncpy(mod_command_name, strchr(mod_name, '_')+1, strcspn(mod_name, ".")); 
     mod->name = strdup(mod_command_name);
@@ -116,12 +119,12 @@ static void load_python_plugins()
 
     dir = opendir(PLUGIN_DIR);
 
-	if (!dir)
-	{
-		fprintf(stderr, "%25s:%4d: no modules found, skipping.\n", __FILE__, __LINE__);
-		return;
-	}
-    
+    if (!dir)
+    {
+        fprintf(stderr, "%25s:%4d: no modules found, skipping.\n", __FILE__, __LINE__);
+        return;
+    }
+
     while ((dirent = readdir(dir)) != NULL)
     {
         if (strstr(dirent->d_name, ".py")) {

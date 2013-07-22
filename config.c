@@ -31,35 +31,35 @@ void config_load(struct session_t * session)
             token = strtok(NULL, " \r\n");
             if (token) session->nickname = strdup(token);
             else session->nickname = NICKNAME;
-            fprintf(stderr, "%25s:%4d:nickname: %s\n", __FILE__, __LINE__, session->nickname);
+            fprintf(stderr, "%25s:%4d:nickname         : %s\n", __FILE__, __LINE__, session->nickname);
         }
         else if (!strcmp(token, "pass"))
         {
             token = strtok(NULL, " \r\n");
             if (token) session->password = strdup(token);
             else session->password = PASSWORD;
-            fprintf(stderr, "%25s:%4d:password: %s\n", __FILE__, __LINE__, session->password);
+            fprintf(stderr, "%25s:%4d:password         : %s\n", __FILE__, __LINE__, session->password);
         }
         else if (!strcmp(token, "admin"))
         {
             token = strtok(NULL, " \r\n");
             if (token) session->admin = strdup(token);
             else session->admin = ADMIN;
-            fprintf(stderr, "%25s:%4d:admin: %s\n", __FILE__, __LINE__, session->admin);
+            fprintf(stderr, "%25s:%4d:admin            : %s\n", __FILE__, __LINE__, session->admin);
         }
         else if (!strcmp(token, "server"))
         {
             token = strtok(NULL, " \r\n");
             if (token) session->socket.host_name = strdup(token);
             else session->socket.host_name = HOST;
-            fprintf(stderr, "%25s:%4d:host_name: %s\n", __FILE__, __LINE__, session->socket.host_name);
+            fprintf(stderr, "%25s:%4d:host_name        : %s\n", __FILE__, __LINE__, session->socket.host_name);
         }
         else if (!strcmp(token, "port"))
         {
             token = strtok(NULL, " \r\n");
             if (token) session->socket.port = strdup(token); 
             else session->socket.port = PORT;
-            fprintf(stderr, "%25s:%4d:port: %s\n", __FILE__, __LINE__, session->socket.port);
+            fprintf(stderr, "%25s:%4d:port             : %s\n", __FILE__, __LINE__, session->socket.port);
         }
         else if (!strcmp(token, "channels"))
         {

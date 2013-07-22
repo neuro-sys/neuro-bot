@@ -15,9 +15,9 @@ void prepare_plugins(struct irc_t * irc)
 {
     struct plugin_list_t * it;
 
-    fprintf(stderr, "%25s:%4d:Session initializing plugins.\n", __FILE__, __LINE__);
+    fprintf(stderr, "%25s:%4d:Session preparing plugins before connecting to the server.\n", __FILE__, __LINE__);
     for (it = plugin_list_head; it != NULL; it = it->next) {
-        fprintf(stderr, "%25s:%4d:Name:%s\n", __FILE__, __LINE__, it->cur->name);
+        fprintf(stderr, "%25s:%4d:Name: [%s]\n", __FILE__, __LINE__, it->cur->name);
         it->cur->irc = irc;
     }
 }
@@ -61,7 +61,7 @@ static void start_loopers(struct irc_t * irc)
             break;
         }
 
-        fprintf(stderr, "%25s:%4d:Looper %s is started\n", __FILE__, __LINE__, it->cur->name);
+        fprintf(stderr, "%25s:%4d:Looper plugin [%s] is started\n", __FILE__, __LINE__, it->cur->name);
         if ((err = pthread_create(&plugin_threads[i], NULL, start_thread, it->cur)) != 0) {
             fprintf(stderr, "%25s:%4d:Thread could not be started. pthread_create, errno = %d\n", 
                     __FILE__, __LINE__, err);
@@ -80,9 +80,9 @@ void session_run(struct session_t * session)
 
     /* Conect to the server specified in socket_t struct. */
     if ( socket_connect(&irc.session->socket) < 0 ) {
-        fprintf(stderr, "%20s:%4d:Unable to connect to %s:%s\n", __FILE__, __LINE__, 
+        fprintf(stderr, "%25s:%4d:Unable to connect to %s:%s\n", __FILE__, __LINE__, 
                     irc.session->socket.host_name, irc.session->socket.port);
-        abort();
+        exit(EXIT_SUCCESS);
     }
     /* Do one time initialization work after connecting to the server. */
     session_init_irc(irc.session);

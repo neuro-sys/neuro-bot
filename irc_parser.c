@@ -1,7 +1,5 @@
 #include "irc_parser.h"
 
-#include "irc.h"
-
 #include <stdio.h>
 #include <string.h>
 

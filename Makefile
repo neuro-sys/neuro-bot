@@ -11,9 +11,6 @@ OBJS	   =config.o \
 
 MOD_DIR    = ./modules
 TEST_DIR   = ./tests
-DEPS	   = python-2.7
-CFLAGS	   += $(shell pkg-config $(DEPS) --cflags)
-LDFLAGS    += $(shell pkg-config $(DEPS) --libs)
 CFLAGS     += -O0
 
 %.o: %.c
