@@ -354,7 +354,7 @@ struct plugin_t * init(void)
     memset(plugin, 0, sizeof *plugin);
 
     plugin->run        = run;
-    plugin->name       = "python_loader";
+    plugin->name       = "python_manager";
     plugin->is_looper  = 1;
     plugin->is_command = 1;
     plugin->is_grep    = 1;
