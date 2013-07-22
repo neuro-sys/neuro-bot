@@ -20,9 +20,13 @@ struct plugin_t * plugin_find_command(char * name)
     struct plugin_list_t * it;
 
     for (it = plugin_list_head; it != NULL; it = it->next) {
-        if (!strcmp(it->cur->name, name))
-            return it->cur;
+        if (!it->cur->is_command)
+            continue;
+
         if (it->cur->is_manager && !it->cur->manager_find(name))
+            return it->cur;
+
+        if (!strcmp(it->cur->name, name))
             return it->cur;
     }
     return NULL;

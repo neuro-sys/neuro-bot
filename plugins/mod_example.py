@@ -6,7 +6,7 @@ def is_command():
     return true 
 
 def main():
-    mod_example("#python", ".foo 42")
+  print mod_example("#python", ".foo 42")
 
 if __name__ == '__main__':
     main()
