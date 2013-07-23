@@ -31,7 +31,6 @@ static char * parse_json_wiki(char * data)
 {
     char * temp;
     json_value * root, * extract;
-    int i;
 
     temp = malloc(MAX_IRC_MSG);
 
@@ -100,7 +99,7 @@ void run(void)
     free(http);
 
     if (!p) {
-        sprintf(plugin->irc->response, "PRIVMSG %s :Wiki article could not be found.", plugin->irc->from, reply_message);
+        sprintf(plugin->irc->response, "PRIVMSG %s :Wiki article could not be found.", plugin->irc->from);
         return;
     }
 

@@ -22,11 +22,16 @@ static int in_title = 0;
 
 static int validate_http(char * line)
 {
-    char * ret, * t, * p;
+    char * ret;
+    size_t z;
 
     ret = strstr(line, "http");
     if (!ret)
         return -1;
+
+    z = strcspn(ret, " \r\n");
+
+    ret[z] = 0;
 
     return 0;
 }
@@ -65,7 +70,7 @@ characters_callback (void * ctx,
 
     t = (char *) ch;
     while (*t) { if (*t == '\n' || *t == '\t') *t = ' '; t++; }
-    offset = strspn(ch, " \t\r\n");
+    offset = strspn((char *) ch, " \t\r\n");
     strcat(title_buffer, (char *) ch + offset);
     fprintf(stderr, "%s", title_buffer);
 }
@@ -75,7 +80,7 @@ struct plugin_t * plugin;
 void run(void)
 {
     struct http_req * http;
-    char * t, reply_msg[MAX_IRC_MSG];
+    char reply_msg[MAX_IRC_MSG];
     htmlSAXHandler saxHandler;
     htmlParserCtxt * ctx_ptr;
     struct curl_slist * slist = NULL;

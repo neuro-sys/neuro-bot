@@ -15,11 +15,14 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <unistd.h>
+
 #define GIT_EVENT_API_URL "https://api.github.com/repos/neuro-sys/neuro-bot/events"
 
 static char etag_last[1024];
 static int x_rate_limit;
 
+#if 0
 static void sanitize_json_response(char *body)
 {
     size_t len = strlen(body);
@@ -30,6 +33,7 @@ static void sanitize_json_response(char *body)
 
     body[i+1] = 0;
 }
+#endif
 
 static void parse_json_event(char * body, char * dest)
 {
@@ -118,7 +122,7 @@ void run(void)
         parse_etag(http->header);
 
         if (!strstr(http->header, "304 Not Modified")) {
-            char message[510], response[510];
+            char message[510];
             int i;
 
             parse_json_event(http->body, message);

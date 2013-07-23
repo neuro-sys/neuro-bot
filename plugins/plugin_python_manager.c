@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <unistd.h>
 #include <dirent.h>
 #include <dlfcn.h>
 
@@ -29,7 +30,9 @@ static  PyObject    (*PyObject_CallObject)      (PyObject *, PyObject *);
 static  char *      (*PyString_AsString)        (PyObject *);
 static  int         (*PyErr_Print)              (void);
 static  void        (*PySys_SetPath)            (char *);
+#if 0
 static  void        (*Py_DECREF)                (PyObject *);
+#endif
 
 /**
  * Internal python plugins struct for each python plugin as all managed by this plugin. 
@@ -73,8 +76,6 @@ static void plugin_load_file(char * full_path)
     struct py_module_t * mod;
     char mod_name[50];
     char mod_command_name[50];
-    char * file_name;
-    int k;
 
     if (!strstr(full_path, ".py") || full_path[strlen(full_path)-1] != 'y') 
         return;

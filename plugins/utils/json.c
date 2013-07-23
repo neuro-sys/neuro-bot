@@ -475,14 +475,14 @@ json_value * json_parse_ex (json_settings * settings, const json_char * json, ch
 
                      default:
 
-                        if (isdigit (b) || b == '-')
+                        if (isdigit ((int) b) || b == '-')
                         {
                            if (!new_value (&state, &top, &root, &alloc, json_integer))
                               goto e_alloc_failure;
 
                            if (!state.first_pass)
                            {
-                              while (isdigit (b) || b == '+' || b == '-'
+                              while (isdigit ((int) b) || b == '+' || b == '-'
                                         || b == 'e' || b == 'E' || b == '.')
                               {
                                  b = *++ i;
@@ -566,7 +566,7 @@ json_value * json_parse_ex (json_settings * settings, const json_char * json, ch
             case json_integer:
             case json_double:
 
-               if (isdigit (b))
+               if (isdigit ((int) b))
                {
                   ++ num_digits;
 

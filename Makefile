@@ -9,22 +9,21 @@ OBJS	   =config.o \
 		   plugin.o\
 		   main.o
 
-MOD_DIR    = ./modules
-TEST_DIR   = ./tests
+PLUGIN_DIR = ./plugins
 CFLAGS     += -O0
 
 %.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
-all: neurobot unit_tests
+all: neurobot plugins
 
 neurobot: $(OBJS)
 	$(CC) $(OBJS) -o $@ $(CFLAGS) $(LDFLAGS)
 
 clean:
-	rm -fv $(OBJS) neurobot; $(MAKE) --directory=$(MOD_DIR) clean; $(MAKE) --directory=$(TEST_DIR) clean;
+	rm -fv $(OBJS) neurobot && $(MAKE) --directory=$(PLUGIN_DIR) clean;
 
-.PHONY: unit_tests test_plugin test_irc_parser test_config
+.PHONY: unit_tests plugins
 
 test_plugin: plugin.c plugin.h
 	$(CC) plugin.c socket.c -DTEST_PLUGIN -o $@ && ./$@ && rm -fv $@ 
@@ -38,11 +37,7 @@ test_config: config.c config.h
 unit_tests:
 	$(MAKE) test_plugin test_irc_parser test_config
 
-
-#modules:
-#	$(MAKE) --directory=$(MOD_DIR)
-
-#unit_tests:
-#	$(MAKE) --directory=$(TEST_DIR)
+plugins:
+	$(MAKE) --directory=$(PLUGIN_DIR)
 
 
