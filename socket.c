@@ -45,21 +45,21 @@ int socket_internal_connect(char *host, char *port)
 #if defined(_WIN32)
         MessageBox(NULL, "getaddrinfo failed.", "Error", MB_OK);
 #endif
-        fprintf(stderr, "%25s:%4d:getaddrinfo failed.\n", __FILE__, __LINE__);
+        debug("getaddrinfo failed.\n");
         return -1;
     }
     if ((sockfd = socket(res->ai_family, res->ai_socktype, res->ai_protocol)) < 0) {
 #if defined(_WIN32)
         MessageBox(NULL, "socket failed.", "Error", MB_OK);
 #endif
-        fprintf(stderr, "%25s:%4d:socket call failed.\n", __FILE__, __LINE__);
+        debug("socket call failed.\n");
         return -1;
     }
     if (connect(sockfd, res->ai_addr, res->ai_addrlen) < 0) {
 #if defined(_WIN32)
         MessageBox(NULL, "connect failed.", "Error", MB_OK);
 #endif
-        fprintf(stderr, "%25s:%4d:connect call failed.\n", __FILE__, __LINE__);
+        debug("connect call failed.\n");
         return -1;
     }
 

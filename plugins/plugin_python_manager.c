@@ -91,7 +91,7 @@ static void plugin_load_file(char * full_path)
     mod->pModule = PyImport_ImportModule(mod_name);
 
     if (!mod->pModule) {
-        fprintf(stderr, "%25s:%4d:Can't load module: %s at %s\n", __FILE__, __LINE__, mod_name, full_path);
+        debug("Can't load module: %s at %s\n", mod_name, full_path);
         //PyErr_Print();
         free(mod);
         return;
@@ -100,7 +100,7 @@ static void plugin_load_file(char * full_path)
     mod->pFunc = PyObject_GetAttrString(mod->pModule, mod_name);
 
     if (!mod->pFunc || !PyCallable_Check(mod->pFunc)) {
-        fprintf(stderr, "%25s:%4d:Error python call method check for module %s and attr %s.\n", __FILE__, __LINE__, 
+        debug("Error python call method check for module %s and attr %s.\n", 
                         full_path, mod_name);
         free(mod);
         return;
@@ -112,7 +112,7 @@ static void plugin_load_file(char * full_path)
     mod->is_command = 1;
     insert(mod);
 
-    fprintf(stderr, "%25s:%4d:Python module loaded: [%s]\n", __FILE__, __LINE__, full_path);
+    debug("Python module loaded: [%s]\n", full_path);
 }
 
 static void load_python_plugins()
@@ -124,7 +124,7 @@ static void load_python_plugins()
 
     if (!dir)
     {
-        fprintf(stderr, "%25s:%4d: no modules found, skipping.\n", __FILE__, __LINE__);
+        debug(" no modules found, skipping.\n");
         return;
     }
 
@@ -234,106 +234,106 @@ static int init_python(void)
       && (handle = dlopen("libpython2.6.so", RTLD_NOW|RTLD_GLOBAL)) == NULL
       && (handle = dlopen("python27.so", RTLD_NOW|RTLD_GLOBAL)) == NULL
       && (handle = dlopen("python26.so", RTLD_NOW|RTLD_GLOBAL)) == NULL) {
-        fprintf(stderr, "%25s:%4d:Python shared library not found.\n", __FILE__, __LINE__);
+        debug("Python shared library not found.\n");
         return -1;
     }
-    fprintf(stderr, "%25s:%4d:Python found.\n", __FILE__, __LINE__);
+    debug("Python found.\n");
 
     if ( (sym = dlsym(handle, "Py_Initialize")) == NULL) {
-        fprintf(stderr, "%25s:%4d:Symbol not found: Py_Initialize\n", __FILE__, __LINE__);
+        debug("Symbol not found: Py_Initialize\n");
         return -1;
     }
     Py_Initialize = sym;
    
 
     if ( (sym = dlsym(handle, "PyList_Append")) == NULL) {
-        fprintf(stderr, "%25s:%4d:Symbol not found: PyList_Append\n", __FILE__, __LINE__);
+        debug("Symbol not found: PyList_Append\n");
         return -1;
     }
     PyList_Append = sym;
 
     if ( (sym = dlsym(handle, "PyString_FromString")) == NULL) {
-        fprintf(stderr, "%25s:%4d:Symbol not found: PyString_FromString\n", __FILE__, __LINE__);
+        debug("Symbol not found: PyString_FromString\n");
         return -1;
     }
     PyString_FromString = sym;
 
     if ( (sym = dlsym(handle, "PySys_GetObject")) == NULL) {
-        fprintf(stderr, "%25s:%4d:Symbol not found: PySys_GetObject\n", __FILE__, __LINE__);
+        debug("Symbol not found: PySys_GetObject\n");
         return -1;
     }
     PySys_GetObject = sym;
 
     if ( (sym = dlsym(handle, "PyObject_GetAttrString")) == NULL) {
-        fprintf(stderr, "%25s:%4d:Symbol not found: PyObject_GetAttrString\n", __FILE__, __LINE__);
+        debug("Symbol not found: PyObject_GetAttrString\n");
         return -1;
     }
     PyObject_GetAttrString = sym;
 
     if ( (sym = dlsym(handle, "PyImport_ImportModule")) == NULL) {
-        fprintf(stderr, "%25s:%4d:Symbol not found: PyImport_ImportModule\n", __FILE__, __LINE__);
+        debug("Symbol not found: PyImport_ImportModule\n");
         return -1;
     }
     PyImport_ImportModule = sym;
 
 
     if ( (sym = dlsym(handle, "PyCallable_Check")) == NULL) {
-        fprintf(stderr, "%25s:%4d:Symbol not found: PyCallable_Check\n", __FILE__, __LINE__);
+        debug("Symbol not found: PyCallable_Check\n");
         return -1;
     }
     PyCallable_Check = sym;
 
     if ( (sym = dlsym(handle, "PyTuple_New")) == NULL) {
-        fprintf(stderr, "%25s:%4d:Symbol not found: PyTuple_New\n", __FILE__, __LINE__);
+        debug("Symbol not found: PyTuple_New\n");
         return -1;
     }
     PyTuple_New = sym;
 
     if ( (sym = dlsym(handle, "PyObject_CallObject")) == NULL) {
-        fprintf(stderr, "%25s:%4d:Symbol not found: PyObject_CallObject\n", __FILE__, __LINE__);
+        debug("Symbol not found: PyObject_CallObject\n");
         return -1;
     }
     PyObject_CallObject = sym;
 
     if ( (sym = dlsym(handle, "PyString_AsString")) == NULL) {
-        fprintf(stderr, "%25s:%4d:Symbol not found: PyString_AsString\n", __FILE__, __LINE__);
+        debug("Symbol not found: PyString_AsString\n");
         return -1;
     }
     PyString_AsString = sym;
 
     if ( (sym = dlsym(handle, "PyTuple_SetItem")) == NULL) {
-        fprintf(stderr, "%25s:%4d:Symbol not found: PyTuple_SetItem\n", __FILE__, __LINE__);
+        debug("Symbol not found: PyTuple_SetItem\n");
         return -1;
     }
     PyTuple_SetItem = sym;
 
     if ( (sym = dlsym(handle, "PyImport_AddModule")) == NULL) {
-        fprintf(stderr, "%25s:%4d:Symbol not found: PyImport_AddModule\n", __FILE__, __LINE__);
+        debug("Symbol not found: PyImport_AddModule\n");
         return -1;
     }
     PyImport_AddModule = sym;
 
     if ( (sym = dlsym(handle, "PyErr_Print")) == NULL) {
-        fprintf(stderr, "%25s:%4d:Symbol not found: PyErr_Print\n", __FILE__, __LINE__);
+        debug("Symbol not found: PyErr_Print\n");
         return -1;
     }
     PyErr_Print = sym;
 
     if ( (sym = dlsym(handle, "PyImport_Import")) == NULL) {
-        fprintf(stderr, "%25s:%4d:Symbol not found: PyImport_Import\n", __FILE__, __LINE__);
+        debug("Symbol not found: PyImport_Import\n");
         return -1;
     }
     PyImport_Import = sym;
     
     if ( (sym = dlsym(handle, "PySys_SetPath")) == NULL) {
-        fprintf(stderr, "%25s:%4d:Symbol not found: PySys_SetPath\n", __FILE__, __LINE__);
+        debug("Symbol not found: PySys_SetPath\n");
         return -1;
     }
     PySys_SetPath = sym;
 
 #if 0
     if ( (sym = dlsym(handle, "Py_DECREF")) == NULL) {
-        fprintf(stderr, "%25s:%4d:Symbol not found: Py_DECREF\n", __FILE__, __LINE__);
+        debug("Symbol not found: Py_DECREF\n");
         return -1;
     }
     Py_DECREF = sym;
@@ -343,7 +343,7 @@ static int init_python(void)
     
     getcwd(pwd, 1024);
     sprintf(buf, "%s/%s/", pwd, PLUGIN_DIR);
-    fprintf(stderr, "%25s:%4d:Setting python module path: %s\n", __FILE__, __LINE__, buf);
+    debug("Setting python module path: %s\n", buf);
     set_pymodule_path(buf);
 
     return 0;
@@ -371,14 +371,16 @@ struct plugin_t * init(void)
     return plugin;
 }
 
+#if TEST_PLUGIN_PYTHON_MANAGER
 int main(int argc, char *argv[])
 {
     struct plugin_t * plugin;
 
     plugin = init();
 
-    int n = manager_find("example");
+    int n = plugin->manager_find("example");
     printf("%d\n", n);
     return 0;
 }
+#endif
 

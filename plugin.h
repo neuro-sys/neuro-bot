@@ -9,7 +9,7 @@ struct plugin_list_t {
     struct plugin_list_t * next;
 };
 
-void insert(struct plugin_t * p);
+void plugin_insert(struct plugin_t * p);
 void plugin_init();
 struct plugin_t * plugin_find_command(char * name);
 

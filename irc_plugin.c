@@ -1,5 +1,7 @@
 #include "irc_plugin.h"
 
+#include "global.h"
+
 #include "irc.h"
 #include "plugin.h"
 #include "socket.h"
@@ -23,7 +25,7 @@ void irc_plugin_handle_command(struct irc_t * irc)
     if (plugin == NULL)
         return;
 
-    fprintf(stderr, "%s:%d:Handling plugin command: %s\n", __FILE__, __LINE__, plugin->name);
+    debug("Handling plugin command: %s\n", plugin->name);
 
     plugin->run();
 }

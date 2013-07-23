@@ -2,6 +2,7 @@
 #define __PLUGIN_CLIENT_H
 
 #include "../irc.h"
+#include "../global.h"
 
 struct plugin_t {
     /* Attributes initialized by the plugin. */

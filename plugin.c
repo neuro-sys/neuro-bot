@@ -1,6 +1,8 @@
 #include "plugin.h"
 #include "plugins/plugin_client.h"
 
+#include "global.h"
+
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
@@ -32,7 +34,7 @@ struct plugin_t * plugin_find_command(char * name)
     return NULL;
 }
 
-void insert(struct plugin_t * p)
+void plugin_insert(struct plugin_t * p)
 {
     if (plugin_list_head == NULL) {
         plugin_list_head = malloc(sizeof (struct plugin_list_t));
@@ -57,7 +59,7 @@ void insert(struct plugin_t * p)
  */
 void send_message(struct irc_t * irc)
 {
-    fprintf(stderr, "%25s:%4d:%s\n", __FILE__, __LINE__, irc->response);
+    debug(irc->response);
     socket_send_message(&irc->session->socket, irc->response);
 }
 
@@ -69,30 +71,28 @@ void plugin_load_file(char * file)
     struct plugin_t * (*init)(void);
     struct plugin_t * plugin;
 
-    fprintf(stderr, "%25s:%4d:Loading native plugin \"%s\"\n", __FILE__, __LINE__, file);
+    debug("Loading native plugin \"%s\"\n", file);
     if ((plugin_file = dlopen(file, RTLD_LAZY)) == NULL) {
-        fprintf(stderr, "%25s:%4d: The plugin file \"%s\" could not be opened.\n", 
-                __FILE__, __LINE__, file);
+        debug("The plugin file \"%s\" could not be opened.\n", file);
         return;
     }
 
     if ((init = dlsym(plugin_file, "init")) == NULL) { 
-        fprintf(stderr, "%25s:%4d:The plugin \"%s\" has no exported init function symbol.\n",
-                __FILE__, __LINE__, file);
+        debug("The plugin \"%s\" has no exported init function symbol.\n", file);
     }
 
     /* initialize and get handle to the plugin */
     if ((plugin = init()) == NULL) {
-        fprintf(stderr, "%25s:%4d:The plugin initialization is failed for reasons unknown."
-                " Hope it's last words were meaningful, if any.\n", __FILE__, __LINE__);
+        debug("The plugin initialization is failed for reasons unknown."
+                " Hope it's last words were meaningful, if any.\n");
         return;
     }
 
     /* See warning message for commentary */
     if (!plugin->is_manager && (plugin->is_command + plugin->is_grep + plugin->is_looper) > 1) {
-        fprintf(stderr, "%25s:%4d:The plugin \"%s\" is not valid."
+        debug("The plugin \"%s\" is not valid."
                     "A plugin can only be one of type `command', `grep' and `looper'.\n",
-                    __FILE__, __LINE__, file);
+                    file);
         /* TODO: Clean up. */
         return;
     }
@@ -107,15 +107,14 @@ void plugin_load_file(char * file)
         if ((keywords = dlsym(plugin_file, "keywords"))) {
             plugin->keywords = keywords;
         } else { 
-            fprintf(stderr, "%25s:%4d:The plugin \"%s\" is of type `grep', but has no "
-                        "exported grep keywords symbols found. Discarding.\n",
-                        __FILE__, __LINE__, file);
+            debug("The plugin \"%s\" is of type `grep', but has no "
+                        "exported grep keywords symbols found. Discarding.\n", file);
             /* TODO: Clean up. */
             return;
         }
     }
 
-    insert(plugin);
+    plugin_insert(plugin);
 }
 
 void plugin_init()
@@ -127,7 +126,7 @@ void plugin_init()
 
 	if (!dir)
 	{
-		fprintf(stderr, "%25s:%4d:no modules found, skipping.\n", __FILE__, __LINE__);
+		debug("no modules found, skipping.\n");
 		return;
 	}
     
