@@ -1,4 +1,4 @@
-CFLAGS = -Wall
+CFLAGS = -Wall -g -O0
 
 ifneq ($(OS), Windows_NT)
 	CFLAGS		 	+= -fPIC

@@ -20,14 +20,31 @@ void irc_plugin_handle_command(struct irc_t * irc)
     strncpy(command_name, irc->message.trailing+1, n);
     command_name[n] = 0;
 
-    plugin = plugin_find_command(command_name);
+    {
+        struct plugin_t * plugin_command_list[10];
+        struct plugin_t ** it;
 
-    if (plugin == NULL)
-        return;
+        plugin_command_list[0] = NULL;
 
-    debug("Handling plugin command: %s\n", plugin->name);
+        plugin_find_commands(command_name, plugin_command_list);
 
-    plugin->run();
+        if (plugin_command_list[0] == NULL)
+            return;
+
+        for (it = plugin_command_list; *it != NULL; it++) {
+            plugin = *it;
+
+#ifdef TEST_IRC_PLUGIN
+            plugin->irc = irc;
+#endif
+            debug("Handling plugin command: %s\n", plugin->name);
+            plugin->run();
+
+#ifdef TEST_IRC_PLUGIN
+            debug_ex("%s\n", irc->response);
+#endif
+        }
+    }
 }
 
 void irc_plugin_handle_grep(struct irc_t * irc)
@@ -53,4 +70,20 @@ void irc_plugin_handle_grep(struct irc_t * irc)
         }
     }
 }
+
+#ifdef TEST_IRC_PLUGIN
+int main(int argc, char *argv[])
+{
+    struct irc_t irc;
+
+    memset(&irc, 0, sizeof irc);
+    strcpy(irc.message.trailing, ".wiki irc bot");
+
+    plugin_init();
+    irc_plugin_handle_command(&irc); 
+
+    return 0;
+}
+
+#endif
 

@@ -17,21 +17,24 @@ struct plugin_list_t * plugin_list_head;
 /**
  * Returns a handle to the native plugin, for the given command name.
  */
-struct plugin_t * plugin_find_command(char * name)
+struct plugin_t ** plugin_find_commands(char * name, struct plugin_t ** plugin_list)
 {
     struct plugin_list_t * it;
+    int i = 0;
 
     for (it = plugin_list_head; it != NULL; it = it->next) {
         if (!it->cur->is_command)
             continue;
 
         if (it->cur->is_manager && !it->cur->manager_find(name))
-            return it->cur;
+            plugin_list[i++] = it->cur;
 
         if (!strcmp(it->cur->name, name))
-            return it->cur;
+            plugin_list[i++] = it->cur;
     }
-    return NULL;
+
+    plugin_list[i] = NULL;
+    return plugin_list;
 }
 
 void plugin_insert(struct plugin_t * p)

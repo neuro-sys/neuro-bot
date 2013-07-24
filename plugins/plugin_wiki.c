@@ -61,7 +61,6 @@ void run(void)
     char * p, * t, reply_message[MAX_IRC_MSG];
     struct http_req * http;
     char url_path[512];
-    int i;
     char request[512];
 
     strcpy(request, plugin->irc->message.trailing);
@@ -72,10 +71,8 @@ void run(void)
     if (!p++)
         return;
     
-    i = strlen(p);
-
     /* strip the trailing cr-lf */
-    p[i-1] = '\0';
+    p[strcspn(p, "\r\n")] = '\0';
 
     t = p;
 
