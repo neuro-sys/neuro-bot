@@ -4,7 +4,7 @@ ifneq ($(OS), Windows_NT)
 	CFLAGS		 	+= -fPIC
 endif
 
-all: plugin_python_manager.so plugin_git.so plugin_title.so plugin_wiki.so plugin_youtube.so plugin_test.so
+all: plugin_python_manager.so plugin_git.so plugin_title.so plugin_wiki.so plugin_youtube.so plugin_test.so plugin_mesai.so
 
 plugin_python_manager.so: plugin_python_manager.c
 	$(CC) plugin_python_manager.c $(CFLAGS) --shared -o$@
@@ -24,6 +24,8 @@ plugin_youtube.so: plugin_youtube.c
 plugin_test.so: plugin_test.c
 	$(CC) plugin_test.c $(CFLAGS) --shared -o$@
 
+plugin_mesai.so: plugin_mesai.c
+	$(CC) plugin_mesai.c $(CFLAGS) --shared -o$@
 
 clean:
 	rm -fv *.o *.so
