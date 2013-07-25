@@ -5,7 +5,7 @@ ifneq ($(OS), Windows_NT)
 endif
 
 all: plugin_python_manager.so plugin_git.so plugin_title.so plugin_wiki.so plugin_youtube.so \
-	plugin_test.so plugin_mesai.so plugin_java_manager.so
+	plugin_test.so plugin_mesai.so 
 
 plugin_python_manager.so: plugin_python_manager.c
 	$(CC) plugin_python_manager.c $(CFLAGS) --shared -o$@
