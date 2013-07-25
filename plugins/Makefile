@@ -28,8 +28,13 @@ plugin_test.so: plugin_test.c
 plugin_mesai.so: plugin_mesai.c
 	$(CC) plugin_mesai.c $(CFLAGS) --shared -o$@
 
+GCJ_LD_PATH="/usr/lib/gcj-*/"
 plugin_java_manager.so: plugin_java_manager.c
+ifeq ("$(wildcard $(GCJ_LD_PATH))", "")
 	$(CC) plugin_java_manager.c -L$(shell ls -d /usr/lib/gcj-*/) -ljvm --shared -o$@
+else
+	@echo 'Java plugin cannot be built, skipping. GCJ libraries are needed.'
+endif
 
 clean:
 	rm -fv *.o *.so
