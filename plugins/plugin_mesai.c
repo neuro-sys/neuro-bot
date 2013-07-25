@@ -8,11 +8,24 @@
 
 struct plugin_t * plugin;
 
+static void format_message(double diff, char * dest, size_t len)
+{
+    char buffer[512];
+
+    sprintf(buffer, "bitimine %d saat, %d dakika, %d saniye kaldi.",
+            ((int) diff / 60) / 60,
+            ((int) diff / 60) % 60,
+            ((int) diff % 60));
+
+    strncpy(dest, buffer, len);
+}
+
 void run(void)
 {
     time_t current_time, mesai_time;
     struct tm * mesai_time_tm;
     double diff;
+    char buffer[MAX_IRC_MSG];
 
     current_time = time(NULL);
     mesai_time_tm = localtime(&current_time);
@@ -28,7 +41,8 @@ void run(void)
 
     diff = difftime(mesai_time, current_time);
 
-    sprintf(plugin->irc->response, "PRIVMSG %s :%d dakika, %d saniye kaldi.\n", plugin->irc->from, (int) diff / 60, (int) diff % 60);
+    format_message(diff, buffer, MAX_IRC_MSG);
+    sprintf(plugin->irc->response, "PRIVMSG %s :%s\r\n", plugin->irc->from, buffer);
 }
 
 struct plugin_t * init(void)
