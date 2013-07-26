@@ -43,11 +43,11 @@ static void parse_json_event(char * body, char * dest)
     root = json_parse(body);
     if (!root) return;
 
-    payload = n_json_find_object(root, "payload");
-    comitter_name = n_json_find_object(payload, "name");
-    message = n_json_find_object(payload, "message");
-    name = n_json_find_object(root, "name");
-    sha = n_json_find_object(payload, "sha");
+    if (!(payload = n_json_find_object(root, "payload"))) return;
+    if (!(comitter_name = n_json_find_object(payload, "name"))) return;
+    if (!(message = n_json_find_object(payload, "message"))) return;
+    if (!(name = n_json_find_object(root, "name"))) return;
+    if (!(sha = n_json_find_object(payload, "sha"))) return;
 
     sprintf(dest, "* Commiter: [%s] - Msg: [%s] Url: [http://github.com/%s/commit/%s]", 
                                   comitter_name->u.string.ptr,
@@ -125,11 +125,15 @@ void run(void)
             char message[510];
             int i;
 
+            message[0] = 0;
+
             parse_json_event(http->body, message);
-            for (i = 0; i < plugin->irc->channels_siz; i++) {
-                char * chan = plugin->irc->channels[i];
-                sprintf(plugin->irc->response, "PRIVMSG %s :%s\r\n", chan, message);
-                plugin->send_message(plugin->irc);
+            if (message[0]) {
+                for (i = 0; i < plugin->irc->channels_siz; i++) {
+                    char * chan = plugin->irc->channels[i];
+                    sprintf(plugin->irc->response, "PRIVMSG %s :%s\r\n", chan, message);
+                    plugin->send_message(plugin->irc);
+                }
             }
         } 
 
