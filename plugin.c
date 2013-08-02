@@ -7,12 +7,59 @@
 #include <string.h>
 #include <stdlib.h>
 
+#include <pthread.h>
+
 #include <dirent.h>
 #include <dlfcn.h>
 
 #define PLUGIN_DIR "plugins"
 
 struct plugin_list_t * plugin_list_head;
+
+/**
+ * TODO: Use a dynamic structure to keep track of threads.
+ */
+static pthread_t plugin_threads[10];
+
+static void *start_thread(void * pdata)
+{
+    ((struct plugin_t *)pdata)->run();
+
+    return NULL;
+}
+
+void plugin_start_loopers(struct irc_t * irc)
+{
+
+    struct plugin_list_t * it;
+    int i, err;
+
+    for (i = 0, it = plugin_list_head; it != NULL; it = it->next, i++) {
+        if (!it->cur->is_looper || it->cur->is_manager)
+            continue;
+
+        if (i == 10) {
+            debug("Passed the maximum number of loopers limit.\n");
+            break;
+        }
+
+        debug("Looper plugin [%s] is started\n", it->cur->name);
+        if ((err = pthread_create(&plugin_threads[i], NULL, start_thread, it->cur)) != 0) {
+            debug("Thread could not be started. pthread_create, errno = %d\n", err);
+        }
+    }
+}
+
+void plugin_attach_context(struct irc_t * irc)
+{
+    struct plugin_list_t * it;
+
+    debug("Session preparing plugins before connecting to the server.\n");
+    for (it = plugin_list_head; it != NULL; it = it->next) {
+        debug("Name: [%s]\n", it->cur->name);
+        it->cur->irc = irc;
+    }
+}
 
 /**
  * Returns a handle to the native plugin, for the given command name.
