@@ -1,5 +1,7 @@
 #include "plugin_client.h"
 
+#include <Python.h>
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -9,30 +11,6 @@
 #include <dlfcn.h>
 
 #define PLUGIN_DIR "plugins"
-
-/*
- * Python library functions. Should match the prototypes in python lib headers.
- */
-
-typedef void *      PyObject;
-static  void        (*Py_Initialize)            (void);
-static  void        (*PyList_Append)            (PyObject *, PyObject *);
-static  PyObject    (*PySys_GetObject)          (char *);
-static  PyObject    (*PyString_FromString)      (char *);
-static  PyObject    (*PyImport_ImportModule)    (char *);
-static  PyObject    (*PyImport_Import)          (PyObject *);
-static  PyObject    (*PyObject_GetAttrString)   (PyObject *, char *);
-static  PyObject    (*PyImport_AddModule)       (char *);
-static  int         (*PyTuple_SetItem)          (PyObject *, size_t pos, PyObject *);
-static  int         (*PyCallable_Check)         (PyObject *);
-static  PyObject    (*PyTuple_New)              (int);
-static  PyObject    (*PyObject_CallObject)      (PyObject *, PyObject *);
-static  char *      (*PyString_AsString)        (PyObject *);
-static  int         (*PyErr_Print)              (void);
-static  void        (*PySys_SetPath)            (char *);
-#if 0
-static  void        (*Py_DECREF)                (PyObject *);
-#endif
 
 /**
  * Internal python plugins struct for each python plugin as all managed by this plugin. 
@@ -222,125 +200,12 @@ static int init_python(void)
 {
     char buf[200];
     char pwd[100];
-    void * sym;
-    void * handle;
 
     buf[0] = 0;
     pwd[0] = 0;
 
-    if ( (handle = dlopen("python27.dll", RTLD_NOW|RTLD_GLOBAL)) == NULL
-      && (handle = dlopen("python26.dll", RTLD_NOW|RTLD_GLOBAL)) == NULL
-      && (handle = dlopen("libpython2.7.so", RTLD_NOW|RTLD_GLOBAL)) == NULL
-      && (handle = dlopen("libpython2.6.so", RTLD_NOW|RTLD_GLOBAL)) == NULL
-      && (handle = dlopen("python27.so", RTLD_NOW|RTLD_GLOBAL)) == NULL
-      && (handle = dlopen("python26.so", RTLD_NOW|RTLD_GLOBAL)) == NULL) {
-        debug("Python shared library not found.\n");
-        return -1;
-    }
-    debug("Python found.\n");
-
-    if ( (sym = dlsym(handle, "Py_Initialize")) == NULL) {
-        debug("Symbol not found: Py_Initialize\n");
-        return -1;
-    }
-    Py_Initialize = sym;
-   
-
-    if ( (sym = dlsym(handle, "PyList_Append")) == NULL) {
-        debug("Symbol not found: PyList_Append\n");
-        return -1;
-    }
-    PyList_Append = sym;
-
-    if ( (sym = dlsym(handle, "PyString_FromString")) == NULL) {
-        debug("Symbol not found: PyString_FromString\n");
-        return -1;
-    }
-    PyString_FromString = sym;
-
-    if ( (sym = dlsym(handle, "PySys_GetObject")) == NULL) {
-        debug("Symbol not found: PySys_GetObject\n");
-        return -1;
-    }
-    PySys_GetObject = sym;
-
-    if ( (sym = dlsym(handle, "PyObject_GetAttrString")) == NULL) {
-        debug("Symbol not found: PyObject_GetAttrString\n");
-        return -1;
-    }
-    PyObject_GetAttrString = sym;
-
-    if ( (sym = dlsym(handle, "PyImport_ImportModule")) == NULL) {
-        debug("Symbol not found: PyImport_ImportModule\n");
-        return -1;
-    }
-    PyImport_ImportModule = sym;
-
-
-    if ( (sym = dlsym(handle, "PyCallable_Check")) == NULL) {
-        debug("Symbol not found: PyCallable_Check\n");
-        return -1;
-    }
-    PyCallable_Check = sym;
-
-    if ( (sym = dlsym(handle, "PyTuple_New")) == NULL) {
-        debug("Symbol not found: PyTuple_New\n");
-        return -1;
-    }
-    PyTuple_New = sym;
-
-    if ( (sym = dlsym(handle, "PyObject_CallObject")) == NULL) {
-        debug("Symbol not found: PyObject_CallObject\n");
-        return -1;
-    }
-    PyObject_CallObject = sym;
-
-    if ( (sym = dlsym(handle, "PyString_AsString")) == NULL) {
-        debug("Symbol not found: PyString_AsString\n");
-        return -1;
-    }
-    PyString_AsString = sym;
-
-    if ( (sym = dlsym(handle, "PyTuple_SetItem")) == NULL) {
-        debug("Symbol not found: PyTuple_SetItem\n");
-        return -1;
-    }
-    PyTuple_SetItem = sym;
-
-    if ( (sym = dlsym(handle, "PyImport_AddModule")) == NULL) {
-        debug("Symbol not found: PyImport_AddModule\n");
-        return -1;
-    }
-    PyImport_AddModule = sym;
-
-    if ( (sym = dlsym(handle, "PyErr_Print")) == NULL) {
-        debug("Symbol not found: PyErr_Print\n");
-        return -1;
-    }
-    PyErr_Print = sym;
-
-    if ( (sym = dlsym(handle, "PyImport_Import")) == NULL) {
-        debug("Symbol not found: PyImport_Import\n");
-        return -1;
-    }
-    PyImport_Import = sym;
-    
-    if ( (sym = dlsym(handle, "PySys_SetPath")) == NULL) {
-        debug("Symbol not found: PySys_SetPath\n");
-        return -1;
-    }
-    PySys_SetPath = sym;
-
-#if 0
-    if ( (sym = dlsym(handle, "Py_DECREF")) == NULL) {
-        debug("Symbol not found: Py_DECREF\n");
-        return -1;
-    }
-    Py_DECREF = sym;
-#endif
-
     Py_Initialize();
-    
+
     getcwd(pwd, 1024);
     sprintf(buf, "%s/%s/", pwd, PLUGIN_DIR);
     debug("Setting python module path: %s\n", buf);

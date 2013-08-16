@@ -8,7 +8,7 @@ all: plugin_python_manager.so plugin_git.so plugin_title.so plugin_wiki.so plugi
 	plugin_test.so plugin_mesai.so 
 
 plugin_python_manager.so: plugin_python_manager.c
-	$(CC) plugin_python_manager.c $(CFLAGS) -ldl --shared -o$@
+	$(CC) plugin_python_manager.c $(CFLAGS) $(shell pkg-config python-2.7 --cflags --libs) --shared -o$@
 
 plugin_git.so: plugin_git.c
 	$(CC) plugin_git.c utils/curl_wrapper.c utils/json.c $(CFLAGS) `pkg-config libcurl --cflags --libs` --shared -o$@
