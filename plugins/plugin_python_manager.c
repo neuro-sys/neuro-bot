@@ -141,10 +141,10 @@ static void py_call_module(struct py_module_t * mod, struct irc_t * irc, char * 
     p_args = PyTuple_New(2);                          
 
     p_val = PyString_FromString("");           
-    PyTuple_SetItem(p_args, 0, p_val);            
-
-    p_val = PyString_FromString(irc->message.trailing);        
     PyTuple_SetItem(p_args, 1, p_val);            
+
+    p_val = PyString_FromString(irc->from);        
+    PyTuple_SetItem(p_args, 0, p_val);            
 
     p_val = PyObject_CallObject(mod->pFunc, p_args);  
     if (p_val) {
@@ -164,7 +164,7 @@ static void run(void)
 
     command_name[0] = 0;
 
-    if (!plugin->irc->message.trailing[0]) {
+    if (plugin->irc->message.trailing[0]) {
         size_t n = strcspn(plugin->irc->message.trailing+1, " \r\n");
         strncpy(command_name, plugin->irc->message.trailing+1, n);
         command_name[n] = 0;
