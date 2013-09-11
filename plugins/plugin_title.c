@@ -84,13 +84,16 @@ void run(void)
     htmlSAXHandler saxHandler;
     htmlParserCtxt * ctx_ptr;
     struct curl_slist * slist = NULL;
-    char reqbuf[256];
-    char trailing[510];
+    char request_header_str[256];
+    char trailing_str[510];
 
-    strcpy(trailing, plugin->irc->message.trailing);
     title_buffer[0] = 0;
     title_len = 0;
     in_title = 0;
+    trailing_str[0] = 0;
+    reply_msg[0] = 0;
+
+    strcpy(trailing_str, plugin->irc->message.trailing);
 
     memset(&saxHandler, 0, sizeof (htmlSAXHandler));
 
@@ -99,16 +102,16 @@ void run(void)
     saxHandler.characters = characters_callback;
     saxHandler.cdataBlock = characters_callback;
 
-    if (validate_http(trailing) < 0 )
+    if (validate_http(trailing_str) < 0 )
         return;
 
-    snprintf(reqbuf, 256, "Accept: text/plain, text/html");
-    slist = curl_slist_append(slist, reqbuf);
-    http = curl_perform(trailing, slist);
+    snprintf(request_header_str, 256, "Accept: text/plain, text/html");
+    slist = curl_slist_append(slist, request_header_str);
+    http = curl_perform(trailing_str, slist);
     if (!http->body) return;
 
 
-    ctx_ptr = htmlCreatePushParserCtxt(&saxHandler, NULL, "", 0, "", XML_CHAR_ENCODING_NONE);
+    ctx_ptr = htmlCreatePushParserCtxt(&saxHandler, NULL, "", 0, "", XML_CHAR_ENCODING_UTF8);
     htmlParseChunk(ctx_ptr, http->body, http->body_len, 0);
     htmlParseChunk(ctx_ptr, "", 0, 1);
     
@@ -121,7 +124,8 @@ void run(void)
     free(http->body);
     free(http);
 
-    sprintf(plugin->irc->response, "PRIVMSG %s :%s", plugin->irc->from, reply_msg);
+    if (reply_msg[0])
+        sprintf(plugin->irc->response, "PRIVMSG %s :%s", plugin->irc->from, reply_msg);
 }
 
 struct plugin_t * init(void)
