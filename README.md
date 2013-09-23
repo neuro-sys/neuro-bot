@@ -11,8 +11,8 @@ neurobot is an IRC bot written in C with an extensible plugin architecture in mi
 ###### How to build & run:
 	$ make && ./neurobot
 
-###### Linker dependencies: 
-There are no linker dependencies for the bot itself.
+###### Dependencies: 
+POSIX (for pthreads).
 
 ##### Some of the plugins may need the libraries below for their internal use.
  - Python (Required by the python plugin manager)
