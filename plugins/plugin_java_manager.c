@@ -67,7 +67,7 @@ static void plugin_load_file(char * full_path)
 
     {
         char * offset = strchr(full_path, '/')+1;
-        int len = strcspn(full_path, ".") - (offset-full_path);
+        int len = strcspn(offset, "."); 
         strncpy(plugin_name, offset, len);
         plugin_name[len] = 0;
     }
@@ -87,6 +87,8 @@ static void plugin_load_file(char * full_path)
         debug("Static method run could not be found in plugin %s.\n", plugin_name);
         return;
     }
+
+    debug("Plugin %s is loaded.\n", plugin_name);
 }
 
 int init_jvm(void)
