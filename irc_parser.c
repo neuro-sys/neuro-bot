@@ -3,6 +3,9 @@
 #include <stdio.h>
 #include <string.h>
 
+/**
+ * ( nickname [ [ "!" user ] "@" host ] )
+ */
 static void parse_prefix_nickname(struct nickname_t * nickname, const char * src)
 {
     char * c;
@@ -19,8 +22,9 @@ static void parse_prefix_nickname(struct nickname_t * nickname, const char * src
         strncpy(nickname->host, c+1, len);
         nickname->host[len] = '\0';
         if ((k = strchr(src, '!'))) {
-            strncpy(nickname->user, k+1, (c - k - 1));
-            nickname->user[c - k - 1] = '\0';
+            size_t num = (c - k - 1);
+            strncpy(nickname->user, k+1, num);
+            nickname->user[num] = '\0';
         }
     } 
     n = strcspn(src, "!@ ");
@@ -29,9 +33,6 @@ static void parse_prefix_nickname(struct nickname_t * nickname, const char * src
 
 /**
  * prefix     =  servername / ( nickname [ [ "!" user ] "@" host ] )
- * Notes:
- * [21:26] < grawity> Server names always have a "." – nicknames never do.
- *
  */
 static void parse_prefix(struct prefix_t * prefix, const char * src)
 {
@@ -44,13 +45,16 @@ static void parse_prefix(struct prefix_t * prefix, const char * src)
         parse_prefix_nickname(&prefix->nickname, src);
 }
 
+/**
+ * param1 param2 param_n [:trailing ...]crlf
+ */
 static void parse_params(char params[][50], char * trailing, const char * src)
 {
-    int i = 0;        /* They are: `param1 param2 ... [:Trailing ...]CRLF'  */
+    int i = 0;
     char buf[510];
     char * t;
 
-    strcpy(buf, src); /* Copy the line in a buffer to tokenize it. */
+    strncpy(buf, src, 510); /* Copy the line in a buffer to tokenize it. */
     /* Get the `trailing' first, which marks the ending of params, if there is. */
     if ((t = strstr(buf, " :"))) { /* It starts with a SPACE preceding a ':'. */ 
         char * end = strchr(t, '\r');
@@ -92,7 +96,7 @@ void irc_parser(struct message_t * message, const char * line)
     } 
 
     /* Then get the obligatory command field. */
-    pos = strcspn(line, " \r\n"); /* It ends with a SPACE or CRLF */
+    pos = strcspn(line, " \r\n"); /* It ends with a SPACE or/with CRLF */
     strncpy(message->command, line, pos);
     message->command[pos] = '\0';
     line += pos;
@@ -102,6 +106,9 @@ void irc_parser(struct message_t * message, const char * line)
         parse_params(message->params, message->trailing, line);
 }
 
+/**
+ * Pretty print a struct message_t 
+ */
 void print_message_t(struct message_t * message)
 {
     if (message->prefix.servername[0])
@@ -145,7 +152,7 @@ int main(int argc, char *argv)
         ":kokobot!~ircbot@88.240.45.200 JOIN #gameover\r\n",
         ":leguin.freenode.net 353 kokobot = #gameover :kokobot @ChanServ\r\n",
         ":leguin.freenode.net 366 kokobot #gameover :End of /NAMES list\r\n",
-        ":ChanServ!ChanServ@services. NOTICE kokobot :[#gameover] sikerim\r\n",
+        ":ChanServ!ChanServ@services. NOTICE kokobot :[#gameover] \r\n",
         ":fooobar KOMUT param1 param2 :test\r\n",
         "PING :foo.bar\r\n",
         ":ChanServ!ChanServ@services. MODE #botwar +o KOKBOT\r\n",
