@@ -43,7 +43,7 @@ void * unqueue(struct queue_t * queue)
     return data;
 }
 
-#ifndef TEST_QUEUE
+#ifdef TEST_QUEUE
 int main(int argc, char *argv[])
 {
     struct queue_t queue_test;

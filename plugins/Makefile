@@ -5,7 +5,7 @@ ifneq ($(OS), Windows_NT)
 endif
 
 all: plugin_python_manager.so plugin_git.so plugin_title.so plugin_wiki.so plugin_youtube.so \
-	plugin_test.so plugin_mesai.so plugin_java_manager.so
+	plugin_test.so plugin_mesai.so 
 
 plugin_python_manager.so: plugin_python_manager.c
 	$(CC) plugin_python_manager.c $(CFLAGS) $(shell pkg-config python-2.7 --cflags --libs) --shared -o$@
@@ -27,10 +27,6 @@ plugin_test.so: plugin_test.c
 
 plugin_mesai.so: plugin_mesai.c
 	$(CC) plugin_mesai.c $(CFLAGS) --shared -o$@
-
-GCJ_LD_PATH="/usr/lib/gcj-*/"
-plugin_java_manager.so: plugin_java_manager.c
-	$(CC) plugin_java_manager.c -L$(shell ls -d /usr/lib/gcj-*/) -ljvm --shared -o$@
 
 clean:
 	rm -fv *.o *.so

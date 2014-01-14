@@ -39,7 +39,7 @@ test_irc_plugin: irc_plugin.c irc_plugin.h
 	$(CC) irc_plugin.c socket.c plugin.c -ldl -DTEST_IRC_PLUGIN -o $@ && ./$@ && rm -fv $@
 
 test_queue: queue.c queue.h
-	$(CC) queue.c -o $@ && ./$@ && rm -fv $@
+	$(CC) queue.c -o -DTEST_QUEUE $@ && ./$@ && rm -fv $@
 
 test:
 	$(MAKE) test_plugin test_irc_parser test_config test_irc_plugin test_queue

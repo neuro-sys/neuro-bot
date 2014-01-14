@@ -165,3 +165,5 @@ void irc_process_line(struct irc_t * irc, const char * line)
     if (irc->response[0])
         fprintf(stderr, "%s\n", irc->response);
 }
+
+
