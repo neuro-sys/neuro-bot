@@ -144,9 +144,11 @@ void run(void)
     {
         char * tinyurl = NULL;
 
-        tinyurl = make_tinyurl(trailing_str);
-        strcat(plugin->irc->response, " - ");
-        strcat(plugin->irc->response, tinyurl);
+        if ( (tinyurl = make_tinyurl(trailing_str)) != NULL) {
+            strcat(plugin->irc->response, " - ");
+            strcat(plugin->irc->response, tinyurl);
+            free(tinyurl);
+        }
     }
 }
 
