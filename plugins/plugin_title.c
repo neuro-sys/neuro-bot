@@ -75,6 +75,21 @@ characters_callback (void * ctx,
     fprintf(stderr, "%s", title_buffer);
 }
 
+static char * make_tinyurl(char * url)
+{
+    struct http_req * http = NULL;
+    char tinyurl_url[2048];
+
+    tinyurl_url[0] = 0;
+
+    sprintf(tinyurl_url, "http://tinyurl.com/api-create.php?url=");
+    sprintf(tinyurl_url + strlen(tinyurl_url), "%s", url);
+
+    http = curl_perform(tinyurl_url, NULL);
+
+    return http->body;
+}
+
 struct plugin_t * plugin;
 
 void run(void)
@@ -126,6 +141,13 @@ void run(void)
 
     if (reply_msg[0])
         sprintf(plugin->irc->response, "PRIVMSG %s :%s", plugin->irc->from, reply_msg);
+    {
+        char * tinyurl = NULL;
+
+        tinyurl = make_tinyurl(trailing_str);
+        strcat(plugin->irc->response, " - ");
+        strcat(plugin->irc->response, tinyurl);
+    }
 }
 
 struct plugin_t * init(void)
