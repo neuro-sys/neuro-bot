@@ -2,6 +2,8 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
+
 #include <assert.h>
 
 void queue(struct queue_t * queue, void * data)
@@ -15,7 +17,7 @@ void queue(struct queue_t * queue, void * data)
 
     queue->data[queue->count++] = data;
 
-    if (queue->count >= MAX_QUEUE_SIZE)
+    if (queue->count >= queue->max_size)
         queue->count = 0;
 
     if (queue->count == queue->front)
@@ -35,7 +37,7 @@ void * unqueue(struct queue_t * queue)
 
     data = queue->data[queue->front++];
 
-    if (queue->front >= MAX_QUEUE_SIZE)
+    if (queue->front >= queue->max_size)
         queue->front = 0;
 
     queue->is_full = 0;
@@ -48,6 +50,10 @@ int main(int argc, char *argv[])
 {
     struct queue_t queue_test;
     memset(&queue_test, 0, sizeof(queue_test));
+
+    queue_test.max_size = 500;
+
+    queue_test.data = malloc(queue_test.max_size);
 
     queue(&queue_test, "elma");
     queue(&queue_test, "armut");
