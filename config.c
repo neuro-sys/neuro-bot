@@ -25,7 +25,14 @@ void config_load(struct session_t * session)
     }
     while (fgets(buf, 1024, file))
     {
+        if (buf == NULL || buf[0] == '#')
+            continue;
+
         token = strtok(buf, "=");
+
+        if (token == NULL)
+            continue;
+
         if (!strcmp(token, "nick"))
         {
             token = strtok(NULL, " \r\n");

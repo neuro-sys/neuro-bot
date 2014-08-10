@@ -85,6 +85,8 @@ void irc_parser(struct message_t * message, const char * line)
     if (line == NULL || message == NULL)
         return;
 
+    memset(message, 0, sizeof (struct message_t));
+
     /* If starts with ':', then has a prefix field. */
     if (line[0] == ':') {
         char buffer[510];

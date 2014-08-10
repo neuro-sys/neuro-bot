@@ -76,10 +76,11 @@ void run(void)
 
     if (youtube->valid)
     {
-
-        sprintf(plugin->irc->response, "PRIVMSG %s :[%s] - [rating: %.2f/5, viewed: %s]", 
+        char response[512];
+        sprintf(response, "PRIVMSG %s :[%s] - [rating: %.2f/5, viewed: %s]", 
                 plugin->irc->from,
                 youtube->title, youtube->rating, youtube->view_count);
+        plugin->send_message(plugin->irc, response);
     }
     free(youtube);
 }

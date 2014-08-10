@@ -26,6 +26,7 @@ void run(void)
     struct tm * mesai_time_tm;
     double diff;
     char buffer[MAX_IRC_MSG];
+    char response[512];
 
     current_time = time(NULL);
     mesai_time_tm = localtime(&current_time);
@@ -42,7 +43,8 @@ void run(void)
     diff = difftime(mesai_time, current_time);
 
     format_message(diff, buffer, MAX_IRC_MSG);
-    sprintf(plugin->irc->response, "PRIVMSG %s :%s\r\n", plugin->irc->from, buffer);
+    sprintf(response, "PRIVMSG %s :%s\r\n", plugin->irc->from, buffer);
+    plugin->send_message(plugin->irc, response);
 }
 
 struct plugin_t * init(void)

@@ -6,6 +6,7 @@
 
 void config_load(struct session_t * session);
 
+/* Defaults */
 #define NICKNAME "neurobot"
 #define PASSWORD ""
 #define ADMIN    "neuro_sys"

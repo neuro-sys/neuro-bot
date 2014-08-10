@@ -8,7 +8,11 @@ struct plugin_t * plugin;
 
 void run(void)
 {
-    sprintf(plugin->irc->response, "PRIVMSG %s :Hello!", plugin->irc->from);
+    char response[512];
+
+    sprintf(response, "PRIVMSG %s :Hello!", plugin->irc->from);
+
+    plugin->send_message(plugin->irc, response);
 }
 
 struct plugin_t * init(void)

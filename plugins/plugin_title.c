@@ -110,6 +110,10 @@ void run(void)
 
     strcpy(trailing_str, plugin->irc->message.trailing);
 
+    if (strstr(trailing_str, "youtube.com") != NULL) {
+        return;
+    }
+
     memset(&saxHandler, 0, sizeof (htmlSAXHandler));
 
     saxHandler.startElement = startTag;
@@ -139,17 +143,21 @@ void run(void)
     free(http->body);
     free(http);
 
-    if (reply_msg[0])
-        sprintf(plugin->irc->response, "PRIVMSG %s :%s", plugin->irc->from, reply_msg);
-    {
+    if (reply_msg[0]) {
+        char response[512];
         char * tinyurl = NULL;
 
+        sprintf(response, "PRIVMSG %s :%s", plugin->irc->from, reply_msg);
+
         if ( (tinyurl = make_tinyurl(trailing_str)) != NULL) {
-            strcat(plugin->irc->response, " - ");
-            strcat(plugin->irc->response, tinyurl);
+            strcat(response, " - ");
+            strcat(response, tinyurl);
             free(tinyurl);
         }
+
+        plugin->send_message(plugin->irc, response);
     }
+
 }
 
 struct plugin_t * init(void)

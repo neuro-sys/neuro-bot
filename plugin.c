@@ -50,6 +50,9 @@ void plugin_start_loopers(struct irc_t * irc)
     }
 }
 
+/*
+ * pass a reference of irc handle to the plugins.
+ */
 void plugin_attach_context(struct irc_t * irc)
 {
     struct plugin_list_t * it;
@@ -107,10 +110,10 @@ void plugin_insert(struct plugin_t * p)
  * TODO: It should utilize a message queue for delivering messages to the network.
  *
  */
-void send_message(struct irc_t * irc)
+void send_message(struct irc_t * irc, char * response)
 {
-    debug(irc->response);
-    socket_send_message(&irc->session->socket, irc->response);
+    debug(response);
+    socket_send_message(&irc->session->socket, response);
 }
 
 struct plugin_t plugin_list[100];
@@ -141,7 +144,7 @@ void plugin_load_file(char * file)
     /* See warning message for commentary */
     if (!plugin->is_manager && (plugin->is_command + plugin->is_grep + plugin->is_looper) > 1) {
         debug("The plugin \"%s\" is not valid."
-                    "A plugin can only be one of type `command', `grep' and `looper'.\n",
+                    "A plugin can only be any one of the types `command', `grep' and `looper'; or a manager.\n",
                     file);
         /* TODO: Clean up. */
         return;

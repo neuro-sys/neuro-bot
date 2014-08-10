@@ -96,7 +96,9 @@ void run(void)
     free(http);
 
     if (!p) {
-        sprintf(plugin->irc->response, "PRIVMSG %s :Wiki article could not be found.", plugin->irc->from);
+        char response[512];
+
+        sprintf(response, "PRIVMSG %s :Wiki article could not be found.", plugin->irc->from);
         return;
     }
 
@@ -104,7 +106,11 @@ void run(void)
 
     free(p);
 
-    sprintf(plugin->irc->response, "PRIVMSG %s :Wikipedia: %s", plugin->irc->from, reply_message);
+    {
+        char response[512];
+        sprintf(response, "PRIVMSG %s :Wikipedia: %s", plugin->irc->from, reply_message);
+        plugin->send_message(plugin->irc, response);
+    }
 }
 
 struct plugin_t * init(void)

@@ -174,8 +174,11 @@ static void run(void)
         /* Run command. */
         if (it->cur->is_command && !strcmp(it->cur->name, command_name)) {
             struct py_module_t * module = it->cur;
+            char response[512];
 
-            py_call_module(module, plugin->irc, plugin->irc->response);
+            py_call_module(module, plugin->irc, response);
+
+            plugin->send_message(plugin->irc, response);
         }
 
         /**

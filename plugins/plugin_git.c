@@ -131,8 +131,10 @@ void run(void)
             if (message[0]) {
                 for (i = 0; i < plugin->irc->channels_siz; i++) {
                     char * chan = plugin->irc->channels[i];
-                    sprintf(plugin->irc->response, "PRIVMSG %s :%s\r\n", chan, message);
-                    plugin->send_message(plugin->irc);
+                    char response[512];
+
+                    sprintf(response, "PRIVMSG %s :%s\r\n", chan, message);
+                    plugin->send_message(plugin->irc, response);
                 }
             }
         } 

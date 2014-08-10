@@ -9,25 +9,26 @@
 #include <stdlib.h>
 #include <string.h>
 
-static void session_init_irc(struct session_t * session)
+static void session_init_irc(struct irc_t * irc, struct session_t * session)
 {
     char message[MAX_IRC_MSG];
 
-    irc_set_nick(session->nickname, message);
-    socket_send_message(&session->socket, message);
+    irc_set_nick(irc, session->nickname, message);
 
-    irc_set_user("ircbot", "github.com/neuro-sys/neuro-bot", message);
-    socket_send_message(&session->socket, message);
+    irc_set_user(irc, "ircbot", "github.com/neuro-sys/neuro-bot", message);
+
+    plugin_start_loopers(irc);
 }
 
 
-void session_run(struct session_t * session)
+int session_run(struct session_t * session)
 { 
-    char          line[MAX_IRC_MSG];
     struct irc_t  irc;
 
     memset(&irc, 0, sizeof(irc));
+
     irc.session = session;        
+
     plugin_attach_context(&irc);
 
     /* Conect to the server specified in socket_t struct. */
@@ -35,25 +36,18 @@ void session_run(struct session_t * session)
         debug("Unable to connect to %s:%s\n", irc.session->socket.host_name, irc.session->socket.port);
         exit(EXIT_SUCCESS);
     }
+
     /* Do one time initialization work after connecting to the server. */
-    session_init_irc(irc.session);
+    session_init_irc(&irc, irc.session);
 
-    plugin_start_loopers(&irc);
-
-    while (1) 
+    while (666) 
     {
-
-        irc.response[0] = 0;
-        irc.from[0]     = 0;
-        memset(&irc.message, 0, sizeof (irc.message));
+        char line[MAX_IRC_MSG];
 
         if (socket_read_line(&irc.session->socket, line) < 0)
-            break;
+            return -1;
 
         irc_process_line(&irc, line);
-
-        if (irc.response[0])
-            socket_send_message(&irc.session->socket, irc.response);
     }
 }
 

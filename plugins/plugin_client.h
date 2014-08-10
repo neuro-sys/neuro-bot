@@ -16,7 +16,7 @@ struct plugin_t {
                                   /* plugins. A manager plugin can load other plugins. */
 
     /* Handles provied to the plugin. Initialized by the bot. */
-    void (*send_message)(struct irc_t *);   /* This is for the plugin to send message to server */
+    void (*send_message)(struct irc_t *, char * message);   /* This is for the plugin to send message to server */
     struct irc_t * irc;
 
     /* Handles provied to the bot. Initialized by the plugin. */

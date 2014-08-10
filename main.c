@@ -23,9 +23,8 @@ int main(int argc, char *argv[])
     /* Load plugin modules. */
     plugin_init();
 
-    while (1)
-    {
-        session_run(&session);
+    while ( session_run(&session) > 0 ) {
+        /* loop until exit */
     }
 
     return 0;
