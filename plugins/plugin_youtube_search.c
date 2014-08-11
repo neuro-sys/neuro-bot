@@ -48,11 +48,26 @@ static struct youtube_t * parse_json_youtube(char * data)
 
                 link = n_json_find_object(n_json_find_object(val, "link")->u.array.values[0], "href");
                 strcpy(youtube->url, link->u.string.ptr);
+                *strchr(youtube->url, '&') = '\0';
             }
         }
     }
 
+    json_value_free(root);
+
     return youtube;
+}
+
+static void string_replace_all(char * str, char this, char that)
+{
+    char * ptr;
+
+    ptr = str;
+
+    while (*ptr != '\0') {
+        if (*ptr == this) *ptr = that;
+        ptr++;
+    }
 }
 
 static void parse_search_keyword(struct irc_t * irc, char * dest, size_t dest_len)
@@ -61,7 +76,6 @@ static void parse_search_keyword(struct irc_t * irc, char * dest, size_t dest_le
     char * t;
 
     strcpy(request, irc->message.trailing);
-    request[strlen(irc->message.trailing)] = '\0';
 
     t = strchr(request, ' ');
 
@@ -71,16 +85,7 @@ static void parse_search_keyword(struct irc_t * irc, char * dest, size_t dest_le
 
     t++;
 
-    {
-        char * ptr;
-
-        ptr = t;
-
-        while (*ptr != '\0') {
-            if (*ptr == ' ') *ptr = '+';
-            ptr++;
-        }
-    }
+    string_replace_all(t, ' ', '+');
 
     strncpy(dest, t, dest_len);
 }
