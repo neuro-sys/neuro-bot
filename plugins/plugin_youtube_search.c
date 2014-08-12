@@ -96,7 +96,7 @@ static char * request_youtube_api(char * keyword)
     char url[1024];
     char * response;
 
-    sprintf(url, "http://gdata.youtube.com/feeds/api/videos?alt=json&ver=2&q=%s", keyword);
+    sprintf(url, "http://gdata.youtube.com/feeds/api/videos?alt=json&ver=2&orderBy=relevance&q=%s", keyword);
 
     http = curl_perform(url, NULL);
 
