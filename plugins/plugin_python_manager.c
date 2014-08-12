@@ -125,8 +125,18 @@ static void set_pymodule_path(char * py_path)
 {
     PyObject * sys_path = PySys_GetObject("path");        
     PyObject * path     = PyString_FromString(py_path);   
+    PyObject * syspath  = NULL;
+
     PyList_Append(sys_path, path);
-    PySys_SetPath(py_path);
+    PySys_SetObject("path", sys_path);
+
+    syspath = PyImport_ImportModule("sys");
+    {
+        PyObject * strObj = PyObject_GetAttrString(syspath, "path");
+        PyObject * strRep = PyObject_Str(strObj);
+
+        debug("Python sys.path: %s\n", PyString_AsString(strRep));
+    }
 }
 
 /*
@@ -140,11 +150,11 @@ static void py_call_module(struct py_module_t * mod, struct irc_t * irc, char * 
 
     p_args = PyTuple_New(2);                          
 
-    p_val = PyString_FromString("");           
-    PyTuple_SetItem(p_args, 1, p_val);            
-
     p_val = PyString_FromString(irc->from);        
     PyTuple_SetItem(p_args, 0, p_val);            
+
+    p_val = PyString_FromString(irc->message.trailing);           
+    PyTuple_SetItem(p_args, 1, p_val);            
 
     p_val = PyObject_CallObject(mod->pFunc, p_args);  
     if (p_val) {
@@ -175,10 +185,13 @@ static void run(void)
         if (it->cur->is_command && !strcmp(it->cur->name, command_name)) {
             struct py_module_t * module = it->cur;
             char response[512];
+            char raw_response[512];
 
             py_call_module(module, plugin->irc, response);
 
-            plugin->send_message(plugin->irc, response);
+            snprintf(raw_response, 512, "PRIVMSG %s :%s\r\n", plugin->irc->from, response);
+
+            plugin->send_message(plugin->irc, raw_response);
         }
 
         /**
@@ -208,6 +221,13 @@ static int init_python(void)
     pwd[0] = 0;
 
     Py_Initialize();
+
+    if (!Py_IsInitialized()) {
+        debug("Python's not initialized.\n");
+        return -1;
+    }
+
+    debug("Python's initialized...\n");
 
     getcwd(pwd, 1024);
     sprintf(buf, "%s/%s/", pwd, PLUGIN_DIR);
