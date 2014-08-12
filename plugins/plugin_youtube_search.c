@@ -128,6 +128,8 @@ void run(void)
 
     youtube = parse_json_youtube(json_data);
 
+    free(json_data);
+    
     if (youtube == NULL)
         return;
 
