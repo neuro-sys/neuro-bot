@@ -1,5 +1,5 @@
 ## neurobot
-neurobot is an IRC bot written in C with an extensible plugin architecture in mind. Plugins can be loaded at runtime without need to restart the application. A container plugin also may load other plugins and act as a plugin proxy -- ideally for the purpose of binding plugins written in other languages. For instance, there is one python plugin manager which is itself a plugin, and loads python plugins. Plugins for other languages are planned.
+Uriel is an IRC bot written in C with an extensible plugin architecture in mind. Plugins can be loaded at runtime without need to restart the application. A container plugin also may load other plugins and act as a plugin proxy -- ideally for the purpose of binding plugins written in other languages. For instance, there is one python plugin manager which is itself a plugin, and loads python plugins. Plugins for other languages are planned.
 
 ###### Features:
  - Admin management
