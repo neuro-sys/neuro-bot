@@ -61,8 +61,10 @@ void irc_plugin_handle_grep(struct irc_t * irc)
         while (*keywords) {
             char * keyword = *keywords++;
 
-            if (strstr(irc->message.trailing, keyword))
+            if (strstr(irc->message.trailing, keyword)) {
                 plugin->run();
+                break;
+            }
         }
     }
 }

@@ -112,7 +112,7 @@ void plugin_insert(struct plugin_t * p)
  */
 void send_message(struct irc_t * irc, char * response)
 {
-    debug(response);
+    debug("%s\n", response);
     socket_send_message(&irc->session->socket, response);
 }
 
