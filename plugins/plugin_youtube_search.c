@@ -13,11 +13,15 @@ struct plugin_t * plugin;
 struct youtube_t {
     char title[512];
     char url[512];
+    char category[512];
+    double rating;
+    int numRaters;
+    char viewCount[512];
 };
 
 static struct youtube_t * parse_json_youtube(char * data)
 {
-    json_value * root, * entry;
+    json_value * root, * entry, * val, * node;
     struct youtube_t * youtube;
 
     youtube = malloc(sizeof (struct youtube_t));
@@ -37,21 +41,26 @@ static struct youtube_t * parse_json_youtube(char * data)
         return NULL;
     }
 
-      
-    json_value * val;
-        
     val = entry->u.array.values[0];
 
+    node  = n_json_find_object(n_json_find_object(val, "title"), "$t");
+    strcpy(youtube->title, node->u.string.ptr);
 
-    json_value * title, * link;
-
-    title = n_json_find_object(n_json_find_object(val, "title"), "$t");
-    strcpy(youtube->title, title->u.string.ptr);
-
-    link = n_json_find_object(n_json_find_object(val, "link")->u.array.values[0], "href");
-    strcpy(youtube->url, link->u.string.ptr);
+    node  = n_json_find_object(n_json_find_object(val, "link")->u.array.values[0], "href");
+    strcpy(youtube->url, node->u.string.ptr);
     *strchr(youtube->url, '&') = '\0';
 
+    node = n_json_find_object(val, "label");
+    strcpy(youtube->category, node->u.string.ptr);
+
+    node = n_json_find_object(val, "viewCount");
+    strcpy(youtube->viewCount, node->u.string.ptr);
+
+	node = n_json_find_object(val, "average");
+	youtube->rating = node->u.dbl;
+
+	node = n_json_find_object(val, "numRaters");
+	youtube->numRaters = node->u.integer;
 
     json_value_free(root);
 
@@ -133,7 +142,17 @@ void run(void)
     if (youtube == NULL)
         return;
 
-    sprintf(response, "PRIVMSG %s :%s - %s", plugin->irc->from, youtube->title, youtube->url);
+    sprintf(
+			response,
+			"PRIVMSG %s :%s | %s | l: %s | c: %s | r: %.2f/%u", 
+			plugin->irc->from, 
+			youtube->title, 
+			youtube->url, 
+			youtube->category, 
+			youtube->viewCount, 
+			youtube->rating, 
+			youtube->numRaters
+	);
 
     free(youtube);
 #ifndef TEST_PLUGIN_YT
@@ -164,7 +183,7 @@ void run(void)
     struct irc_t irc;
 
     plugin = &p;
-    strcpy(irc.message.trailing, ".yt coil triple sun");
+    strcpy(irc.message.trailing, ".yt test");
     plugin->irc = &irc;
 
     run();
