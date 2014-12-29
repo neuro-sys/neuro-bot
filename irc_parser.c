@@ -9,22 +9,21 @@
 static void parse_prefix_nickname(struct nickname_t * nickname, const char * src)
 {
     char * c;
-    size_t n;
+    size_t len;
 
     if (src == NULL)
         return;
 
     if ((c = strchr(src, '@'))) {
         char * k;
-        size_t len;
 
-        len = strlen(src);
+        len = strlen(c);
         strncpy(nickname->host, c+1, len);
         nickname->host[len] = '\0';
         if ((k = strchr(src, '!'))) {
-            size_t num = (c - k - 1);
-            strncpy(nickname->user, k+1, num);
-            nickname->user[num] = '\0';
+            len = (c - k - 1);
+            strncpy(nickname->user, k+1, len);
+            nickname->user[len] = '\0';
         }
     } 
     n = strcspn(src, "!@ ");
