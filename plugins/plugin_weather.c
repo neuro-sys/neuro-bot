@@ -14,7 +14,8 @@
 struct plugin_t * plugin;
 
 struct weather_s {
-    double lon, lat, temp, pressure, humidity, wind_speed, wind_deg, clouds;
+    double lon, lat, temp, wind_speed, wind_deg, pressure;
+    int clouds, humidity;
     char * main, * name;
 };
 
@@ -60,7 +61,17 @@ static struct weather_s * parse_json(char * json_payload)
     if (!(node = n_json_find_object(root, "all"))) {
         return NULL;
     }
-    weather->clouds = node->u.dbl;
+    weather->clouds = node->u.integer;
+
+    if (!(node = n_json_find_object(root, "humidity"))) {
+        return NULL;
+    }
+    weather->humidity = node->u.integer;
+
+    if (!(node = n_json_find_object(root, "pressure"))) {
+        return NULL;
+    }
+    weather->pressure = node->u.dbl;
 
     json_value_free(root);
 
@@ -119,8 +130,8 @@ void run(void)
         return;
     }
    
-    snprintf(response, 512, "PRIVMSG %s :%s (%s), Temp: %.2f \u00b0C, Wind speed: %.2f km/h, Cloud: %.f%%", 
-        plugin->irc->from, weather->name, weather->main, weather->temp - 273.15, MPS_TO_KMH(weather->wind_speed), weather->clouds);
+    snprintf(response, 512, "PRIVMSG %s :%s (%s), Temp: %.2f \u00b0C, Wind speed: %.2f km/h, Cloud ratio: %d%%, Humidity: %d%%, Pressure: %.2f hPa", 
+        plugin->irc->from, weather->name, weather->main, weather->temp - 273.15, MPS_TO_KMH(weather->wind_speed), weather->clouds, weather->humidity, weather->pressure);
     plugin->send_message(plugin->irc, response);
 
     weather_free(weather);
