@@ -26,8 +26,8 @@ static void parse_prefix_nickname(struct nickname_t * nickname, const char * src
             nickname->user[len] = '\0';
         }
     } 
-    n = strcspn(src, "!@ ");
-    strncpy(nickname->nickname, src, n);
+    len = strcspn(src, "!@ ");
+    strncpy(nickname->nickname, src, len);
 }
 
 /**
