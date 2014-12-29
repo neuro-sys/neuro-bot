@@ -9,6 +9,8 @@
 
 #define WEATHER_API "http://api.openweathermap.org/data/2.5/weather?q="
 
+#define MPS_TO_KMH(A) A*3.6
+
 struct plugin_t * plugin;
 
 struct weather_s {
@@ -117,8 +119,8 @@ void run(void)
         return;
     }
    
-    snprintf(response, 512, "PRIVMSG %s :%s (%s), Temp: %.2f deg, Wnd Spd: %.2f, Cloud: %.f%%", 
-        plugin->irc->from, weather->name, weather->main, weather->temp - 273.15, weather->wind_speed, weather->clouds);
+    snprintf(response, 512, "PRIVMSG %s :%s (%s), Temp: %.2f \u00b0C, Wind speed: %.2f km/h, Cloud: %.f%%", 
+        plugin->irc->from, weather->name, weather->main, weather->temp - 273.15, MPS_TO_KMH(weather->wind_speed), weather->clouds);
     plugin->send_message(plugin->irc, response);
 
     weather_free(weather);
