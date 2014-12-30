@@ -24,6 +24,9 @@ struct gps_s {
 
 static void gps_free(struct gps_s * gps)
 {
+    if (gps == NULL)
+        return;
+
     free(gps->name);
     free(gps);
 }
@@ -61,24 +64,24 @@ static void gps_free(struct gps_s * gps)
 
 const char *world_map[] = 
 {
-"                                    ",
-"      ..... ....   .   .    .       ",
-"  ........   .     .................",
-"     .......       .. ..........  . ",
-"      ..... .     ...............   ",
-"      .....        .  ........ .    ",
-"        . .      .............      ",
-"         .      .......  .  .       ",
-"          ...     .....     ..      ",
-"          .....    ...      . . .   ",
-"         .....     ... .       .    ",
-"          ...       .  .      ...   ",
-"           ..                  ..  .",
-"           ..                      .",
-"           .                        ",
-"                                    ",
-"                                    ",
-"                                    ",
+    "                                    ",
+    "      ..... ....   .   .    .       ",
+    "  ........   .     .................",
+    "     .......       .. ..........  . ",
+    "      ..... .     ...............   ",
+    "      .....        .  ........ .    ",
+    "        . .      .............      ",
+    "         .      .......  .  .       ",
+    "          ...     .....     ..      ",
+    "          .....    ...      . . .   ",
+    "         .....     ... .       .    ",
+    "          ...       .  .      ...   ",
+    "           ..                  ..  .",
+    "           ..                      .",
+    "           .                        ",
+    "                                    ",
+    "                                    ",
+    "                                    ",
 };
 
 
@@ -89,63 +92,69 @@ const char *world_map[] =
 
 static void convert_world_coord_to_map_coord(int lat, int lon, int * mx, int * my)
 {
-	*mx = ((lat + 180.) / 360.) * WIDTH;
-	*my = ((-lon + 90.) / 180.) * HEIGHT;
-	
-	if (*mx >= WIDTH) 	*mx = WIDTH-1;
-	if (*mx < 0) 		*mx = 0;
-	if (*my >= HEIGHT)	*my = HEIGHT-1;
-	if (*my <0)			*my = 0;
+    *mx = ((lat + 180.) / 360.) * WIDTH;
+    *my = ((-lon + 90.) / 180.) * HEIGHT;
+
+    if (*mx >= WIDTH) 	*mx = WIDTH-1;
+    if (*mx < 0) 		*mx = 0;
+    if (*my >= HEIGHT)	*my = HEIGHT-1;
+    if (*my <0)			*my = 0;
 }
 
 static char * get_map(int lon, int lat)
 {
-	int x, y;
-	int mx, my;
-	char *map_buf = malloc(MAP_BUF_LEN); // +HEIGHT is for newline chars.
-	int i = 0;
+    int x, y;
+    int mx, my;
+    char *map_buf = malloc(MAP_BUF_LEN); // +HEIGHT is for newline chars.
+    int i = 0;
 
-	convert_world_coord_to_map_coord(lon, lat, &mx, &my);
-	
-	for (y = 0; y < HEIGHT; y++) {
-		for (x = 0; x < WIDTH; x++) {
-			if (x == mx && y == my) {
-				map_buf[i++] = 'X';
-			} else {
-				map_buf[i++] = world_map[y][x];
-			}
-		}
-		map_buf[i++] = '\n';
-	}
+    convert_world_coord_to_map_coord(lon, lat, &mx, &my);
 
-	return map_buf;
+    for (y = 0; y < HEIGHT; y++) {
+        for (x = 0; x < WIDTH; x++) {
+            if (x == mx && y == my) {
+                map_buf[i++] = 'X';
+            } else {
+                map_buf[i++] = world_map[y][x];
+            }
+        }
+        map_buf[i++] = '\n';
+    }
+
+    return map_buf;
 }
 
 static void send_map(char * map_buf)
 {
-	int i;
-	char response_line[512];
+    int i;
+    char response_line[512];
+    int is_empty_line = 1;
 
-	response_line[0] = 0;
+    response_line[0] = 0;
 
-	for (i = 0; i < MAP_BUF_LEN; i++) {
-		char c = map_buf[i];
-
+    for (i = 0; i < MAP_BUF_LEN; i++) {
+        char c = map_buf[i];
+        
         if (i == (MAP_BUF_LEN / 2)) {
             sleep(3); /* Avoid flooding. */
         }
 
-		if (c == '\n' || i == 0) {
-			plugin->send_message(plugin->irc, response_line);
+        if (c == '\n' || i == 0) {
+            if (is_empty_line) {
+                continue;
+            }
+            is_empty_line = 1;
+            plugin->send_message(plugin->irc, response_line);
             usleep(500*1000); /* Avoid flooding. */
-			sprintf(response_line, "PRIVMSG %s :", plugin->irc->from);
-		} else {
-			char append[2];
+            sprintf(response_line, "PRIVMSG %s :", plugin->irc->from);
+        } else {
+            char append[2];
+            if (map_buf[i] != ' ') is_empty_line = 0;
 
-			sprintf(append, "%c", map_buf[i]);
-			strcat(response_line, append);
-		}
-	}
+            sprintf(append, "%c", map_buf[i]);
+            strcat(response_line, append);
+        }
+    }
 }
 
 
@@ -155,6 +164,7 @@ static struct gps_s * parse_json(char * json_payload)
     json_value * root, * node;
 
     gps = malloc(sizeof (struct gps_s));
+    memset(gps, 0, sizeof(*gps));
 
     if (!(root = json_parse(json_payload))) {
         goto e_fail;
@@ -174,10 +184,10 @@ static struct gps_s * parse_json(char * json_payload)
         goto e_fail;
     }
     gps->lat = node->u.dbl;
-    
+
     json_value_free(root);
     return gps;
-    
+
 e_fail:
     free(gps);
     return NULL;
@@ -217,7 +227,7 @@ void run(void)
     const char * city_name = NULL;
     char * json_payload = NULL;
     struct gps_s * gps = NULL;
-	char * map_buf = NULL;
+    char * map_buf = NULL;
 
     city_name = get_city_name(plugin->irc->message.trailing);
     if (city_name == NULL) {
@@ -227,17 +237,25 @@ void run(void)
     }
 
     json_payload = get_json_gps_data(city_name);
-    
+
     gps = parse_json(json_payload);
-    
+
     if (gps == NULL) {
         sprintf(response, "PRIVMSG %s :No data could have been read!", plugin->irc->from);
         plugin->send_message(plugin->irc, response);
         goto e_cleanup;
     }
-   
-	map_buf = get_map(gps->lon, gps->lat);
-	send_map(map_buf);
+
+    map_buf = get_map(gps->lon, gps->lat);
+    send_map(map_buf);
+
+    sprintf(response, "PRIVMSG %s :%s, Lat: %.2f, Lon: %.2f", 
+        plugin->irc->from,
+        strcmp(gps->name, "") ? gps->name : city_name, // weather service can return empty name
+        gps->lat,
+        gps->lon
+    );
+    plugin->send_message(plugin->irc, response);
 
 e_cleanup:
     gps_free(gps);
@@ -260,5 +278,4 @@ struct plugin_t * init(void)
 
     return plugin;
 }
-
 
