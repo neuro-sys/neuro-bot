@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
+#include <time.h>
 
 #define WEATHER_API "http://api.openweathermap.org/data/2.5/weather?q="
 
@@ -20,6 +21,8 @@ struct gps_s {
     double lon, lat;
     char * name;
 };
+
+static time_t last_clock;
 
 static void gps_free(struct gps_s * gps)
 {
@@ -230,6 +233,15 @@ void run(void)
     char * json_payload = NULL;
     struct gps_s * gps = NULL;
     char * map_buf = NULL;
+
+    double diff_sec = difftime(time(NULL), last_clock);
+
+    if (diff_sec < 15) {
+        sprintf(response, "PRIVMSG %s :Wait %d seconds more...", plugin->irc->from, (int) (15 - diff_sec));
+        plugin->send_message(plugin->irc, response);
+        return;
+    }
+    last_clock = time(NULL);
 
     city_name = get_city_name(plugin->irc->message.trailing);
     if (city_name == NULL) {
