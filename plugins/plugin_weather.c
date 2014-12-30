@@ -26,7 +26,6 @@ static void weather_free(struct weather_s * weather)
     free(weather);
 }
 
-
 static struct weather_s * parse_json(char * json_payload)
 {
     struct weather_s * weather;
@@ -35,47 +34,50 @@ static struct weather_s * parse_json(char * json_payload)
     weather = malloc(sizeof (struct weather_s));
 
     if (!(root = json_parse(json_payload))) {
-        return NULL;
+        goto e_fail;
     }
 
     if (!(node = n_json_find_object(root, "main"))) {
-        return NULL;
+        goto e_fail;
     }
     weather->main = strdup(node->u.string.ptr);
 
     if (!(node = n_json_find_object(root, "name"))) {
-        return NULL;
+        goto e_fail;
     }
     weather->name = strdup(node->u.string.ptr);
 
     if (!(node = n_json_find_object(root, "temp"))) {
-        return NULL;
+        goto e_fail;
     }
     weather->temp = node->u.dbl;
 
     if (!(node = n_json_find_object(root, "speed"))) {
-        return NULL;
+        goto e_fail;
     }
     weather->wind_speed= node->u.dbl;
 
     if (!(node = n_json_find_object(root, "all"))) {
-        return NULL;
+        goto e_fail;
     }
     weather->clouds = node->u.integer;
 
     if (!(node = n_json_find_object(root, "humidity"))) {
-        return NULL;
+        goto e_fail;
     }
     weather->humidity = node->u.integer;
 
     if (!(node = n_json_find_object(root, "pressure"))) {
-        return NULL;
+        goto e_fail;
     }
     weather->pressure = node->u.dbl;
 
     json_value_free(root);
-
     return weather;
+    
+e_fail:
+    free(weather);
+    return NULL;
 }
 
 static char * get_json_weather_data(const char * city_name)
@@ -109,32 +111,46 @@ static const char * get_city_name(char * trailing)
 void run(void)
 {
     char response[512];
-    const char * city_name;
-    char * json_payload;
-    struct weather_s * weather;
+    const char * city_name = NULL;
+    char * json_payload = NULL;
+    struct weather_s * weather = NULL;
 
     city_name = get_city_name(plugin->irc->message.trailing);
     if (city_name == NULL) {
         sprintf(response, "PRIVMSG %s :Which city?", plugin->irc->from);
         plugin->send_message(plugin->irc, response);
-        return;
+        goto e_cleanup;
     }
 
     json_payload = get_json_weather_data(city_name);
-
+    
     weather = parse_json(json_payload);
-    free(json_payload);
+    
     if (weather == NULL) {
-        sprintf(response, "PRIVMSG %s :No data could have been read.!", plugin->irc->from);
+        sprintf(response, "PRIVMSG %s :No data could have been read!", plugin->irc->from);
         plugin->send_message(plugin->irc, response);
-        return;
+        goto e_cleanup;
     }
    
-    snprintf(response, 512, "PRIVMSG %s :%s (%s), Temp: %.2f \u00b0C, Wind speed: %.2f km/h, Cloud ratio: %d%%, Humidity: %d%%, Pressure: %.2f hPa", 
-        plugin->irc->from, weather->name, weather->main, weather->temp - 273.15, MPS_TO_KMH(weather->wind_speed), weather->clouds, weather->humidity, weather->pressure);
+    snprintf(response, 512, 
+        "PRIVMSG %s :%s (%s), Temp: %.2f \u00b0C, Wind speed: %.2f km/h, Cloud ratio: %d%%, Humidity: %d%%, Pressure: %.2f hPa", 
+        plugin->irc->from, 
+        weather->name, 
+        weather->main, 
+        weather->temp - 273.15, 
+        MPS_TO_KMH(weather->wind_speed), 
+        weather->clouds, 
+        weather->humidity, 
+        weather->pressure
+    );
     plugin->send_message(plugin->irc, response);
 
+e_cleanup:
     weather_free(weather);
+    free(city_name);
+    free(json_payload);
+    
+    return;
 }
 
 struct plugin_t * init(void)
