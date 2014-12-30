@@ -9,7 +9,7 @@
 #include <errno.h>
 #include <sys/types.h>
 
-#if defined(unix)
+#if defined(unix) || defined(__MACH__)
     #include <sys/socket.h>
     #include <netdb.h>
     #include <unistd.h>
