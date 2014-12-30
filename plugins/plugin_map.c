@@ -201,7 +201,10 @@ static char * get_json_gps_data(const char * city_name)
 
     snprintf(url, 512, "%s%s", WEATHER_API, city_name);
 
-    get = curl_perform(url, NULL); 
+    get = curl_perform(url, NULL);
+    if (!get->body)
+	return NULL;
+
     ret = strdup(get->body);
 
     free(get->header);
@@ -237,14 +240,23 @@ void run(void)
     }
 
     json_payload = get_json_gps_data(city_name);
-
-    gps = parse_json(json_payload);
-
-    if (gps == NULL) {
+    if (json_payload == NULL) {
         sprintf(response, "PRIVMSG %s :No data could have been read!", plugin->irc->from);
         plugin->send_message(plugin->irc, response);
         goto e_cleanup;
     }
+
+    gps = parse_json(json_payload);
+
+    if (gps == NULL) {
+        sprintf(response, "PRIVMSG %s :Could not parse the response!", plugin->irc->from);
+        plugin->send_message(plugin->irc, response);
+        goto e_cleanup;
+    }
+
+
+    sprintf(response, "PRIVMSG %s :[Incoming transmission...]", plugin->irc->from);
+    plugin->send_message(plugin->irc, response);    
 
     map_buf = get_map(gps->lon, gps->lat);
     send_map(map_buf);
@@ -259,8 +271,10 @@ void run(void)
 
 e_cleanup:
     gps_free(gps);
-    free(json_payload);
-    free(map_buf);
+    if (json_payload)
+        free(json_payload);
+    if (map_buf)
+        free(map_buf);
 
     return;
 }

@@ -147,7 +147,6 @@ void run(void)
 
 e_cleanup:
     weather_free(weather);
-    free(city_name);
     free(json_payload);
     
     return;
