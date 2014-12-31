@@ -7,6 +7,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <unistd.h>
 
 /* Send misc user commands. */
 void irc_set_nick(struct irc_t * irc, char * nickname, char * buffer)
@@ -154,6 +155,7 @@ static void process_protocol_commands (struct irc_t * irc)
             char message[MAX_IRC_MSG];
 
             fprintf(stderr, "Auth to nickserv request received.\n");
+            sleep(3);
             if (strcmp(irc->session->password, "")) {
                 fprintf(stderr, "Authing to nickserv\n");
                 irc_identify_to_auth(irc, irc->session->password, message);
