@@ -20,6 +20,7 @@ struct plugin_t * plugin;
 struct gps_s {
     double lon, lat;
     char * name;
+    int http_status;
 };
 
 static time_t last_clock;
@@ -29,7 +30,9 @@ static void gps_free(struct gps_s * gps)
     if (gps == NULL)
         return;
 
-    free(gps->name);
+    if (gps->name)
+        free(gps->name);
+
     free(gps);
 }
 
@@ -136,7 +139,7 @@ static void send_map(char * map_buf)
 
     for (i = 0; i < MAP_BUF_LEN; i++) {
         char c = map_buf[i];
-        
+
         if (i == (MAP_BUF_LEN / 2)) {
             sleep(3); /* Avoid flooding. */
         }
@@ -172,6 +175,13 @@ static struct gps_s * parse_json(char * json_payload)
         goto e_fail;
     }
 
+    if (!(node = n_json_find_object(root, "cod"))) {
+        goto e_fail;
+    }
+    if ((gps->http_status = node->u.integer) != 200) {
+        return gps;
+    }
+
     if (!(node = n_json_find_object(root, "name"))) {
         goto e_fail;
     }
@@ -205,7 +215,7 @@ static char * get_json_gps_data(const char * city_name)
 
     get = curl_perform(url, NULL);
     if (!get->body)
-	return NULL;
+        return NULL;
 
     ret = strdup(get->body);
 
@@ -265,6 +275,11 @@ void run(void)
         goto e_cleanup;
     }
 
+    if (gps->http_status != 200) {
+        sprintf(response, "PRIVMSG %s :Not found.", plugin->irc->from);
+        plugin->send_message(plugin->irc, response);
+        goto e_cleanup;
+    }
 
     sprintf(response, "PRIVMSG %s :[Incoming transmission...]", plugin->irc->from);
     plugin->send_message(plugin->irc, response);    
