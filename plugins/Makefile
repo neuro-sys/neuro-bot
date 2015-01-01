@@ -5,7 +5,8 @@ ifneq ($(OS), Windows_NT)
 endif
 
 all: plugin_python_manager.so plugin_git.so plugin_title.so plugin_wiki.so plugin_youtube.so \
-	plugin_test.so plugin_mesai.so plugin_youtube_search.so plugin_weather.so plugin_map.so
+	plugin_test.so plugin_mesai.so plugin_youtube_search.so plugin_weather.so plugin_map.so \
+    plugin_gris.so
 
 plugin_python_manager.so: plugin_python_manager.c
 	$(CC) plugin_python_manager.c $(CFLAGS) $(shell pkg-config python-2.7 --cflags --libs) $(shell python-config --cflags --libs) --shared -o$@ -g -O0
@@ -15,6 +16,9 @@ plugin_git.so: plugin_git.c
 
 plugin_title.so: plugin_title.c
 	$(CC) plugin_title.c utils/curl_wrapper.c $(CFLAGS) `pkg-config libcurl libxml-2.0 --cflags --libs` --shared -o$@
+
+plugin_gris.so: plugin_gris.c
+	$(CC) plugin_gris.c $(CFLAGS) ../socket.c --shared -o$@
 
 plugin_wiki.so: plugin_wiki.c
 	$(CC) plugin_wiki.c utils/curl_wrapper.c utils/json.c $(CFLAGS) `pkg-config libcurl --cflags --libs` --shared -o$@

@@ -10,7 +10,7 @@ struct http_req {
     int body_len;
 };
 
-extern struct http_req * curl_perform(char * url, struct curl_slist * slist);
+extern struct http_req * curl_perform(const char * url, struct curl_slist * slist);
 
 #endif
 

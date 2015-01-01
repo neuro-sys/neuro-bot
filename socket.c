@@ -85,6 +85,11 @@ int getchar_fd(int sockfd)
     return (--n >= 0) ? (unsigned char) *bufp++ : EOF;
 }
 
+int socket_close(struct socket_t * socket)
+{
+    return close(socket->sockfd);
+}
+
 int socket_connect(struct socket_t * socket)
 {
     int sockfd;

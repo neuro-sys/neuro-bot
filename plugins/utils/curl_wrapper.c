@@ -37,7 +37,7 @@ static size_t body_callback(void * contents, size_t size, size_t nmemb, void * u
     return size * nmemb;
 }
 
-struct http_req * curl_perform(char * url, struct curl_slist * slist)
+struct http_req * curl_perform(const char * url, struct curl_slist * slist)
 {
     CURL * curl;
     struct http_req * http;

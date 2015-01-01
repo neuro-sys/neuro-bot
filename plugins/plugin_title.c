@@ -79,6 +79,7 @@ static char * make_tinyurl(char * url)
 {
     struct http_req * http = NULL;
     char tinyurl_url[2048];
+    char * response = NULL;
 
     tinyurl_url[0] = 0;
 
@@ -87,7 +88,16 @@ static char * make_tinyurl(char * url)
 
     http = curl_perform(tinyurl_url, NULL);
 
-    return http->body;
+    if (http == NULL || http->body == NULL)
+        return NULL;
+
+    response = strdup(http->body);
+
+    free(http->body);
+    free(http->header);
+    free(http);
+
+    return response;
 }
 
 struct plugin_t * plugin;
