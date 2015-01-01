@@ -119,13 +119,15 @@ int socket_read_line(struct socket_t * socket, char * buf)
 
 void socket_send_message(struct socket_t * socket, char * message)
 {
+    char * payload;
     int len;
 
     /* Make sure the line ends with cr-lf */
     len = strlen(message);
-    if (message[len-2] != '\r' && message[len-1] != '\n')
-        strcat(message, "\r\n");
+    payload = malloc(len+2);
+    snprintf(payload, len+2, "%s\r\n", message);
 
-    len = send(socket->sockfd, message, strlen(message), 0);
+    len = send(socket->sockfd, payload, strlen(payload), 0);
+    free(payload);
 }
 
