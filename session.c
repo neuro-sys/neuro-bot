@@ -44,8 +44,7 @@ int session_run(struct session_t * session)
     {
         char line[MAX_IRC_MSG];
 
-        if (socket_read_line(&irc.session->socket, line) < 0) /* blocking io */
-            return -1;
+        socket_read_line(&irc.session->socket, line); /* blocking io */
 
         irc_process_line(&irc, line);
     }
