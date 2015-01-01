@@ -49,7 +49,7 @@ static char * extract_url(char * trailing)
     len = strcspn(begin, " \r\n");
 
     strncpy(url, begin, len);
-   
+    url[len] = 0; 
     return strdup(url); 
 }
 
