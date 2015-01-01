@@ -162,12 +162,12 @@ static void process_protocol_commands (struct irc_t * irc)
             }
         }
     } else if (strstr(irc->message.command, "JOIN")) {
-        if (!strcmp(irc->message.prefix.nickname.nickname, irc->session->nickname))
-            process_command_353_join(irc);
+        //if (!strcmp(irc->message.prefix.nickname.nickname, irc->session->nickname))
+            //process_command_353_join(irc);
 
     } else if (strstr(irc->message.command, "PART")) {
-        if (!strcmp(irc->message.prefix.nickname.nickname, irc->session->nickname))
-            process_command_part(irc);
+        //if (!strcmp(irc->message.prefix.nickname.nickname, irc->session->nickname))
+            //process_command_part(irc);
     }
 }
 
