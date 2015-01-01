@@ -35,13 +35,31 @@ static char * gris_search(char * url)
     return strdup(gris_response);; 
 }
 
+static char * extract_url(char * trailing)
+{
+    char * begin = NULL;
+    char url[512];
+    size_t len;
+
+    begin = strstr(trailing, "http");
+    if (begin == NULL) {
+        return NULL;
+    }
+
+    len = strcspn(begin, " \r\n");
+
+    strncpy(url, begin, len);
+   
+    return strdup(url); 
+}
+
 void run(void)
 {
     char response[512];
     char * url = NULL;
     char * image_description = NULL;
 
-    url = plugin->irc->message.trailing;
+    url = extract_url(plugin->irc->message.trailing);
 
     if (url == NULL) {
         sprintf(response, "PRIVMSG %s :URL can't be read.", plugin->irc->from);
@@ -51,6 +69,7 @@ void run(void)
 
     image_description = gris_search(url);
     if (image_description == NULL) {
+        free(url);
         return;
     }
 
@@ -58,6 +77,7 @@ void run(void)
     plugin->send_message(plugin->irc, response);
     
     free(image_description);
+    free(url);
 }
 
 struct plugin_t * init(void)
