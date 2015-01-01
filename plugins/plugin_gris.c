@@ -13,7 +13,7 @@ char * keywords[10] = { "http", "https" };
 
 struct plugin_t * plugin;
 
-static char * gris_search(char * url)
+static void gris_search(char * url, char * dest, size_t max)
 {
     char gris_response[512];
     struct socket_t socket;
@@ -29,13 +29,12 @@ static char * gris_search(char * url)
     socket_close(&socket);
 
     if (strlen(gris_response) == 0) {
-        return NULL;
+        return;
     }
-    
-    return strdup(gris_response);; 
+    snprintf(dest, max, "%s", gris_response);
 }
 
-static char * extract_url(char * trailing)
+static void extract_url(char * trailing, char * dest, size_t max)
 {
     char * begin = NULL;
     char url[512];
@@ -43,41 +42,42 @@ static char * extract_url(char * trailing)
 
     begin = strstr(trailing, "http");
     if (begin == NULL) {
-        return NULL;
+        return;
     }
 
     len = strcspn(begin, " \r\n");
 
     strncpy(url, begin, len);
     url[len] = 0; 
-    return strdup(url); 
+
+    snprintf(dest, max, "%s", url);
 }
 
 void run(void)
 {
     char response[512];
-    char * url = NULL;
-    char * image_description = NULL;
+    char url[512];
+    char image_description[512];
 
-    url = extract_url(plugin->irc->message.trailing);
+    image_description[0] = 0;
+    url[0] = 0;
+    response[0] = 0; 
 
-    if (url == NULL) {
+    extract_url(plugin->irc->message.trailing, url, 512);
+
+    if (url[0] == 0) {
         sprintf(response, "PRIVMSG %s :URL can't be read.", plugin->irc->from);
         plugin->send_message(plugin->irc, response);
         return;
     }
 
-    image_description = gris_search(url);
-    if (image_description == NULL) {
-        free(url);
+    gris_search(url, image_description, 512);
+    if (image_description[0] == 0) {
         return;
     }
 
     sprintf(response, "PRIVMSG %s :(Image is likely: %s)", plugin->irc->from, image_description);
     plugin->send_message(plugin->irc, response);
-    
-    free(image_description);
-    free(url);
 }
 
 struct plugin_t * init(void)
