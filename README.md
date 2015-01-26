@@ -1,7 +1,7 @@
 ## neurobot
 neurobot is an IRC (Internet Relay Chat) bot written in C extensible with plugins written in C, Python and Java.
 
-##### Dependencies:
+###### Dependencies:
 The bot core needs POSIX threads to run.
 
 But the contained plugins may have other dependencies.
@@ -12,7 +12,7 @@ But the contained plugins may have other dependencies.
 * libxml2
 * libcurl
 
-##### Plugins:
+###### Plugins:
 
 * plugins/plugin_git.c
   * Tracks github repository commits history. 
