@@ -3,16 +3,14 @@ neurobot is an IRC (Internet Relay Chat) bot written in C extensible with plugin
 
 ##### Dependencies:
 The bot core needs POSIX threads to run.
-```bash
-[neuro@localhost neuro-bot]$ ldd ./neurobot
-        linux-vdso.so.1 (0x00007fffb7bfd000)
-        libdl.so.2 => /usr/lib/libdl.so.2 (0x00007ff35b97d000)
-        libpthread.so.0 => /usr/lib/libpthread.so.0 (0x00007ff35b761000)
-        libc.so.6 => /usr/lib/libc.so.6 (0x00007ff35b3be000)
-        /lib64/ld-linux-x86-64.so.2 (0x00007ff35bb81000)
-```
 
-Plugins may have other dependencies. The present plugins require the following libraries:
+But the contained plugins may have other dependencies.
+
+* python2
+  * BeautifulSoup
+  * urlgrabber
+* libxml2
+* libcurl
 
 ##### Plugins:
 
