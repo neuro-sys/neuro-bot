@@ -8,7 +8,7 @@
 #include <stdio.h>
 #include <string.h>
 
-char * keywords[10] = { "http", "https" };
+char * keywords[10] = { "http", "https", "spotify:track" };
 
 #ifdef _MSC_VER
 #define COMPARE(a, b) (!stricmp((a), (b)))
@@ -102,6 +102,21 @@ static char * make_tinyurl(char * url)
 
 struct plugin_t * plugin;
 
+int adapt_spotify_hotlink(char * trailing)
+{
+    char spotify_id[50];
+
+
+    if (strstr(trailing, "spotify:track") == NULL) {
+        return 0;
+    }
+
+    sscanf(trailing, "spotify:track:%s", spotify_id);
+    snprintf(trailing, 512, "http://play.spotify.com/track/%s", spotify_id);
+
+    return 1;
+}
+
 void run(void)
 {
     struct http_req * http;
@@ -111,6 +126,7 @@ void run(void)
     struct curl_slist * slist = NULL;
     char request_header_str[256];
     char trailing_str[510];
+    int is_spotify_hotlink = 0;
 
     title_buffer[0] = 0;
     title_len = 0;
@@ -119,6 +135,8 @@ void run(void)
     reply_msg[0] = 0;
 
     strcpy(trailing_str, plugin->irc->message.trailing);
+
+    is_spotify_hotlink = adapt_spotify_hotlink(trailing_str);
 
     if (strstr(trailing_str, "youtube.com") != NULL) {
         return;
@@ -145,6 +163,14 @@ void run(void)
     htmlParseChunk(ctx_ptr, "", 0, 1);
     
     htmlFreeParserCtxt(ctx_ptr);
+
+    if (is_spotify_hotlink) {
+        size_t span_first_dash = strcspn(title_buffer,  "-");
+        char temp[512];
+
+        snprintf(temp, 512, title_buffer + span_first_dash + 2);
+        snprintf(title_buffer, 512, temp);
+    }
 
     if (title_len > 1)
         sprintf(reply_msg, "Title: %s", title_buffer);

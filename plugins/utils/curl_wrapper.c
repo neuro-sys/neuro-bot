@@ -50,7 +50,7 @@ struct http_req * curl_perform(const char * url, struct curl_slist * slist)
     curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1);
     //curl_easy_setopt(curl, CURLOPT_VERBOSE, 1);
     curl_easy_setopt(curl, CURLOPT_POSTREDIR, CURL_REDIR_POST_ALL );
-    curl_easy_setopt(curl, CURLOPT_USERAGENT, "neuro_irc_bot");
+    curl_easy_setopt(curl, CURLOPT_USERAGENT, "Mozilla/5.0 (Windows NT 6.3; rv:36.0) Gecko/20100101 Firefox/36.0");
     curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, body_callback);
     curl_easy_setopt(curl, CURLOPT_HEADERFUNCTION, header_callback);
     curl_easy_setopt(curl, CURLOPT_WRITEHEADER, http);

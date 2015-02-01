@@ -21,8 +21,15 @@ struct weather_s {
 
 static void weather_free(struct weather_s * weather)
 {
-    free(weather->main);
-    free(weather->name);
+    if (weather == NULL)
+        return ;
+
+    if (weather->main) 
+        free(weather->main);
+
+    if (weather->name)
+        free(weather->name);
+
     free(weather);
 }
 
