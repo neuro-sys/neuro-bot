@@ -3,8 +3,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <ctype.h>
+#include <stdlib.h>
 #include <time.h>
+#include <ctype.h>
 
 struct plugin_t * plugin;
 
@@ -20,22 +21,19 @@ static char * get_param(char * trailing)
 
 void run(void)
 {
+#define MAX_HOI_NUM 150 // 3 * X <=~ 500
     char response[512], request[512], buffer[512];
-    int n;
+    long n = MAX_HOI_NUM;
     char *level = NULL;
 
     response[0] = request[0] = buffer[0] = 0;
 
     level = get_param(plugin->irc->message.trailing);
-
-    if (level == NULL) { // second param for the level of happiness in a scale of 10 to 500
-        level = "300";
+    if (level != NULL) { 
+        n = strtol(level, NULL, 10);
+        if (n <= 0 || n > MAX_HOI_NUM) n = MAX_HOI_NUM;
     }
 
-    srand(time(NULL));
-
-    n = rand() % atoi(level);
-    if (n >= 300) n = 300; 
 
     while (n--) {
         int i;
