@@ -141,14 +141,14 @@ void plugin_load_file(char * file)
         return;
     }
 
-    /* See warning message for commentary */
+    /* See warning message for commentary 
     if (!plugin->is_manager && (plugin->is_command + plugin->is_grep + plugin->is_looper) > 1) {
         debug("The plugin \"%s\" is not valid."
                     "A plugin can only be any one of the types `command', `grep' and `looper'; or a manager.\n",
                     file);
-        /* TODO: Clean up. */
         return;
     }
+    */
 
     /* Attach callbacks to be used by plugin. */
     plugin->send_message = send_message;

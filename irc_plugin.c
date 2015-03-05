@@ -35,7 +35,9 @@ void irc_plugin_handle_command(struct irc_t * irc)
         plugin->irc = irc;
 #endif
         debug("Handling plugin command: %s\n", plugin->name);
+        plugin->is_command |= 1 << 2;
         plugin->run();
+        plugin->is_command &= ~(1 << 2);
 
 #ifdef TEST_IRC_PLUGIN
         debug_ex("%s\n", irc->response);
@@ -62,7 +64,9 @@ void irc_plugin_handle_grep(struct irc_t * irc)
             char * keyword = *keywords++;
 
             if (strstr(irc->message.trailing, keyword)) {
+                plugin->is_grep |= 1 << 2;
                 plugin->run();
+                plugin->is_grep &= ~(1 << 2);
                 break;
             }
         }
