@@ -46,4 +46,4 @@ tags
 *.so
 *.db
 neurobot
-
+*.log

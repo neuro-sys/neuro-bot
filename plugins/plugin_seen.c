@@ -5,7 +5,7 @@
 #include <string.h>
 #include <sqlite3.h>
 
-char * keywords[100] = {"a","b","c","d","e","f","g","h","i","j","k","l","m","n","o","p","q","r","s","t","u","v","w","x","y","z","A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z","0","1","2","3","4","5","6","7","8","9"};
+char * keywords[] = { "*" };
 
 struct plugin_t * plugin;
 
@@ -114,7 +114,7 @@ void handle_command(void)
 
     sprintf(
         sql,
-        "select * from seen where name = '%s';",
+        "select a.name, a.lastmsg, datetime(a.lasttime, '+2 hours') as lasttime from seen as a where name = '%s';",
         who
     );
     sqliteStatus = sqlite3_exec(seendb, sql, db_read_seen, &seen, &zErrMsg);

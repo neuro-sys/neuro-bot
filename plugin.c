@@ -137,15 +137,6 @@ void plugin_load_file(char * file)
         return;
     }
 
-    /* See warning message for commentary 
-    if (!plugin->is_manager && (plugin->is_command + plugin->is_grep + plugin->is_looper) > 1) {
-        debug("The plugin \"%s\" is not valid."
-                    "A plugin can only be any one of the types `command', `grep' and `looper'; or a manager.\n",
-                    file);
-        return;
-    }
-    */
-
     /* Attach callbacks to be used by plugin. */
     plugin->send_message = send_message;
 
@@ -157,8 +148,7 @@ void plugin_load_file(char * file)
             plugin->keywords = keywords;
         } else { 
             debug("The plugin \"%s\" is of type `grep', but has no "
-                        "exported grep keywords symbols found. Discarding.\n", file);
-            /* TODO: Clean up. */
+                  "exported grep keywords symbols found. Discarding.\n", file);
             return;
         }
     }

@@ -112,41 +112,48 @@ void irc_parser(struct message_t * message, const char * line)
 /**
  * Pretty print a struct message_t 
  */
+
+static FILE * server_output_f;
 void print_message_t(struct message_t * message)
 {
+    if (server_output_f == NULL) {
+        server_output_f = fopen("server_output.log", "w+");
+    }
+
     if (message->prefix.servername[0])
-        fprintf(stderr, RED "Serv" CLEAR ": (" CYAN "%s" CLEAR " ) ", message->prefix.servername);
+        fprintf(server_output_f, RED "Serv" CLEAR ": (" CYAN "%s" CLEAR " ) ", message->prefix.servername);
     else if (message->prefix.nickname.nickname[0]) {
-        fprintf(stderr, GREEN "Nick" CLEAR ": (" GREEN "%s" CLEAR, message->prefix.nickname.nickname);
+        fprintf(server_output_f, GREEN "Nick" CLEAR ": (" GREEN "%s" CLEAR, message->prefix.nickname.nickname);
         if (message->prefix.nickname.user[0])
-            fprintf(stderr, YELLOW "!%s" CLEAR, message->prefix.nickname.user);
+            fprintf(server_output_f, YELLOW "!%s" CLEAR, message->prefix.nickname.user);
         if (message->prefix.nickname.host[0])
-            fprintf(stderr, YELLOW "@%s " CLEAR, message->prefix.nickname.host);
-        fprintf(stderr, ") ");
+            fprintf(server_output_f, YELLOW "@%s " CLEAR, message->prefix.nickname.host);
+        fprintf(server_output_f, ") ");
     }
 
     if (message->command[0])
-        fprintf(stderr, "(" CYAN "%s" CLEAR ") ", message->command);
+        fprintf(server_output_f, "(" CYAN "%s" CLEAR ") ", message->command);
 
     if (message->params[0][0]) {
         int i = 0;
 
-        fprintf(stderr, "{");
+        fprintf(server_output_f, "{");
         while (message->params[i][0]) {
-            fprintf(stderr, MAGENTA "\"%s\"" CLEAR, message->params[i++]);
+            fprintf(server_output_f, MAGENTA "\"%s\"" CLEAR, message->params[i++]);
             if (message->params[i][0])
-                fprintf(stderr, ", ");
+                fprintf(server_output_f, ", ");
         }
-        fprintf(stderr, "}");
+        fprintf(server_output_f, "}");
     }
     if (message->trailing[0])
-        fprintf(stderr, " => %s", message->trailing);
+        fprintf(server_output_f, " => %s", message->trailing);
 
-    fprintf(stderr, "\n");
+    fprintf(server_output_f, "\n");
+    fflush(server_output_f);
 }
 
 #ifdef TEST_IRC_PARSER
-int main(int argc, char *argv)
+int main(int argc, char *argv[])
 {
     struct message_t message;
     int i;

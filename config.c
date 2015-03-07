@@ -25,7 +25,7 @@ void config_load(struct session_t * session)
     }
     while (fgets(buf, 1024, file))
     {
-        if (buf == NULL || buf[0] == '#')
+        if (buf[0] == '#')
             continue;
 
         token = strtok(buf, "=");
@@ -93,7 +93,7 @@ void config_load(struct session_t * session)
                 sprintf(print_buffer + strlen(print_buffer), "%s ", *channels_v);
             }
             sprintf(print_buffer + strlen(print_buffer), "\n");
-            debug(print_buffer);
+            debug("%s", print_buffer);
         }
     }
     fclose(file);

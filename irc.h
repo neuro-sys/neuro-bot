@@ -15,9 +15,9 @@ struct irc_t {
 
 extern void irc_process_line(struct irc_t * irc, const char * line);
 
-extern void irc_set_nick(struct irc_t * irc, char * nickname, char * buffer);
-extern void irc_set_user(struct irc_t * irc, char * user, char * host, char * buffer);
-extern void irc_identify_to_auth(struct irc_t * irc, char * password, char * buffer);
-extern void irc_join_channel(struct irc_t * irc, char * channel, char * buffer);
+extern void irc_set_nick(struct irc_t * irc, char * nickname);
+extern void irc_set_user(struct irc_t * irc, char * user, char * host);
+extern void irc_identify_to_auth(struct irc_t * irc, char * password);
+extern void irc_join_channel(struct irc_t * irc, char * channel);
 
 #endif

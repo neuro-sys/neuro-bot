@@ -62,17 +62,14 @@ void irc_plugin_handle_command(struct irc_t * irc)
     for (iterator = plugin_commands_v; *iterator != NULL; iterator++) {
         struct plugin_t * plugin = *iterator;
 
-#ifdef TEST_IRC_PLUGIN
-        plugin->irc = irc;
-#endif
         debug("Handling plugin command: %s\n", plugin->name);
+
+#ifndef TEST_IRC_PLUGIN
         BIT_ON(plugin->is_command, 2);
         plugin->run();
         BIT_OFF(plugin->is_command, 2);
-
-#ifdef TEST_IRC_PLUGIN
-        debug_ex("%s\n", irc->response);
 #endif
+
     }
 
     free(plugin_commands_v);
@@ -97,7 +94,9 @@ void irc_plugin_handle_grep(struct irc_t * irc)
         for (keywords_v = plugin->keywords; *keywords_v != NULL; keywords_v++) {
             char * keyword = *keywords_v;
 
-            if (strstr(irc->message.trailing, keyword)) {
+            if (strstr(irc->message.trailing, keyword) || strcmp("*", keyword) == 0) {
+                debug("Handling grep command: %s\n", plugin->name);
+
                 BIT_ON(plugin->is_grep, 2);
                 plugin->run();
                 BIT_OFF(plugin->is_grep, 2);
