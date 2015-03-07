@@ -39,7 +39,6 @@ void run(void)
     char hoi[] = "hohiohoih";
     char fmt[] = {'%', '.', '1', 's', '\0'};
     const size_t hoilen = strlen(hoi);
-    fprintf(stderr, "oktay -- n: %ld hoilen: %zu\n", n, hoilen);
     while (n-- && written < 450) {
         int i;
         int start = rand() % 5;
