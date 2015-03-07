@@ -7,13 +7,12 @@
 struct plugin_t {
     /* Attributes initialized by the plugin. */
     char * name;                  /* Plugin name, and the command name for command plugins. */
-    char ** keywords;             /* Used by grep plugins. */
+    char ** keywords;             /* Used if is_grep is 1. */
 
-    int is_looper;                /* Runs in their own thread, are not trigger. */
-    int is_command;               /* Triggered by users. */
-    int is_grep;                  /* Triggered by grepping all lines for (char **) keywords. */
+    int is_looper;                /* runs as a daemon in its own thread */
+    int is_command;               /* executed when trailing contains (*name) prefixed with `.' */
+    int is_grep;                  /* executed when trailing contains one of the (** keywords) */
     int is_manager;               /* Manager plugins manage their own repository of */
-                                  /* plugins. A manager plugin can load other plugins. */
 
     /* Handles provied to the plugin. Initialized by the bot. */
     void (*send_message)(struct irc_t *, char * message);   /* This is for the plugin to send message to server */

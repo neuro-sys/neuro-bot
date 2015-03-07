@@ -26,11 +26,13 @@ void command_help(struct irc_t * irc)
         sprintf(message + strlen(message), "%s", plugin->name);
 
         if (plugin->is_looper) {
-            sprintf(message + strlen(message), CYAN " (l)" CLEAR);
-        } else if (plugin->is_grep) {
-            sprintf(message + strlen(message), RED " (g)" CLEAR);
-        } else if (plugin->is_command) {
-            sprintf(message + strlen(message), YELLOW " (c)" CLEAR);
+            sprintf(message + strlen(message),  " (l)" );
+        } 
+        if (plugin->is_grep) {
+            sprintf(message + strlen(message),  " (g)" );
+        } 
+        if (plugin->is_command) {
+            sprintf(message + strlen(message),  " (c)" );
         }
 
     }
@@ -39,7 +41,7 @@ void command_help(struct irc_t * irc)
     socket_send_message(&irc->session->socket, message);
 
     message[0] = 0;
-    sprintf(message, "PRIVMSG %s :(" CYAN "l" CLEAR ") is " CYAN "looper" CLEAR ", (" RED "g" CLEAR ") is " RED "grep" CLEAR ", (" YELLOW "c" CLEAR ") is " YELLOW "command" CLEAR " type of plugins. you can run " YELLOW "command" CLEAR " plugins with prefix `.'", irc->from);
+    sprintf(message, "PRIVMSG %s :(l) is looper, (g) is grep, (c) is command type of plugins. you can run command plugins with prefix `.'", irc->from);
     socket_send_message(&irc->session->socket, message);
 }
 
@@ -64,9 +66,9 @@ void irc_plugin_handle_command(struct irc_t * irc)
         plugin->irc = irc;
 #endif
         debug("Handling plugin command: %s\n", plugin->name);
-        plugin->is_command |= 1 << 2;
+        BIT_ON(plugin->is_command, 2);
         plugin->run();
-        plugin->is_command &= ~(1 << 2);
+        BIT_OFF(plugin->is_command, 2);
 
 #ifdef TEST_IRC_PLUGIN
         debug_ex("%s\n", irc->response);
@@ -87,20 +89,18 @@ void irc_plugin_handle_grep(struct irc_t * irc)
 
     SLIST_FOREACH(iterator, &plugin_slist_head, plugin_slist) {
         struct plugin_t * plugin = iterator->plugin;
-        char ** keywords;
+        char ** keywords_v;
 
         if (!plugin->is_grep || plugin->is_manager)
             continue;
 
-        keywords = plugin->keywords;
-
-        while (*keywords) {
-            char * keyword = *keywords++;
+        for (keywords_v = plugin->keywords; *keywords_v != NULL; keywords_v++) {
+            char * keyword = *keywords_v;
 
             if (strstr(irc->message.trailing, keyword)) {
-                plugin->is_grep |= 1 << 2;
+                BIT_ON(plugin->is_grep, 2);
                 plugin->run();
-                plugin->is_grep &= ~(1 << 2);
+                BIT_OFF(plugin->is_grep, 2);
                 break;
             }
         }

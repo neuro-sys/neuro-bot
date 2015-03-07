@@ -11,6 +11,11 @@
 
 #define BG_RED  "\033[1;41m"
 
+#define BIT_ON(WORD, BIT)   WORD |= 1 << BIT
+#define BIT_OFF(WORD, BIT)  WORD &= ~(1 << BIT)
+
+#define IS_BIT_ON(WORD, BIT) WORD & (1 << BIT)
+
 /* #define USE_PYTHON_MODULES */
 #define debug(args...) \
     fprintf(stderr, MAGENTA "%25s" ":" "%4d" ":" "%25s" ":" CLEAR, __FILE__, __LINE__, __FUNCTION__); \

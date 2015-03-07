@@ -176,9 +176,9 @@ void handle_grep(void)
 void run(void)
 {
     escape_quotes(plugin->irc->message.trailing);
-    if (plugin->is_command & (1 << 2)) {
+    if (IS_BIT_ON(plugin->is_command, 2)) {
         handle_command();
-    } else if (plugin->is_grep & (1 << 2)) {
+    } else if (IS_BIT_ON(plugin->is_grep, 2)) {
         handle_grep();
     }
 }
