@@ -16,6 +16,16 @@ struct seen_t {
     char lasttime[MAX_SEEN_STRING_SIZE];
 };
 
+/* bad hack, just dump single quotes */
+static char * escape_quotes(char * str)
+{
+    for (; *str != 0; str++) {
+        if (*str == '\'') *str = '\"';
+    } 
+
+    return str;
+}
+
 /* @TODO: later to add: check if already opened, if not, re-open the database (might have got closed somehow) */
 static struct sqlite3 * get_db_connection(void)
 {
@@ -82,7 +92,25 @@ void handle_command(void)
     char response[512];
     const char * who;
 
+    memset(&seen, 0, sizeof(seen));
+
     who = get_command_parameter(plugin->irc->message.trailing);
+
+    if (who == NULL || strspn(who, " \t\r\n") > 0) {
+        snprintf(response, 512, "PRIVMSG %s :Seen who?",
+            plugin->irc->from
+        );
+        plugin->send_message(plugin->irc, response);
+        return;
+    }
+
+    if (strcmp(plugin->irc->session->nickname, who) == 0) {
+        snprintf(response, 512, "PRIVMSG %s :I'm here.",
+            plugin->irc->from
+        );
+        plugin->send_message(plugin->irc, response);
+        return;
+    }
 
     sprintf(
         sql,
@@ -119,7 +147,7 @@ void handle_grep(void)
 
     sprintf(
         sql,
-        "select * from seen where name = '%s';",
+        "SELECT * FROM SEEN WHERE NAME = '%s';",
         plugin->irc->message.prefix.nickname.nickname
     );
     sqliteStatus = sqlite3_exec(seendb,sql,db_does_name_exist, &exists , &zErrMsg);
@@ -127,7 +155,7 @@ void handle_grep(void)
     if (exists) {
         sprintf(
                 sql,
-                "update seen set lastmsg = '%s', lasttime = CURRENT_TIMESTAMP where name = '%s';",
+                "UPDATE SEEN SET LASTMSG = '%s', LASTTIME = CURRENT_TIMESTAMP WHERE NAME = '%s';",
                 plugin->irc->message.trailing,
                 plugin->irc->message.prefix.nickname.nickname
                );
@@ -135,7 +163,7 @@ void handle_grep(void)
     } else {
         sprintf(
                 sql,
-                "insert into seen(name,lastmsg,lasttime) values('%s','%s', CURRENT_TIMESTAMP);",
+                "INSERT INTO SEEN(NAME,LASTMSG,LASTTIME) VALUES('%s','%s', CURRENT_TIMESTAMP);",
                 plugin->irc->message.prefix.nickname.nickname,
                 plugin->irc->message.trailing
                );
@@ -147,6 +175,7 @@ void handle_grep(void)
 
 void run(void)
 {
+    escape_quotes(plugin->irc->message.trailing);
     if (plugin->is_command & (1 << 2)) {
         handle_command();
     } else if (plugin->is_grep & (1 << 2)) {
@@ -160,12 +189,11 @@ static void create_tables(void)
     char *zErrMsg = 0;
     int sqliteStatus;
     struct sqlite3 * seendb = get_db_connection();
-    char * create_script = "create table seen (name, lastmsg, lasttime);";
+    char * create_script = "CREATE TABLE IF NOT EXISTS SEEN (NAME, LASTMSG, LASTTIME);";
 
-    debug("Creating table.\n");
     sqliteStatus = sqlite3_exec(seendb,create_script,0,0,&zErrMsg);
     if (sqliteStatus != SQLITE_OK) {
-        debug("failed to create table\n");
+        abort();
     }
 
 
