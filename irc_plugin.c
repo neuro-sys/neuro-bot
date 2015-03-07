@@ -10,6 +10,39 @@
 #include <string.h>
 #include <stdlib.h>
 
+void command_help(struct irc_t * irc)
+{
+    struct plugin_slist_t * iterator;
+    char message[500];
+
+    sprintf(message, "PRIVMSG %s :Loaded plugins: ", irc->from);
+
+    SLIST_FOREACH(iterator, &plugin_slist_head, plugin_slist) {
+        struct plugin_t * plugin = iterator->plugin;
+   
+        if (SLIST_FIRST(&plugin_slist_head) != iterator) {
+            sprintf(message + strlen(message), ", ");
+        } 
+        sprintf(message + strlen(message), "%s", plugin->name);
+
+        if (plugin->is_looper) {
+            sprintf(message + strlen(message), CYAN " (l)" CLEAR);
+        } else if (plugin->is_grep) {
+            sprintf(message + strlen(message), RED " (g)" CLEAR);
+        } else if (plugin->is_command) {
+            sprintf(message + strlen(message), YELLOW " (c)" CLEAR);
+        }
+
+    }
+    sprintf(message + strlen(message), ".");
+
+    socket_send_message(&irc->session->socket, message);
+
+    message[0] = 0;
+    sprintf(message, "PRIVMSG %s :(" CYAN "l" CLEAR ") is " CYAN "looper" CLEAR ", (" RED "g" CLEAR ") is " RED "grep" CLEAR ", (" YELLOW "c" CLEAR ") is " YELLOW "command" CLEAR " type of plugins. you can run " YELLOW "command" CLEAR " plugins with prefix `.'", irc->from);
+    socket_send_message(&irc->session->socket, message);
+}
+
 void irc_plugin_handle_command(struct irc_t * irc)
 {
 #define MAX_COMMAND_NAME_SIZE 50
@@ -41,7 +74,12 @@ void irc_plugin_handle_command(struct irc_t * irc)
     }
 
     free(plugin_commands_v);
+
+    if (strcmp(command_name, "help") == 0) {
+        command_help(irc);
+    }
 }
+
 
 void irc_plugin_handle_grep(struct irc_t * irc)
 {
