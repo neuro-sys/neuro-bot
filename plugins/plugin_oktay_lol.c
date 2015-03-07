@@ -21,7 +21,7 @@ static char * get_param(char * trailing)
 
 void run(void)
 {
-#define MAX_HOI_NUM 150 // 3 * X <=~ 500
+#define MAX_HOI_NUM 50 // 3 * X <=~ 500
     char response[512], request[512], buffer[512];
     long n = MAX_HOI_NUM;
     char *level = NULL;
@@ -35,15 +35,26 @@ void run(void)
     }
 
 
-    while (n--) {
+    size_t written = 0;
+    char hoi[] = "hohiohoih";
+    char fmt[] = {'%', '.', '1', 's', '\0'};
+    const size_t hoilen = strlen(hoi);
+    fprintf(stderr, "oktay -- n: %ld hoilen: %zu\n", n, hoilen);
+    while (n-- && written < 450) {
         int i;
-        char hoi[] = "hoi";
+        int start = rand() % 5;
+        int end = hoilen-1;
 
-        for (i = 0; i < sizeof(hoi); i++) {
-            hoi[i] = rand() % 2 ? toupper(hoi[i]) : hoi[i];
+        for (i = start; i < end; i++) {
+            hoi[i] = rand() & 1 ? toupper(hoi[i]) : tolower(hoi[i]);
         }
 
-        snprintf(buffer + strlen(buffer), 512, "%s", hoi);
+        const size_t lenpos = 2;
+        size_t hl = end - start;
+        fmt[lenpos] = '0' + hl;
+
+        snprintf(buffer + written, hl, fmt, hoi);;
+        written += hl - 1;
     }
 
     sprintf(response, "PRIVMSG %s :%s", plugin->irc->from, buffer);
