@@ -3,10 +3,12 @@
 
 #include "plugins/plugin_client.h"
 
-struct plugin_list_t * plugin_list_head;
-struct plugin_list_t {
-    struct plugin_t * cur;
-    struct plugin_list_t * next;
+#include <sys/queue.h>
+
+SLIST_HEAD(plugin_slist_head, plugin_slist_t) plugin_slist_head; 
+struct plugin_slist_t {
+    struct plugin_t * plugin;
+    SLIST_ENTRY(plugin_slist_t) plugin_slist;
 };
 
 void plugin_insert(struct plugin_t * p);

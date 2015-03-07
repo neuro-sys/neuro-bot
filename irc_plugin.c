@@ -47,13 +47,11 @@ void irc_plugin_handle_command(struct irc_t * irc)
 
 void irc_plugin_handle_grep(struct irc_t * irc)
 {
-    struct plugin_list_t * it;
+    struct plugin_slist_t * iterator;
 
-    for (it = plugin_list_head; it != NULL; it = it->next) {
-        struct plugin_t * plugin;
+    SLIST_FOREACH(iterator, &plugin_slist_head, plugin_slist) {
+        struct plugin_t * plugin = iterator->plugin;
         char ** keywords;
-
-        plugin = it->cur;
 
         if (!plugin->is_grep || plugin->is_manager)
             continue;

@@ -14,11 +14,6 @@
 
 #define PLUGIN_DIR "plugins"
 
-struct plugin_list_t * plugin_list_head;
-
-/**
- * TODO: Use a dynamic structure to keep track of threads.
- */
 static pthread_t plugin_threads[10];
 
 static void *start_thread(void * pdata)
@@ -31,20 +26,23 @@ static void *start_thread(void * pdata)
 void plugin_start_loopers(struct irc_t * irc)
 {
 
-    struct plugin_list_t * it;
     int i, err;
+    struct plugin_slist_t * iterator;
 
-    for (i = 0, it = plugin_list_head; it != NULL; it = it->next, i++) {
-        if (!it->cur->is_looper || it->cur->is_manager)
+    i = 0;
+    SLIST_FOREACH(iterator, &plugin_slist_head, plugin_slist) {
+        struct plugin_t * plugin = iterator->plugin;
+
+        if (!plugin->is_looper || plugin->is_manager)
             continue;
 
-        if (i == 10) {
+        if (i++ == 10) {
             debug("Passed the maximum number of loopers limit.\n");
             break;
         }
 
-        debug("Looper plugin [%s] is started\n", it->cur->name);
-        if ((err = pthread_create(&plugin_threads[i], NULL, start_thread, it->cur)) != 0) {
+        debug("Looper plugin [%s] is started\n", plugin->name);
+        if ((err = pthread_create(&plugin_threads[i], NULL, start_thread, plugin)) != 0) {
             debug("Thread could not be started. pthread_create, errno = %d\n", err);
         }
     }
@@ -55,12 +53,13 @@ void plugin_start_loopers(struct irc_t * irc)
  */
 void plugin_attach_context(struct irc_t * irc)
 {
-    struct plugin_list_t * it;
+    struct plugin_slist_t * iterator;
 
     debug("Session preparing plugins before connecting to the server.\n");
-    for (it = plugin_list_head; it != NULL; it = it->next) {
-        debug("Name: [%s]\n", it->cur->name);
-        it->cur->irc = irc;
+    SLIST_FOREACH(iterator, &plugin_slist_head, plugin_slist) {
+        struct plugin_t * plugin = iterator->plugin;
+        debug("Name: [%s]\n", plugin->name);
+        plugin->irc = irc;
     }
 }
 
@@ -69,18 +68,20 @@ void plugin_attach_context(struct irc_t * irc)
  */
 struct plugin_t ** plugin_find_commands(char * name, struct plugin_t ** plugin_list)
 {
-    struct plugin_list_t * it;
+    struct plugin_slist_t * iterator;
     int i = 0;
 
-    for (it = plugin_list_head; it != NULL; it = it->next) {
-        if (!it->cur->is_command)
+    SLIST_FOREACH(iterator, &plugin_slist_head, plugin_slist) {
+        struct plugin_t * plugin = iterator->plugin;
+
+        if (!plugin->is_command)
             continue;
 
-        if (it->cur->is_manager && !it->cur->manager_find(name))
-            plugin_list[i++] = it->cur;
+        if (plugin->is_manager && !plugin->manager_find(name))
+            plugin_list[i++] = plugin;
 
-        if (!strcmp(it->cur->name, name))
-            plugin_list[i++] = it->cur;
+        if (!strcmp(plugin->name, name))
+            plugin_list[i++] = plugin;
     }
 
     plugin_list[i] = NULL;
@@ -89,30 +90,15 @@ struct plugin_t ** plugin_find_commands(char * name, struct plugin_t ** plugin_l
 
 void plugin_insert(struct plugin_t * p)
 {
-    if (plugin_list_head == NULL) {
-        plugin_list_head = malloc(sizeof (struct plugin_list_t));
-        plugin_list_head->cur = p;
-        plugin_list_head->next = NULL;
-    } else {
-        struct plugin_list_t * it;
 
-        for (it = plugin_list_head; it->next != NULL; it = it->next) {}
-
-        it->next = malloc(sizeof (struct plugin_list_t));
-        it->next->cur = p;
-        it->next->next = NULL;
-    }
+    struct plugin_slist_t * node = malloc(sizeof(node));
+    node->plugin = p;
+    SLIST_INSERT_HEAD(&plugin_slist_head, node, plugin_slist);
 }
 
-/**
- * Callback send raw message function for plugins.
- *
- * TODO: It should utilize a message queue for delivering messages to the network.
- *
- */
 void send_message(struct irc_t * irc, char * response)
 {
-    debug("%s\n", response);
+    debug("SENDING_MESSAGE: %s\n", response);
     socket_send_message(&irc->session->socket, response);
 }
 
@@ -174,6 +160,8 @@ void plugin_init()
 {
     DIR * dir;
     struct dirent * dirent;
+
+    SLIST_INIT(&plugin_slist_head);
 
     dir = opendir(PLUGIN_DIR);
 
