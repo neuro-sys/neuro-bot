@@ -44,4 +44,5 @@ tags
 *.out
 *.class
 *.so
+*.db
 
