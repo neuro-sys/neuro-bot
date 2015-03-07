@@ -14,7 +14,11 @@
 
 #define PLUGIN_DIR "plugins"
 
-static pthread_t plugin_threads[10];
+SLIST_HEAD(plugin_threads_head, plugin_threads_t) plugin_threads_head; 
+struct plugin_threads_t {
+    pthread_t thread;
+    SLIST_ENTRY(plugin_threads_t) plugin_threads;
+};
 
 static void *start_thread(void * pdata)
 {
@@ -26,31 +30,31 @@ static void *start_thread(void * pdata)
 void plugin_start_loopers(struct irc_t * irc)
 {
 
-    int i, err;
+    int err;
     struct plugin_slist_t * iterator;
 
-    i = 0;
+    SLIST_INIT(&plugin_threads_head);
+
     SLIST_FOREACH(iterator, &plugin_slist_head, plugin_slist) {
         struct plugin_t * plugin = iterator->plugin;
+        struct plugin_threads_t * plugin_thread = malloc(sizeof(plugin_thread));
+
+        memset(plugin_thread, 0, sizeof(struct plugin_threads_t));
 
         if (!plugin->is_looper || plugin->is_manager)
             continue;
 
-        if (i++ == 10) {
-            debug("Passed the maximum number of loopers limit.\n");
-            break;
-        }
-
         debug("Looper plugin [%s] is started\n", plugin->name);
-        if ((err = pthread_create(&plugin_threads[i], NULL, start_thread, plugin)) != 0) {
+        
+        if ((err = pthread_create(&plugin_thread->thread, NULL, start_thread, plugin)) != 0) {
             debug("Thread could not be started. pthread_create, errno = %d\n", err);
         }
+
+        SLIST_INSERT_HEAD(&plugin_threads_head, plugin_thread, plugin_threads);
+
     }
 }
 
-/*
- * pass a reference of irc handle to the plugins.
- */
 void plugin_attach_context(struct irc_t * irc)
 {
     struct plugin_slist_t * iterator;
@@ -63,9 +67,6 @@ void plugin_attach_context(struct irc_t * irc)
     }
 }
 
-/**
- * Returns a handle to the native plugin, for the given command name.
- */
 struct plugin_t ** plugin_find_commands(char * name, struct plugin_t ** plugin_list)
 {
     struct plugin_slist_t * iterator;
@@ -90,7 +91,6 @@ struct plugin_t ** plugin_find_commands(char * name, struct plugin_t ** plugin_l
 
 void plugin_insert(struct plugin_t * p)
 {
-
     struct plugin_slist_t * node = malloc(sizeof(node));
     node->plugin = p;
     SLIST_INSERT_HEAD(&plugin_slist_head, node, plugin_slist);
