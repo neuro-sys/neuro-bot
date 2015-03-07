@@ -70,26 +70,30 @@ void config_load(struct session_t * session)
         }
         else if (!strcmp(token, "channels"))
         {
-            int i = 0;
+            int channel_counter = 0;
             char print_buffer[2048];
-            char temp[512];
+            char ** channels_v = NULL;
 
             print_buffer[0] = 0;
-            strcat(print_buffer, "Autojoin channels:");
-            while ( (token = strtok(NULL, ",\n")) != NULL)
-            {
-                if (i) strcat(print_buffer, ", ");
-                if (token) {
-                        session->channels_ajoin[i] = strdup(token);
-                        sprintf(temp, "\"%s\"", session->channels_ajoin[i]);
-                        strcat(print_buffer, temp);
-                        i++;
-                }
 
+            while ((token = strtok(NULL, ",\n")) != NULL)
+            {
+                char * channel = strdup(token);
+       
+                channels_v = realloc(channels_v, (channel_counter+1) * sizeof(char *));
+                *(channels_v + channel_counter++) = channel;
             }
-            strcat(print_buffer, "\n");
+            channels_v = realloc(channels_v, (channel_counter+1) * sizeof(char *));
+            *(channels_v + channel_counter++) = NULL;
+
+            session->channels_ajoin_v = channels_v;
+
+            sprintf(print_buffer, "Autojoin channels: ");
+            for(; *channels_v != NULL; channels_v++) {
+                sprintf(print_buffer + strlen(print_buffer), "%s ", *channels_v);
+            }
+            sprintf(print_buffer + strlen(print_buffer), "\n");
             debug(print_buffer);
-            session->channels_ajoin[i] = '\0';
         }
     }
     fclose(file);

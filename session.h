@@ -8,7 +8,7 @@ struct session_t {
     char                * nickname;
     char                * password;
     char                * admin;
-    char                * channels_ajoin[50];
+    char                ** channels_ajoin_v;
 };
 
 extern int session_run (struct session_t * session);

@@ -99,38 +99,43 @@ static void process_command_privmsg (struct irc_t * irc)
 
 static void process_command_353_join(struct irc_t * irc)
 {
-    int i;
+    int channel_counter = 0;
     char * channel;
+    char ** iterator;
 
     channel = irc->message.params[0]; 
+  
+    if (irc->channels_v != NULL) {
+        for (iterator = irc->channels_v; *iterator != NULL; iterator++, channel_counter++) {}
+    }
 
-    irc->channels = realloc(irc->channels, sizeof (irc->channels) * irc->channels_siz+1);
-    irc->channels[irc->channels_siz] = strdup(channel);
-    irc->channels_siz++;
-
-    for (i = 0; i < irc->channels_siz; i++)
-        puts(irc->channels[i]);
+    irc->channels_v = realloc(irc->channels_v, (channel_counter+1) * sizeof (char *)); 
+    *(irc->channels_v + channel_counter+1) = strdup(channel);
 }
 
 static void process_command_part(struct irc_t * irc)
 {
-    int i, j;
-    char ** new_channels;
+    int channels_counter = 0;
+    char ** new_channels_v = NULL, ** iterator;
     char * channel;
 
     channel = irc->message.params[0];
 
-    new_channels = malloc(sizeof (irc->channels) * irc->channels_siz-1);
+    for (iterator = irc->channels_v; *iterator != NULL; iterator++) {
+        char * temp_channel = *iterator;
 
-    for (j = 0, i = 0; i < irc->channels_siz; i++) 
-        if (!strstr(irc->channels[i], channel))
-            new_channels[j] = irc->channels[i];
-        else
-            free(irc->channels[i]);
+        if (strcmp(temp_channel, channel) == 0) {
+            continue;
+        }
 
-    free(irc->channels);
-    irc->channels = new_channels;
-    irc->channels_siz--;
+        new_channels_v = realloc(new_channels_v, (channels_counter+1) * sizeof (char *));
+        *(new_channels_v + channels_counter++) = temp_channel;
+    } 
+    new_channels_v = realloc(new_channels_v, (channels_counter+1) * sizeof (char *));
+    *(new_channels_v + channels_counter++) = NULL;
+   
+    free(irc->channels_v);
+    irc->channels_v = new_channels_v; 
 }
 
 static void process_protocol_commands (struct irc_t * irc)
@@ -145,10 +150,10 @@ static void process_protocol_commands (struct irc_t * irc)
     }
     else if ( !strncmp ("001", irc->message.command, 3) ) {
         char message[MAX_IRC_MSG];
-        char ** t;
+        char ** channels_v;
 
-        for (t = irc->session->channels_ajoin; *t != NULL; t++) {
-            irc_join_channel(irc, *t, message);
+        for (channels_v = irc->session->channels_ajoin_v; *channels_v != NULL; channels_v++) {
+            irc_join_channel(irc, *channels_v, message);
         }
     } else if ( !strncmp("NOTICE", irc->message.command, 6) ) {
         if (strstr(irc->message.trailing, "registered" ) ) {

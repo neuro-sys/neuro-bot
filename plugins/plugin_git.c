@@ -123,17 +123,17 @@ void run(void)
 
         if (!strstr(http->header, "304 Not Modified")) {
             char message[510];
-            int i;
+            char ** iterator;
 
             message[0] = 0;
 
             parse_json_event(http->body, message);
-            if (message[0]) {
-                for (i = 0; i < plugin->irc->channels_siz; i++) {
-                    char * chan = plugin->irc->channels[i];
+            if (message[0] && plugin->irc->channels_v != NULL) {
+                for (iterator = plugin->irc->channels_v; *iterator != NULL; iterator++) {
+                    char * channel = *iterator;
                     char response[512];
 
-                    sprintf(response, "PRIVMSG %s :%s\r\n", chan, message);
+                    sprintf(response, "PRIVMSG %s :%s\r\n", channel, message);
                     plugin->send_message(plugin->irc, response);
                 }
             }

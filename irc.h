@@ -10,8 +10,7 @@ struct irc_t {
     struct message_t     message;               /* Holds the server response as parsed. */
     struct session_t     * session;             /* A connection session. */
     char                 from[100];             /* A shortcut for by whom the msg is received. */
-    char                 ** channels;           /* Maintains the vector of channels joined. */
-    int                  channels_siz;
+    char                 ** channels_v;           /* Maintains the vector of channels joined. */
 };
 
 extern void irc_process_line(struct irc_t * irc, const char * line);

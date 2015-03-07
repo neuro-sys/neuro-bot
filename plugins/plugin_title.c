@@ -168,8 +168,8 @@ void run(void)
         size_t span_first_dash = strcspn(title_buffer,  "-");
         char temp[512];
 
-        snprintf(temp, 512, title_buffer + span_first_dash + 2);
-        snprintf(title_buffer, 512, temp);
+        snprintf(temp, 512, "%s", title_buffer + span_first_dash + 2);
+        snprintf(title_buffer, 512, "%s", temp);
     }
 
     if (title_len > 1)

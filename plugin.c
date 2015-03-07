@@ -81,17 +81,17 @@ struct plugin_t ** plugin_find_commands(char * name, struct plugin_t *** p_plugi
             continue;
 
         if (plugin->is_manager && !plugin->manager_find(name)) {
-            plugin_commands_v = realloc(plugin_commands_v, command_counter * sizeof (struct plugin_t *));
+            plugin_commands_v = realloc(plugin_commands_v, (command_counter+1) * sizeof (struct plugin_t *));
             *(plugin_commands_v + command_counter++) = plugin;
         }
 
         if (!strcmp(plugin->name, name)) {
-            plugin_commands_v = realloc(plugin_commands_v, command_counter * sizeof (struct plugin_t *));
+            plugin_commands_v = realloc(plugin_commands_v, (command_counter+1) * sizeof (struct plugin_t *));
             *(plugin_commands_v + command_counter++) = plugin;
         }
     }
 
-    plugin_commands_v = realloc(plugin_commands_v, command_counter * sizeof (struct plugin_t *));
+    plugin_commands_v = realloc(plugin_commands_v, (command_counter+1) * sizeof (struct plugin_t *));
     *(plugin_commands_v + command_counter++) = NULL;
     
     *p_plugin_commands_v = plugin_commands_v;
