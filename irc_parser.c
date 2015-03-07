@@ -1,3 +1,5 @@
+#include "global.h"
+
 #include "irc_parser.h"
 
 #include <stdio.h>
@@ -113,25 +115,25 @@ void irc_parser(struct message_t * message, const char * line)
 void print_message_t(struct message_t * message)
 {
     if (message->prefix.servername[0])
-        fprintf(stderr, "Serv: (%s) ", message->prefix.servername);
+        fprintf(stderr, RED "Serv" CLEAR ": (" CYAN "%s" CLEAR " ) ", message->prefix.servername);
     else if (message->prefix.nickname.nickname[0]) {
-        fprintf(stderr, "Nick: (%s", message->prefix.nickname.nickname);
+        fprintf(stderr, GREEN "Nick" CLEAR ": (" GREEN "%s" CLEAR, message->prefix.nickname.nickname);
         if (message->prefix.nickname.user[0])
-            fprintf(stderr, "!%s", message->prefix.nickname.user);
+            fprintf(stderr, YELLOW "!%s" CLEAR, message->prefix.nickname.user);
         if (message->prefix.nickname.host[0])
-            fprintf(stderr, "@%s ", message->prefix.nickname.host);
+            fprintf(stderr, YELLOW "@%s " CLEAR, message->prefix.nickname.host);
         fprintf(stderr, ") ");
     }
 
     if (message->command[0])
-        fprintf(stderr, "(%s) ", message->command);
+        fprintf(stderr, "(" CYAN "%s" CLEAR ") ", message->command);
 
     if (message->params[0][0]) {
         int i = 0;
 
         fprintf(stderr, "{");
         while (message->params[i][0]) {
-            fprintf(stderr, "\"%s\"", message->params[i++]);
+            fprintf(stderr, MAGENTA "\"%s\"" CLEAR, message->params[i++]);
             if (message->params[i][0])
                 fprintf(stderr, ", ");
         }

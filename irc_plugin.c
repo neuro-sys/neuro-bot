@@ -8,28 +8,24 @@
 
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 
 void irc_plugin_handle_command(struct irc_t * irc)
 {
-    struct plugin_t * plugin;
+#define MAX_COMMAND_NAME_SIZE 50
     char command_name[50];
-    struct plugin_t * plugin_command_list[10];
-    struct plugin_t ** it;
+    struct plugin_t ** plugin_commands_v = NULL, ** iterator;
 
-    size_t n = strcspn(irc->message.trailing+1, " \r\n"); // skip the initial period
-    n = n >= 50 ? 50 : n; // CLAM
-    strncpy(command_name, irc->message.trailing+1, n);
-    command_name[n] = 0;
+    size_t n = strcspn(irc->message.trailing+1, " \r\n"); // substring(1, " \r\n")
+    snprintf(command_name, n+1, "%s", irc->message.trailing+1);
 
-    plugin_command_list[0] = NULL;
+    plugin_find_commands(command_name, &plugin_commands_v);
 
-    plugin_find_commands(command_name, plugin_command_list);
-
-    if (plugin_command_list[0] == NULL)
+    if (plugin_commands_v == NULL)
         return;
 
-    for (it = plugin_command_list; *it != NULL; it++) {
-        plugin = *it;
+    for (iterator = plugin_commands_v; *iterator != NULL; iterator++) {
+        struct plugin_t * plugin = *iterator;
 
 #ifdef TEST_IRC_PLUGIN
         plugin->irc = irc;
@@ -43,6 +39,8 @@ void irc_plugin_handle_command(struct irc_t * irc)
         debug_ex("%s\n", irc->response);
 #endif
     }
+
+    free(plugin_commands_v);
 }
 
 void irc_plugin_handle_grep(struct irc_t * irc)

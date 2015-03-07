@@ -7,7 +7,6 @@ OBJS	   =config.o \
 		   irc_parser.o \
 		   irc_plugin.o \
 		   plugin.o \
-           queue.o \
 		   main.o
 
 PLUGIN_DIR = ./plugins
@@ -37,9 +36,6 @@ test_config: config.c config.h
 
 test_irc_plugin: irc_plugin.c irc_plugin.h
 	$(CC) irc_plugin.c socket.c plugin.c -ldl -DTEST_IRC_PLUGIN -o $@ && ./$@ && rm -fv $@
-
-test_queue: queue.c queue.h
-	$(CC) queue.c -o -DTEST_QUEUE $@ && ./$@ && rm -fv $@
 
 test:
 	$(MAKE) test_plugin test_irc_parser test_config test_irc_plugin test_queue

@@ -51,7 +51,6 @@ void plugin_start_loopers(struct irc_t * irc)
         }
 
         SLIST_INSERT_HEAD(&plugin_threads_head, plugin_thread, plugin_threads);
-
     }
 }
 
@@ -67,10 +66,13 @@ void plugin_attach_context(struct irc_t * irc)
     }
 }
 
-struct plugin_t ** plugin_find_commands(char * name, struct plugin_t ** plugin_list)
+struct plugin_t ** plugin_find_commands(char * name, struct plugin_t *** p_plugin_commands_v)
 {
     struct plugin_slist_t * iterator;
-    int i = 0;
+    int command_counter = 0;
+    struct plugin_t ** plugin_commands_v;
+
+    plugin_commands_v = *p_plugin_commands_v;
 
     SLIST_FOREACH(iterator, &plugin_slist_head, plugin_slist) {
         struct plugin_t * plugin = iterator->plugin;
@@ -78,15 +80,23 @@ struct plugin_t ** plugin_find_commands(char * name, struct plugin_t ** plugin_l
         if (!plugin->is_command)
             continue;
 
-        if (plugin->is_manager && !plugin->manager_find(name))
-            plugin_list[i++] = plugin;
+        if (plugin->is_manager && !plugin->manager_find(name)) {
+            plugin_commands_v = realloc(plugin_commands_v, command_counter * sizeof (struct plugin_t *));
+            *(plugin_commands_v + command_counter++) = plugin;
+        }
 
-        if (!strcmp(plugin->name, name))
-            plugin_list[i++] = plugin;
+        if (!strcmp(plugin->name, name)) {
+            plugin_commands_v = realloc(plugin_commands_v, command_counter * sizeof (struct plugin_t *));
+            *(plugin_commands_v + command_counter++) = plugin;
+        }
     }
 
-    plugin_list[i] = NULL;
-    return plugin_list;
+    plugin_commands_v = realloc(plugin_commands_v, command_counter * sizeof (struct plugin_t *));
+    *(plugin_commands_v + command_counter++) = NULL;
+    
+    *p_plugin_commands_v = plugin_commands_v;
+
+    return plugin_commands_v;
 }
 
 void plugin_insert(struct plugin_t * p)
@@ -98,7 +108,7 @@ void plugin_insert(struct plugin_t * p)
 
 void send_message(struct irc_t * irc, char * response)
 {
-    debug("SENDING_MESSAGE: %s\n", response);
+    debug("%s\n", response);
     socket_send_message(&irc->session->socket, response);
 }
 
@@ -190,13 +200,16 @@ void plugin_init()
 #if TEST_PLUGIN
 int main()
 {
-    struct plugin_list_t * it;
+    struct plugin_slist_t * iterator;
+
+    SLIST_INIT(&plugin_threads_head);
 
     plugin_init();
 
     puts("Iterating the plugins...");
-    for (it = plugin_list_head; it != NULL; it = it->next) {
-        printf("- %s\n", it->cur->name);
+    SLIST_FOREACH(iterator, &plugin_slist_head, plugin_slist) {
+        struct plugin_t * plugin = iterator->plugin;
+        debug("%s\n", plugin->name); 
     }
     puts("Finished.");
 
