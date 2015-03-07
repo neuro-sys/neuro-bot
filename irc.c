@@ -10,27 +10,34 @@
 #include <unistd.h>
 
 /* Send misc user commands. */
-void irc_set_nick(struct irc_t * irc, char * nickname, char * buffer)
+void irc_set_nick(struct irc_t * irc, char * nickname)
 {
+    char buffer[MAX_IRC_MSG];
+
     snprintf(buffer, MAX_IRC_MSG, "NICK %s\r\n", nickname); 
     socket_send_message(&irc->session->socket, buffer);
 }
 
-void irc_set_user(struct irc_t * irc, char * user, char * host, char * buffer)
+void irc_set_user(struct irc_t * irc, char * user, char * host)
 {
-    snprintf(buffer, MAX_IRC_MSG, "USER %s 8 * :%s\r\n\r\n",
-            user, host); 
+    char buffer[MAX_IRC_MSG];
+
+    snprintf(buffer, MAX_IRC_MSG, "USER %s 8 * :%s\r\n\r\n", user, host); 
     socket_send_message(&irc->session->socket, buffer);
 }
 
-void irc_identify_to_auth(struct irc_t * irc, char * password, char * buffer)
+void irc_identify_to_auth(struct irc_t * irc, char * password)
 {
+    char buffer[MAX_IRC_MSG];
+
     sprintf(buffer, "PRIVMSG NickServ :identify %s\r\n", password);
     socket_send_message(&irc->session->socket, buffer);
 }
 
-void irc_join_channel(struct irc_t * irc, char * channel, char * buffer)
+void irc_join_channel(struct irc_t * irc, char * channel)
 {
+    char buffer[MAX_IRC_MSG];
+
     sprintf(buffer, "JOIN %s\r\n", channel);
     socket_send_message(&irc->session->socket, buffer);
 }
@@ -38,37 +45,33 @@ void irc_join_channel(struct irc_t * irc, char * channel, char * buffer)
 /* Process bot user commands */
 static void process_bot_command_admin (struct irc_t * irc)
 {
-    char * t;
+    char * token;
     char command[MAX_IRC_MSG], argument[MAX_IRC_MSG];
-    char str[MAX_IRC_MSG];
+    char tokenize_buffer[MAX_IRC_MSG];
     char response[512];
 
-    command[0] = 0;
-    argument[0] = 0;
-    str[0] = 0;
-
-    strncpy(str, irc->message.trailing, MAX_IRC_MSG);
+    snprintf(tokenize_buffer, MAX_IRC_MSG, "%s", irc->message.trailing);
     
-    if (!(t = strtok(str, " ")))
+    if ((token = strtok(tokenize_buffer, " \r\n")) == NULL)
         return;
 
-    strncpy(command, t, MAX_IRC_MSG);
-    if ((t = strtok(NULL, "\r\n")))
-        strncpy(argument, t, MAX_IRC_MSG);
-        
-    if (!strncmp(".join", command, 5)) {
+    snprintf(command, MAX_IRC_MSG, "%s", token);
+
+    if ((token = strtok(NULL, "\r\n"))) {
+        snprintf(argument, MAX_IRC_MSG, "%s", token);
+    } 
+
+    if (strcmp(".join", command) == 0) {
         sprintf(response, "JOIN %s\r\n", argument);
         socket_send_message(&irc->session->socket, response);
-    }
-    else if (!strncmp(".part", command, 5)) {
+    } else if (strcmp(".part", command) == 0) {
         sprintf(response, "PART %s\r\n", argument);
         socket_send_message(&irc->session->socket, response);
-    }
-    else if (!strncmp(".raw", command, 4)) {
+    } else if (strcmp(".raw", command) == 0) {
         sprintf(response, "%s\r\n", argument);
         socket_send_message(&irc->session->socket, response);
     }
-    else if (!strncmp(".reload", command, 7)) {
+    else if (strcmp(".reload", command) == 0) {
         //module_load();
     }
 }
@@ -77,14 +80,14 @@ static void process_bot_command_user (struct irc_t * irc)
 {
     irc_plugin_handle_command(irc);
 
-    if ( !strncmp (irc->session->admin, irc->message.prefix.nickname.nickname, strlen(irc->session->admin)) ) 
+    if (strcmp(irc->session->admin, irc->message.prefix.nickname.nickname) == 0) 
         process_bot_command_admin (irc);
 }
 
 /* Control IRC server commands */
 static void process_command_privmsg (struct irc_t * irc)
 {
-    /* Decide the sender if it's a query window or channel */
+    /* Set the sender/receiver (channel or user) for convenience. That it's first param may be oblivious. */
     strcpy(irc->from, irc->message.params[0]);
 
     if (!strcmp(irc->message.params[0], irc->session->nickname))
@@ -97,7 +100,7 @@ static void process_command_privmsg (struct irc_t * irc)
     irc_plugin_handle_grep(irc);
 }
 
-static void process_command_353_join(struct irc_t * irc)
+static void process_command_join(struct irc_t * irc)
 {
     int channel_counter = 0;
     char * channel;
@@ -142,36 +145,38 @@ static void process_protocol_commands (struct irc_t * irc)
 {
     char response[512];
 
-    if ( !strncmp ("PRIVMSG", irc->message.command, 7) ) 
+    if (strcmp("PRIVMSG", irc->message.command) == 0) {
         process_command_privmsg (irc);
-    else if ( !strncmp ("PING", irc->message.command, 4)) {
+    } else if (strcmp("PING", irc->message.command) == 0) {
         snprintf (response, MAX_IRC_MSG, "PONG %s\r\n", irc->message.trailing);
         socket_send_message(&irc->session->socket, response);
-    }
-    else if ( !strncmp ("001", irc->message.command, 3) ) {
-        char message[MAX_IRC_MSG];
+    } else if (strcmp("001", irc->message.command) == 0) {
         char ** channels_v;
 
         for (channels_v = irc->session->channels_ajoin_v; *channels_v != NULL; channels_v++) {
-            irc_join_channel(irc, *channels_v, message);
+            irc_join_channel(irc, *channels_v);
         }
-    } else if ( !strncmp("NOTICE", irc->message.command, 6) ) {
+    } else if (strcmp("NOTICE", irc->message.command) == 0) {
         if (strstr(irc->message.trailing, "registered" ) ) {
-            char message[MAX_IRC_MSG];
+            static int retry_count = 0;
 
-            fprintf(stderr, "Auth to nickserv request received.\n");
+            if (retry_count > 3) {
+                return;
+            }
+
+            debug("This nickname seems to be registered. Trying to identify...\n");
             sleep(3);
             if (strcmp(irc->session->password, "")) {
-                fprintf(stderr, "Authing to nickserv\n");
-                irc_identify_to_auth(irc, irc->session->password, message);
+                irc_identify_to_auth(irc, irc->session->password);
+                retry_count++;
             }
         }
-    } else if (strstr(irc->message.command, "JOIN")) {
+    } else if (strcmp(irc->message.command, "JOIN") == 0) {
         if (!strcmp(irc->message.prefix.nickname.nickname, irc->session->nickname))
-            process_command_353_join(irc);
+            process_command_join(irc);
 
-    } else if (strstr(irc->message.command, "PART")) {
-        if (!strcmp(irc->message.prefix.nickname.nickname, irc->session->nickname))
+    } else if (strcmp(irc->message.command, "PART") == 0) {
+        if (strcmp(irc->message.prefix.nickname.nickname, irc->session->nickname) == 0)
             process_command_part(irc);
     }
 }

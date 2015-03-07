@@ -11,11 +11,9 @@
 
 static void session_init_irc(struct irc_t * irc, struct session_t * session)
 {
-    char message[MAX_IRC_MSG];
+    irc_set_nick(irc, session->nickname);
 
-    irc_set_nick(irc, session->nickname, message);
-
-    irc_set_user(irc, "ircbot", "github.com/neuro-sys/neuro-bot", message);
+    irc_set_user(irc, "ircbot", "github.com/neuro-sys/neuro-bot");
 
     plugin_start_loopers(irc);
 }
