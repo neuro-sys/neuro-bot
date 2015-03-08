@@ -5,7 +5,7 @@
 
 #define CONFIG_FILE "neurobot.conf"
 
-void config_load(struct session_t * session)
+void config_load(struct irc_t * irc)
 {
     FILE * file;
     char buf[1024];
@@ -15,11 +15,11 @@ void config_load(struct session_t * session)
     if (!file) 
     {	
         debug("No config file found, using defaults.\n");
-        session->nickname = NICKNAME;
-        session->password = PASSWORD;
-        session->admin = ADMIN;
-        session->socket.host_name = HOST;
-        session->socket.port = PORT;
+        irc->nickname = NICKNAME;
+        irc->password = PASSWORD;
+        irc->admin = ADMIN;
+        irc->socket.host_name = HOST;
+        irc->socket.port = PORT;
 
         return;
     }
@@ -36,37 +36,37 @@ void config_load(struct session_t * session)
         if (!strcmp(token, "nick"))
         {
             token = strtok(NULL, " \r\n");
-            if (token) session->nickname = strdup(token);
-            else session->nickname = NICKNAME;
-            debug("nickname         : %s\n", session->nickname);
+            if (token) irc->nickname = strdup(token);
+            else irc->nickname = NICKNAME;
+            debug("nickname         : %s\n", irc->nickname);
         }
         else if (!strcmp(token, "pass"))
         {
             token = strtok(NULL, " \r\n");
-            if (token) session->password = strdup(token);
-            else session->password = PASSWORD;
-            debug("password         : %s\n", session->password);
+            if (token) irc->password = strdup(token);
+            else irc->password = PASSWORD;
+            debug("password         : %s\n", irc->password);
         }
         else if (!strcmp(token, "admin"))
         {
             token = strtok(NULL, " \r\n");
-            if (token) session->admin = strdup(token);
-            else session->admin = ADMIN;
-            debug("admin            : %s\n", session->admin);
+            if (token) irc->admin = strdup(token);
+            else irc->admin = ADMIN;
+            debug("admin            : %s\n", irc->admin);
         }
         else if (!strcmp(token, "server"))
         {
             token = strtok(NULL, " \r\n");
-            if (token) session->socket.host_name = strdup(token);
-            else session->socket.host_name = HOST;
-            debug("host_name        : %s\n", session->socket.host_name);
+            if (token) irc->socket.host_name = strdup(token);
+            else irc->socket.host_name = HOST;
+            debug("host_name        : %s\n", irc->socket.host_name);
         }
         else if (!strcmp(token, "port"))
         {
             token = strtok(NULL, " \r\n");
-            if (token) session->socket.port = strdup(token); 
-            else session->socket.port = PORT;
-            debug("port             : %s\n", session->socket.port);
+            if (token) irc->socket.port = strdup(token); 
+            else irc->socket.port = PORT;
+            debug("port             : %s\n", irc->socket.port);
         }
         else if (!strcmp(token, "channels"))
         {
@@ -86,7 +86,7 @@ void config_load(struct session_t * session)
             channels_v = realloc(channels_v, (channel_counter+1) * sizeof(char *));
             channels_v[channel_counter++] = NULL;
 
-            session->channels_ajoin_v = channels_v;
+            irc->channels_ajoin_v = channels_v;
 
             sprintf(print_buffer, "Autojoin channels: ");
             for(; *channels_v != NULL; channels_v++) {
@@ -102,10 +102,10 @@ void config_load(struct session_t * session)
 #ifdef TEST_CONFIG
 int main(int argc, char *argv[])
 {
-    struct session_t session;
+    struct irc_t irc;
 
     fprintf(stderr, "*** Test for config.c\n");
-    config_load(&session);
+    config_load(&irc);
     fprintf(stderr, "*** OK?\n");
     return 0;
 }

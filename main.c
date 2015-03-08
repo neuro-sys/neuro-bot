@@ -1,6 +1,6 @@
 #include "global.h"
 
-#include "session.h"
+#include "irc.h"
 #include "config.h"
 #include "plugin.h"
 
@@ -37,19 +37,19 @@ set_signal_handlers(void)
 
 int main(int argc, char *argv[])
 {
-    struct session_t session;
+    struct irc_t irc;
 
-    memset(&session, 0, sizeof session);
+    memset(&irc, 0, sizeof(irc));
 
     set_signal_handlers();
 
     setlocale(LC_CTYPE, "");
 
-    config_load(&session);
+    config_load(&irc);
 
     plugin_init();
 
-    while ( session_run(&session) > 0 ) {
+    while ( irc_run(&irc) > 0 ) {
         /* loop until exit */
     }
 

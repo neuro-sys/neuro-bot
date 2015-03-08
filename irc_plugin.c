@@ -38,11 +38,11 @@ void command_help(struct irc_t * irc)
     }
     sprintf(message + strlen(message), ".");
 
-    socket_send_message(&irc->session->socket, message);
+    socket_send_message(&irc->socket, message);
 
     message[0] = 0;
     sprintf(message, "PRIVMSG %s :(l) is looper, (g) is grep, (c) is command type of plugins. you can run command plugins with prefix `.'", irc->from);
-    socket_send_message(&irc->session->socket, message);
+    socket_send_message(&irc->socket, message);
 }
 
 void irc_plugin_handle_command(struct irc_t * irc)

@@ -4,7 +4,6 @@ LDFLAGS	   = -ldl -g -O0  -lpthread
 OBJS	   =config.o \
 		   irc.o \
 		   socket.o \
-		   session.o \
 		   irc_parser.o \
 		   irc_plugin.o \
 		   plugin.o \

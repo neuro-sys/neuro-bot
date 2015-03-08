@@ -104,7 +104,7 @@ void handle_command(void)
         return;
     }
 
-    if (strcmp(plugin->irc->session->nickname, who) == 0) {
+    if (strcmp(plugin->irc->nickname, who) == 0) {
         snprintf(response, 512, "PRIVMSG %s :I'm here.",
             plugin->irc->from
         );

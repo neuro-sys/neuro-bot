@@ -2,9 +2,10 @@
 #define __CONFIG_H
 
 #include "global.h"
-#include "session.h"
 
-void config_load(struct session_t * session);
+#include "irc.h"
+
+void config_load();
 
 /* Defaults */
 #define NICKNAME "neurobot"

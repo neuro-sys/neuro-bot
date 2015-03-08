@@ -3,6 +3,7 @@
 #include "global.h"
 #include "irc_parser.h"
 #include "irc_plugin.h"
+#include "plugin.h"
 
 #include <string.h>
 #include <stdlib.h>
@@ -15,7 +16,7 @@ void irc_set_nick(struct irc_t * irc, char * nickname)
     char buffer[MAX_IRC_MSG];
 
     snprintf(buffer, MAX_IRC_MSG, "NICK %s\r\n", nickname); 
-    socket_send_message(&irc->session->socket, buffer);
+    socket_send_message(&irc->socket, buffer);
 }
 
 void irc_set_user(struct irc_t * irc, char * user, char * host)
@@ -23,7 +24,7 @@ void irc_set_user(struct irc_t * irc, char * user, char * host)
     char buffer[MAX_IRC_MSG];
 
     snprintf(buffer, MAX_IRC_MSG, "USER %s 8 * :%s\r\n\r\n", user, host); 
-    socket_send_message(&irc->session->socket, buffer);
+    socket_send_message(&irc->socket, buffer);
 }
 
 void irc_identify_to_auth(struct irc_t * irc, char * password)
@@ -31,7 +32,7 @@ void irc_identify_to_auth(struct irc_t * irc, char * password)
     char buffer[MAX_IRC_MSG];
 
     sprintf(buffer, "PRIVMSG NickServ :identify %s\r\n", password);
-    socket_send_message(&irc->session->socket, buffer);
+    socket_send_message(&irc->socket, buffer);
 }
 
 void irc_join_channel(struct irc_t * irc, char * channel)
@@ -39,7 +40,7 @@ void irc_join_channel(struct irc_t * irc, char * channel)
     char buffer[MAX_IRC_MSG];
 
     sprintf(buffer, "JOIN %s\r\n", channel);
-    socket_send_message(&irc->session->socket, buffer);
+    socket_send_message(&irc->socket, buffer);
 }
 
 /* Process bot user commands */
@@ -63,13 +64,13 @@ static void process_bot_command_admin (struct irc_t * irc)
 
     if (strcmp(".join", command) == 0) {
         sprintf(response, "JOIN %s\r\n", argument);
-        socket_send_message(&irc->session->socket, response);
+        socket_send_message(&irc->socket, response);
     } else if (strcmp(".part", command) == 0) {
         sprintf(response, "PART %s\r\n", argument);
-        socket_send_message(&irc->session->socket, response);
+        socket_send_message(&irc->socket, response);
     } else if (strcmp(".raw", command) == 0) {
         sprintf(response, "%s\r\n", argument);
-        socket_send_message(&irc->session->socket, response);
+        socket_send_message(&irc->socket, response);
     }
     else if (strcmp(".reload", command) == 0) {
         //module_load();
@@ -80,7 +81,7 @@ static void process_bot_command_user (struct irc_t * irc)
 {
     irc_plugin_handle_command(irc);
 
-    if (strcmp(irc->session->admin, irc->message.prefix.nickname.nickname) == 0) 
+    if (strcmp(irc->admin, irc->message.prefix.nickname.nickname) == 0) 
         process_bot_command_admin (irc);
 }
 
@@ -90,7 +91,7 @@ static void process_command_privmsg (struct irc_t * irc)
     /* Set the sender/receiver (channel or user) for convenience. That it's first param may be oblivious. */
     strcpy(irc->from, irc->message.params[0]);
 
-    if (!strcmp(irc->message.params[0], irc->session->nickname))
+    if (!strcmp(irc->message.params[0], irc->nickname))
         strcpy(irc->from, irc->message.prefix.nickname.nickname);
 
     /* If it the trailing message starts with a period, it's a bot command */
@@ -158,11 +159,11 @@ static void process_protocol_commands (struct irc_t * irc)
         process_command_privmsg (irc);
     } else if (strcmp("PING", irc->message.command) == 0) {
         snprintf (response, MAX_IRC_MSG, "PONG %s\r\n", irc->message.trailing);
-        socket_send_message(&irc->session->socket, response);
+        socket_send_message(&irc->socket, response);
     } else if (strcmp("001", irc->message.command) == 0) {
         char ** channels_v;
 
-        for (channels_v = irc->session->channels_ajoin_v; *channels_v != NULL; channels_v++) {
+        for (channels_v = irc->channels_ajoin_v; *channels_v != NULL; channels_v++) {
             irc_join_channel(irc, *channels_v);
         }
     } else if (strcmp("NOTICE", irc->message.command) == 0) {
@@ -175,17 +176,17 @@ static void process_protocol_commands (struct irc_t * irc)
 
             debug("This nickname seems to be registered. Trying to identify...\n");
             sleep(3);
-            if (strcmp(irc->session->password, "")) {
-                irc_identify_to_auth(irc, irc->session->password);
+            if (strcmp(irc->password, "")) {
+                irc_identify_to_auth(irc, irc->password);
                 retry_count++;
             }
         }
     } else if (strcmp(irc->message.command, "JOIN") == 0) {
-        if (!strcmp(irc->message.prefix.nickname.nickname, irc->session->nickname))
+        if (!strcmp(irc->message.prefix.nickname.nickname, irc->nickname))
             process_command_join(irc);
 
     } else if (strcmp(irc->message.command, "PART") == 0) {
-        if (strcmp(irc->message.prefix.nickname.nickname, irc->session->nickname) == 0)
+        if (strcmp(irc->message.prefix.nickname.nickname, irc->nickname) == 0)
             process_command_part(irc);
     }
 }
@@ -200,4 +201,37 @@ void irc_process_line(struct irc_t * irc, const char * line)
     process_protocol_commands(irc);
 }
 
+
+static void irc_init(struct irc_t * irc)
+{
+    irc_set_nick(irc, irc->nickname);
+
+    irc_set_user(irc, "ircbot", "github.com/neuro-sys/neuro-bot");
+
+    plugin_start_loopers(irc);
+}
+
+
+int irc_run(struct irc_t * irc)
+{ 
+    plugin_attach_context(irc);
+
+    /* Conect to the server specified in socket_t struct. */
+    if ( socket_connect(&irc->socket) < 0 ) {
+        debug("Unable to connect to %s:%s\n", irc->socket.host_name, irc->socket.port);
+        exit(EXIT_SUCCESS);
+    }
+
+    /* Do one time initialization work after connecting to the server. */
+    irc_init(irc);
+
+    while (666) 
+    {
+        char line[MAX_IRC_MSG];
+
+        socket_read_line(&irc->socket, line); /* blocking io */
+
+        irc_process_line(irc, line);
+    }
+}
 
