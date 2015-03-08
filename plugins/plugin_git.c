@@ -156,7 +156,7 @@ struct plugin_t * init(void)
 
     plugin->run        = run;
     plugin->name       = "github";
-    plugin->is_looper  = 1;
+    plugin->is_daemon  = 1;
     plugin->is_command = 0;
     plugin->is_grep    = 0;
 

@@ -17,12 +17,6 @@ struct irc_t {
     char                ** channels_ajoin_v;
 };
 
-void    irc_process_line        (struct irc_t * irc, const char * line);
-
-void    irc_set_nick            (struct irc_t * irc, char * nickname);
-void    irc_set_user            (struct irc_t * irc, char * user, char * host);
-void    irc_identify_to_auth    (struct irc_t * irc, char * password);
-void    irc_join_channel        (struct irc_t * irc, char * channel);
 int     irc_run                 (struct irc_t * irc);
 
 #endif

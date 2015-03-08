@@ -2,7 +2,6 @@
 
 #include "global.h"
 #include "irc_parser.h"
-#include "irc_plugin.h"
 #include "plugin.h"
 
 #include <string.h>
@@ -42,6 +41,100 @@ void irc_join_channel(struct irc_t * irc, char * channel)
     sprintf(buffer, "JOIN %s\r\n", channel);
     socket_send_message(&irc->socket, buffer);
 }
+
+static void command_help(struct irc_t * irc)
+{
+    struct plugin_slist_t * iterator;
+    char message[500];
+
+    sprintf(message, "PRIVMSG %s :Loaded plugins: ", irc->from);
+
+    SLIST_FOREACH(iterator, &plugin_slist_head, plugin_slist) {
+        struct plugin_t * plugin = iterator->plugin;
+   
+        if (SLIST_FIRST(&plugin_slist_head) != iterator) {
+            sprintf(message + strlen(message), ", ");
+        } 
+        sprintf(message + strlen(message), "%s", plugin->name);
+
+        if (plugin->is_daemon) {
+            sprintf(message + strlen(message),  " (d)" );
+        } 
+        if (plugin->is_grep) {
+            sprintf(message + strlen(message),  " (g)" );
+        } 
+        if (plugin->is_command) {
+            sprintf(message + strlen(message),  " (c)" );
+        }
+
+    }
+    sprintf(message + strlen(message), ".");
+
+    socket_send_message(&irc->socket, message);
+
+    message[0] = 0;
+    sprintf(message, "PRIVMSG %s :(d) is daemon, (g) is grep, (c) is command type of plugins. you can run command plugins with prefix `.'", irc->from);
+    socket_send_message(&irc->socket, message);
+}
+
+static void irc_plugin_handle_command(struct irc_t * irc)
+{
+#define MAX_COMMAND_NAME_SIZE 50
+    char command_name[50];
+    struct plugin_t ** plugin_commands_v = NULL, ** iterator;
+
+    size_t n = strcspn(irc->message.trailing+1, " \r\n"); // substring(1, " \r\n")
+    snprintf(command_name, n+1, "%s", irc->message.trailing+1);
+
+    plugin_find_commands(command_name, &plugin_commands_v);
+
+    if (plugin_commands_v == NULL)
+        return;
+
+    for (iterator = plugin_commands_v; *iterator != NULL; iterator++) {
+        struct plugin_t * plugin = *iterator;
+
+        debug("Handling plugin command: %s\n", plugin->name);
+
+        BIT_ON(plugin->is_command, 2);
+        plugin->run();
+        BIT_OFF(plugin->is_command, 2);
+    }
+
+    free(plugin_commands_v);
+
+    if (strcmp(command_name, "help") == 0) {
+        command_help(irc);
+    }
+#undef MAX_COMMAND_NAME_SIZE 
+}
+
+static void irc_plugin_handle_grep(struct irc_t * irc)
+{
+    struct plugin_slist_t * iterator;
+
+    SLIST_FOREACH(iterator, &plugin_slist_head, plugin_slist) {
+        struct plugin_t * plugin = iterator->plugin;
+        char ** keywords_v;
+
+        if (!plugin->is_grep || plugin->is_manager)
+            continue;
+
+        for (keywords_v = plugin->keywords; *keywords_v != NULL; keywords_v++) {
+            char * keyword = *keywords_v;
+
+            if (strstr(irc->message.trailing, keyword) || strcmp("*", keyword) == 0) {
+                debug("Handling grep command: %s\n", plugin->name);
+
+                BIT_ON(plugin->is_grep, 2);
+                plugin->run();
+                BIT_OFF(plugin->is_grep, 2);
+                break;
+            }
+        }
+    }
+}
+
 
 /* Process bot user commands */
 static void process_bot_command_admin (struct irc_t * irc)
@@ -192,8 +285,7 @@ static void process_protocol_commands (struct irc_t * irc)
 }
 
 
-/* Main entry point */
-void irc_process_line(struct irc_t * irc, const char * line)
+static void irc_process_line(struct irc_t * irc, const char * line)
 {  
     irc_parser(&irc->message, line);
     print_message_t(&irc->message);
@@ -208,7 +300,7 @@ static void irc_init(struct irc_t * irc)
 
     irc_set_user(irc, "ircbot", "github.com/neuro-sys/neuro-bot");
 
-    plugin_start_loopers(irc);
+    plugin_start_daemons(irc);
 }
 
 

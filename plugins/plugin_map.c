@@ -312,7 +312,7 @@ struct plugin_t * init(void)
 
     plugin->run        = run;
     plugin->name       = "map";
-    plugin->is_looper  = 0;
+    plugin->is_daemon  = 0;
     plugin->is_command = 1;
     plugin->is_grep    = 0;
 

@@ -5,7 +5,6 @@ OBJS	   =config.o \
 		   irc.o \
 		   socket.o \
 		   irc_parser.o \
-		   irc_plugin.o \
 		   plugin.o \
 		   main.o
 
@@ -33,9 +32,6 @@ test_irc_parser: irc_parser.c irc_parser.h
 
 test_config: config.c config.h
 	$(CC) config.c -DTEST_CONFIG -o $@ && ./$@ && rm -fv $@
-
-test_irc_plugin: irc_plugin.c irc_plugin.h
-	$(CC) irc_plugin.c socket.c plugin.c -pthread -ldl -DTEST_IRC_PLUGIN -o $@ && ./$@ && rm -fv $@
 
 test:
 	$(MAKE) test_plugin test_irc_parser test_config test_irc_plugin

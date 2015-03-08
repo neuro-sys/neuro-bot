@@ -87,7 +87,7 @@ struct plugin_t * init(void)
 
     plugin->run        = run;
     plugin->name       = "gris";
-    plugin->is_looper  = 0;
+    plugin->is_daemon  = 0;
     plugin->is_command = 0;
     plugin->is_grep    = 1;
 

@@ -27,7 +27,7 @@ static void *start_thread(void * pdata)
     return NULL;
 }
 
-void plugin_start_loopers(struct irc_t * irc)
+void plugin_start_daemons(struct irc_t * irc)
 {
 
     int err;
@@ -41,7 +41,7 @@ void plugin_start_loopers(struct irc_t * irc)
 
         memset(plugin_thread, 0, sizeof(struct plugin_threads_t));
 
-        if (!plugin->is_looper || plugin->is_manager)
+        if (!plugin->is_daemon || plugin->is_manager)
             continue;
 
         debug("Looper plugin [%s] is started\n", plugin->name);

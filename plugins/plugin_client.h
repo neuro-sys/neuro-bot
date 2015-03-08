@@ -9,7 +9,7 @@ struct plugin_t {
     char * name;                  /* Plugin name, and the command name for command plugins. */
     char ** keywords;             /* Used if is_grep is 1. */
 
-    int is_looper;                /* runs as a daemon in its own thread */
+    int is_daemon;                /* runs as a daemon in its own thread */
     int is_command;               /* executed when trailing contains (*name) prefixed with `.' */
     int is_grep;                  /* executed when trailing contains one of the (** keywords) */
     int is_manager;               /* Manager plugins manage their own repository of */

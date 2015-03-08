@@ -26,7 +26,7 @@ struct java_plugin_t {
 
     int is_command;
     int is_grep;
-    int is_looper;
+    int is_daemon;
 
     jclass clazz;
     jmethodID method_id;
@@ -160,7 +160,7 @@ struct plugin_t * init(void)
 
     plugin->run        = run;
     plugin->name       = "java_manager";
-    plugin->is_looper  = 1;
+    plugin->is_daemon  = 1;
     plugin->is_command = 1;
     plugin->is_grep    = 1;
     plugin->is_manager = 1;
