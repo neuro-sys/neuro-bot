@@ -123,14 +123,14 @@ void run(void)
 
         if (!strstr(http->header, "304 Not Modified")) {
             char message[510];
-            char ** iterator;
+            struct channel_t ** iterator;
 
             message[0] = 0;
 
             parse_json_event(http->body, message);
             if (message[0] && plugin->irc->channels_v != NULL) {
                 for (iterator = plugin->irc->channels_v; *iterator != NULL; iterator++) {
-                    char * channel = *iterator;
+                    char * channel = (*iterator)->name;
                     char response[512];
 
                     sprintf(response, "PRIVMSG %s :%s\r\n", channel, message);

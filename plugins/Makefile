@@ -7,7 +7,7 @@ endif
 
 all: plugin_python_manager.so plugin_git.so plugin_title.so plugin_wiki.so plugin_youtube.so \
 	plugin_test.so plugin_mesai.so plugin_youtube_search.so plugin_weather.so plugin_map.so \
-    plugin_gris.so plugin_oktay_lol.so plugin_seen.so plugin_rss.so
+    plugin_gris.so plugin_oktay_lol.so plugin_seen.so plugin_rss.so plugin_channels.so \
 
 plugin_python_manager.so: plugin_python_manager.c
 	$(CC) plugin_python_manager.c $(CFLAGS) $(shell pkg-config python-2.7 --cflags --libs) $(shell python-config --cflags --libs) --shared -o$@ -g -O0
@@ -41,6 +41,9 @@ plugin_test.so: plugin_test.c
 
 plugin_oktay_lol.so: plugin_oktay_lol.c
 	$(CC) plugin_oktay_lol.c $(CFLAGS) --shared -o$@
+
+plugin_channels.so: plugin_channels.c
+	$(CC) plugin_channels.c ../channel.c $(CFLAGS) --shared -o$@
 
 plugin_seen.so: plugin_seen.c
 	$(CC) plugin_seen.c $(CFLAGS) `pkg-config sqlite3 --cflags --libs` --shared -o$@

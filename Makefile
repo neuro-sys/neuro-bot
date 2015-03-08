@@ -6,6 +6,7 @@ OBJS	   =config.o \
 		   socket.o \
 		   irc_parser.o \
 		   plugin.o \
+           channel.o \
 		   main.o
 
 PLUGIN_DIR = ./plugins

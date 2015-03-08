@@ -2,6 +2,7 @@
 
 #include "global.h"
 #include "irc_parser.h"
+#include "channel.h"
 #include "plugin.h"
 
 #include <string.h>
@@ -197,52 +198,86 @@ static void process_command_privmsg (struct irc_t * irc)
 static void process_command_join(struct irc_t * irc)
 {
     int channel_counter = 0;
-    char * channel;
-    char ** iterator;
+    char * channel_name;
+    struct channel_t * channel, ** iterator;
 
-    channel = irc->message.params[0]; 
-  
+    channel_name = irc->message.params[0]; 
+    debug("%s\n", irc->message.trailing);
+ 
     if (irc->channels_v != NULL) {
         for (iterator = irc->channels_v; *iterator != NULL; iterator++, channel_counter++) {}
     }
 
-    irc->channels_v = realloc(irc->channels_v, (channel_counter+1) * sizeof (char *)); 
-    irc->channels_v[channel_counter++] = strdup(channel);
+    irc->channels_v = realloc(irc->channels_v, (channel_counter+1) * sizeof (struct channel_t *)); 
+    channel = channel_new(channel_name);
+    irc->channels_v[channel_counter++] = channel;
 
-    irc->channels_v = realloc(irc->channels_v, (channel_counter+1) * sizeof (char *)); 
+    irc->channels_v = realloc(irc->channels_v, (channel_counter+1) * sizeof (struct channel_t *)); 
     irc->channels_v[channel_counter++] = NULL;
 
     for (iterator = irc->channels_v; *iterator != NULL; iterator++) {
-        debug("In channel: %s\n", *iterator);
+        debug("In channel: %s\n", (*iterator)->name);
     }
 }
 
 static void process_command_part(struct irc_t * irc)
 {
     int channels_counter = 0;
-    char ** new_channels_v = NULL, ** iterator;
-    char * channel;
+    struct channel_t ** new_channels_v = NULL, ** iterator;
+    char * channel_name;
 
-    channel = irc->message.params[0];
+    channel_name = irc->message.params[0];
 
     for (iterator = irc->channels_v; *iterator != NULL; iterator++) {
-        char * temp_channel = *iterator;
+        struct channel_t * temp_channel = *iterator;
 
-        if (strcmp(temp_channel, channel) == 0) {
+        if (strcmp(temp_channel->name, channel_name) == 0) {
+            free(temp_channel);
             continue;
         }
 
-        new_channels_v = realloc(new_channels_v, (channels_counter+1) * sizeof (char *));
+        new_channels_v = realloc(new_channels_v, (channels_counter+1) * sizeof (struct channel_t *));
         new_channels_v[channels_counter++] = temp_channel;
     } 
-    new_channels_v = realloc(new_channels_v, (channels_counter+1) * sizeof (char *));
+    new_channels_v = realloc(new_channels_v, (channels_counter+1) * sizeof (struct channel_t *));
     new_channels_v[channels_counter++] = NULL;
    
     free(irc->channels_v);
     irc->channels_v = new_channels_v; 
 
     for (iterator = irc->channels_v; *iterator != NULL; iterator++) {
-        debug("In channel: %s\n", *iterator);
+        debug("In channel: %s\n", (*iterator)->name);
+    }
+}
+
+static void process_command_353(struct irc_t * irc)
+{
+    struct channel_t * channel;
+    char * channel_name;
+    int param_counter = 0;
+
+    while ((channel_name = irc->message.params[param_counter++]) != NULL) {
+        if (channel_name[0] == '#') {
+            break;
+        }
+    }
+
+    channel = channel_find(irc->channels_v, channel_name);
+    if (channel == NULL) {
+        return;
+    }
+
+    char * token;
+
+    token = strtok(irc->message.trailing, " ");
+    if (token == NULL) {
+        return;
+    }
+    channel_add_user(channel, token);
+
+    while ((token = strtok(NULL, " ")) != NULL) {
+        channel_add_user(channel, token);
+        debug("%s\n", token);
     }
 }
 
@@ -261,6 +296,8 @@ static void process_protocol_commands (struct irc_t * irc)
         for (channels_v = irc->channels_ajoin_v; *channels_v != NULL; channels_v++) {
             irc_join_channel(irc, *channels_v);
         }
+    } else if (strcmp("353", irc->message.command) == 0) {
+            process_command_353(irc);
     } else if (strcmp("NOTICE", irc->message.command) == 0) {
         if (strstr(irc->message.trailing, "registered" ) ) {
             static int retry_count = 0;
@@ -308,14 +345,14 @@ static void irc_init(struct irc_t * irc)
 
 void irc_free(struct irc_t * irc)
 {
-    char ** iterator;
+    struct channel_t ** iterator;
 
     if (irc->channels_v == NULL) {
         return;
     }
 
     for (iterator = irc->channels_v; *iterator != NULL; iterator++) {
-        free(*iterator);
+        channel_free(*iterator);
     }
 
     free(irc->channels_v);
