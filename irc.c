@@ -207,8 +207,10 @@ static void process_command_join(struct irc_t * irc)
     }
 
     irc->channels_v = realloc(irc->channels_v, (channel_counter+1) * sizeof (char *)); 
-    irc->channels_v[channel_counter] = strdup(channel);
-    irc->channels_v[channel_counter+1] = NULL;
+    irc->channels_v[channel_counter++] = strdup(channel);
+
+    irc->channels_v = realloc(irc->channels_v, (channel_counter+1) * sizeof (char *)); 
+    irc->channels_v[channel_counter++] = NULL;
 
     for (iterator = irc->channels_v; *iterator != NULL; iterator++) {
         debug("In channel: %s\n", *iterator);
