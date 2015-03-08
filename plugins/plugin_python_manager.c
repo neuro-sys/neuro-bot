@@ -9,6 +9,7 @@
 #include <unistd.h>
 #include <dirent.h>
 #include <dlfcn.h>
+#include <sys/queue.h>
 
 #define PLUGIN_DIR "plugins"
 
@@ -25,52 +26,50 @@ struct py_module_t {
     PyObject * pModule, * pFunc;
 };
 
-static struct python_plugin_list_t * head;
-
-struct python_plugin_list_t {
-    struct py_module_t      * cur;
-    struct python_plugin_list_t    * next;
+SLIST_HEAD(py_module_list_head, py_module_list_node_t) py_module_list_head; 
+struct py_module_list_node_t {
+    struct py_module_t * py_module;
+    SLIST_ENTRY(py_module_list_node_t) py_modules;
 };
 
-static void insert(struct py_module_t * p)
+static void parse_mod_name(char * full_path, char * dest)
 {
-    if (head == NULL) {
-        head = malloc(sizeof (struct python_plugin_list_t));
-        head->cur = p;
-        head->next = NULL;
-    } else {
-        struct python_plugin_list_t * it;
+    char * begin = strrchr(full_path, '/')+1;
+    char * end   = strrchr(full_path, '.');
+    snprintf(dest, end-begin+1, "%s", begin);
+}
 
-        for (it = head; it->next != NULL; it = it->next) {}
-
-        it->next = malloc(sizeof (struct python_plugin_list_t));
-        it->next->cur = p;
-        it->next->next = NULL;
-    }
+static void parse_mod_command_name(char * mod_name, char * dest)
+{
+    char * end = strchr(mod_name, '_')+1;
+    sprintf(dest, "%s", end);
 }
 
 static void plugin_load_file(char * full_path)
 {
     struct py_module_t * mod;
-    char mod_name[50];
+    char mod_name[100];
     char mod_command_name[50];
 
-    if (!strstr(full_path, ".py") || full_path[strlen(full_path)-1] != 'y') 
+    if (!strstr(full_path, ".py") || full_path[strlen(full_path)-1] != 'y') {
         return;
-
-    {
-        char * offset = strchr(full_path, '/')+1;
-        int len = strcspn(full_path, ".") - (offset-full_path); 
-        strncpy(mod_name, offset, len);
-        mod_name[len] = 0;
     }
+
     mod = malloc(sizeof (struct py_module_t));
+
+    parse_mod_name(full_path, mod_name);
+    parse_mod_command_name(mod_name, mod_command_name);
+
+    debug("mod_name: %s\n", mod_name);
+    debug("mod_command_name: %s\n", mod_command_name);
+
+    mod->name = strdup(mod_command_name);
+    mod->is_command = 1;
 
     mod->pModule = PyImport_ImportModule(mod_name);
 
     if (!mod->pModule) {
         debug("Can't load module: %s at %s\n", mod_name, full_path);
-        //PyErr_Print();
         free(mod);
         return;
     }
@@ -78,17 +77,14 @@ static void plugin_load_file(char * full_path)
     mod->pFunc = PyObject_GetAttrString(mod->pModule, mod_name);
 
     if (!mod->pFunc || !PyCallable_Check(mod->pFunc)) {
-        debug("Error python call method check for module %s and attr %s.\n", 
-                        full_path, mod_name);
+        debug("Error python call method check for module %s and attr %s.\n", full_path, mod_name);
         free(mod);
         return;
     }
 
-    mod_command_name[0] = 0;
-    strncpy(mod_command_name, strchr(mod_name, '_')+1, strcspn(mod_name, ".")); 
-    mod->name = strdup(mod_command_name);
-    mod->is_command = 1;
-    insert(mod);
+    struct py_module_list_node_t * node = malloc(sizeof (struct py_module_list_node_t));
+    node->py_module = mod;
+    SLIST_INSERT_HEAD(&py_module_list_head, node, py_modules);
 
     debug("Python module loaded: [%s]\n", full_path);
 }
@@ -98,10 +94,11 @@ static void load_python_plugins()
     DIR * dir;
     struct dirent * dirent;
 
+    SLIST_INIT(&py_module_list_head);
+
     dir = opendir(PLUGIN_DIR);
 
-    if (!dir)
-    {
+    if (!dir) {
         debug(" no modules found, skipping.\n");
         return;
     }
@@ -169,7 +166,6 @@ static struct plugin_t * plugin;
 
 static void run(void)
 {
-    struct python_plugin_list_t * it;
     char command_name[50];
 
     command_name[0] = 0;
@@ -180,10 +176,12 @@ static void run(void)
         command_name[n] = 0;
     }
 
-    for (it = head; it != NULL; it = it->next) {
-        /* Run command. */
-        if (it->cur->is_command && !strcmp(it->cur->name, command_name)) {
-            struct py_module_t * module = it->cur;
+    struct py_module_list_node_t * iterator;
+
+    SLIST_FOREACH(iterator, &py_module_list_head, py_modules) {
+        struct py_module_t * module = iterator->py_module;
+
+        if (module->is_command && !strcmp(module->name, command_name)) {
             char response[512];
             char raw_response[512];
 
@@ -193,19 +191,17 @@ static void run(void)
 
             plugin->send_message(plugin->irc, raw_response);
         }
-
-        /**
-         * TODO: Run python daemons and greps.
-         */
     }
 }
 
 static int manager_find (char * name) 
 {
-    struct python_plugin_list_t * it;
+    struct py_module_list_node_t * iterator;
 
-    for (it = head; it != NULL; it = it->next) {
-        if (!strcmp(it->cur->name, name))
+    SLIST_FOREACH(iterator, &py_module_list_head, py_modules) {
+        struct py_module_t * module = iterator->py_module;
+
+        if (!strcmp(module->name, name))
             return 0;
     }
 
