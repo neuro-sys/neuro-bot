@@ -18,5 +18,6 @@ struct irc_t {
 };
 
 int     irc_run                 (struct irc_t * irc);
+void    irc_free                (struct irc_t * irc);
 
 #endif

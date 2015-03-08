@@ -5,6 +5,24 @@
 
 #define CONFIG_FILE "neurobot.conf"
 
+void config_free(struct irc_t * irc)
+{
+    char ** iterator;
+
+    for (iterator = irc->channels_ajoin_v; *iterator != NULL; iterator++) {
+        free(*iterator);
+    }
+
+    free(irc->channels_ajoin_v);
+
+    free(irc->nickname);
+    free(irc->password);
+    free(irc->admin);
+    
+    free(irc->socket.host_name);
+    free(irc->socket.port);
+}
+
 void config_load(struct irc_t * irc)
 {
     FILE * file;

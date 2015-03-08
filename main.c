@@ -9,10 +9,14 @@
 #include <locale.h>
 #include <signal.h>
 
+struct irc_t irc;
+
 void
 termination_handler (int signum)
 {
     fprintf(stdout, "Received signum %d\n", signum); 
+    plugin_free();
+    irc_free(&irc);
 }
 
 void
@@ -37,7 +41,6 @@ set_signal_handlers(void)
 
 int main(int argc, char *argv[])
 {
-    struct irc_t irc;
 
     memset(&irc, 0, sizeof(irc));
 

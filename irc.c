@@ -49,10 +49,10 @@ static void command_help(struct irc_t * irc)
 
     sprintf(message, "PRIVMSG %s :Loaded plugins: ", irc->from);
 
-    SLIST_FOREACH(iterator, &plugin_slist_head, plugin_slist) {
+    LIST_FOREACH(iterator, &plugin_slist_head, plugin_slist) {
         struct plugin_t * plugin = iterator->plugin;
    
-        if (SLIST_FIRST(&plugin_slist_head) != iterator) {
+        if (LIST_FIRST(&plugin_slist_head) != iterator) {
             sprintf(message + strlen(message), ", ");
         } 
         sprintf(message + strlen(message), "%s", plugin->name);
@@ -113,7 +113,7 @@ static void irc_plugin_handle_grep(struct irc_t * irc)
 {
     struct plugin_slist_t * iterator;
 
-    SLIST_FOREACH(iterator, &plugin_slist_head, plugin_slist) {
+    LIST_FOREACH(iterator, &plugin_slist_head, plugin_slist) {
         struct plugin_t * plugin = iterator->plugin;
         char ** keywords_v;
 
@@ -305,6 +305,22 @@ static void irc_init(struct irc_t * irc)
     plugin_start_daemons(irc);
 }
 
+
+void irc_free(struct irc_t * irc)
+{
+    char ** iterator;
+
+    if (irc->channels_v == NULL) {
+        return;
+    }
+
+    for (iterator = irc->channels_v; *iterator != NULL; iterator++) {
+        free(*iterator);
+    }
+
+    free(irc->channels_v);
+
+}
 
 int irc_run(struct irc_t * irc)
 { 

@@ -26,11 +26,25 @@ struct py_module_t {
     PyObject * pModule, * pFunc;
 };
 
-SLIST_HEAD(py_module_list_head, py_module_list_node_t) py_module_list_head; 
+LIST_HEAD(py_module_list_head, py_module_list_node_t) py_module_list_head; 
 struct py_module_list_node_t {
     struct py_module_t * py_module;
-    SLIST_ENTRY(py_module_list_node_t) py_modules;
+    LIST_ENTRY(py_module_list_node_t) py_modules;
 };
+
+
+static void plugin_python_free()
+{
+    struct py_module_list_node_t * iterator;
+
+    LIST_FOREACH(iterator, &py_module_list_head, py_modules) {
+        struct py_module_t * module = iterator->py_module;
+        
+        free(module->name);
+        free(iterator);
+    }
+    
+}
 
 static void parse_mod_name(char * full_path, char * dest)
 {
@@ -84,7 +98,7 @@ static void plugin_load_file(char * full_path)
 
     struct py_module_list_node_t * node = malloc(sizeof (struct py_module_list_node_t));
     node->py_module = mod;
-    SLIST_INSERT_HEAD(&py_module_list_head, node, py_modules);
+    LIST_INSERT_HEAD(&py_module_list_head, node, py_modules);
 
     debug("Python module loaded: [%s]\n", full_path);
 }
@@ -94,7 +108,7 @@ static void load_python_plugins()
     DIR * dir;
     struct dirent * dirent;
 
-    SLIST_INIT(&py_module_list_head);
+    LIST_INIT(&py_module_list_head);
 
     dir = opendir(PLUGIN_DIR);
 
@@ -178,7 +192,7 @@ static void run(void)
 
     struct py_module_list_node_t * iterator;
 
-    SLIST_FOREACH(iterator, &py_module_list_head, py_modules) {
+    LIST_FOREACH(iterator, &py_module_list_head, py_modules) {
         struct py_module_t * module = iterator->py_module;
 
         if (module->is_command && !strcmp(module->name, command_name)) {
@@ -198,7 +212,7 @@ static int manager_find (char * name)
 {
     struct py_module_list_node_t * iterator;
 
-    SLIST_FOREACH(iterator, &py_module_list_head, py_modules) {
+    LIST_FOREACH(iterator, &py_module_list_head, py_modules) {
         struct py_module_t * module = iterator->py_module;
 
         if (!strcmp(module->name, name))

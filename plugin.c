@@ -8,16 +8,16 @@
 #include <stdlib.h>
 
 #include <pthread.h>
-
+#include <signal.h>
 #include <dirent.h>
 #include <dlfcn.h>
 
 #define PLUGIN_DIR "plugins"
 
-SLIST_HEAD(plugin_threads_head, plugin_threads_t) plugin_threads_head; 
+LIST_HEAD(plugin_threads_head, plugin_threads_t) plugin_threads_head; 
 struct plugin_threads_t {
     pthread_t thread;
-    SLIST_ENTRY(plugin_threads_t) plugin_threads;
+    LIST_ENTRY(plugin_threads_t) plugin_threads;
 };
 
 static void *start_thread(void * pdata)
@@ -27,15 +27,37 @@ static void *start_thread(void * pdata)
     return NULL;
 }
 
+void plugin_free()
+{
+    struct plugin_slist_t * iterator;
+
+    debug("Freeing plugin resources...\n");
+    LIST_FOREACH(iterator, &plugin_slist_head, plugin_slist) {
+        struct plugin_t * plugin = iterator->plugin;
+
+        debug("Freeing plugin: %s\n", plugin->name);
+        free(plugin);
+        free(iterator);
+    }
+
+    struct plugin_threads_t * iterator_threads;
+
+    debug("Killing threads...\n");
+    LIST_FOREACH(iterator_threads, &plugin_threads_head, plugin_threads) {
+        pthread_kill(iterator_threads->thread, 9);
+        free(iterator_threads);
+    }
+}
+
 void plugin_start_daemons(struct irc_t * irc)
 {
 
     int err;
     struct plugin_slist_t * iterator;
 
-    SLIST_INIT(&plugin_threads_head);
+    LIST_INIT(&plugin_threads_head);
 
-    SLIST_FOREACH(iterator, &plugin_slist_head, plugin_slist) {
+    LIST_FOREACH(iterator, &plugin_slist_head, plugin_slist) {
         struct plugin_t * plugin = iterator->plugin;
         struct plugin_threads_t * plugin_thread = malloc(sizeof(plugin_thread));
 
@@ -50,7 +72,7 @@ void plugin_start_daemons(struct irc_t * irc)
             debug("Thread could not be started. pthread_create, errno = %d\n", err);
         }
 
-        SLIST_INSERT_HEAD(&plugin_threads_head, plugin_thread, plugin_threads);
+        LIST_INSERT_HEAD(&plugin_threads_head, plugin_thread, plugin_threads);
     }
 }
 
@@ -59,7 +81,7 @@ void plugin_attach_context(struct irc_t * irc)
     struct plugin_slist_t * iterator;
 
     debug("Session preparing plugins before connecting to the server.\n");
-    SLIST_FOREACH(iterator, &plugin_slist_head, plugin_slist) {
+    LIST_FOREACH(iterator, &plugin_slist_head, plugin_slist) {
         struct plugin_t * plugin = iterator->plugin;
         debug("Name: [%s]\n", plugin->name);
         plugin->irc = irc;
@@ -74,7 +96,7 @@ struct plugin_t ** plugin_find_commands(char * name, struct plugin_t *** p_plugi
 
     plugin_commands_v = *p_plugin_commands_v;
 
-    SLIST_FOREACH(iterator, &plugin_slist_head, plugin_slist) {
+    LIST_FOREACH(iterator, &plugin_slist_head, plugin_slist) {
         struct plugin_t * plugin = iterator->plugin;
 
         if (!plugin->is_command)
@@ -103,7 +125,7 @@ void plugin_insert(struct plugin_t * p)
 {
     struct plugin_slist_t * node = malloc(sizeof(node));
     node->plugin = p;
-    SLIST_INSERT_HEAD(&plugin_slist_head, node, plugin_slist);
+    LIST_INSERT_HEAD(&plugin_slist_head, node, plugin_slist);
 }
 
 void send_message(struct irc_t * irc, char * response)
@@ -161,7 +183,7 @@ void plugin_init()
     DIR * dir;
     struct dirent * dirent;
 
-    SLIST_INIT(&plugin_slist_head);
+    LIST_INIT(&plugin_slist_head);
 
     dir = opendir(PLUGIN_DIR);
 
@@ -192,12 +214,12 @@ int main()
 {
     struct plugin_slist_t * iterator;
 
-    SLIST_INIT(&plugin_threads_head);
+    LIST_INIT(&plugin_threads_head);
 
     plugin_init();
 
     puts("Iterating the plugins...");
-    SLIST_FOREACH(iterator, &plugin_slist_head, plugin_slist) {
+    LIST_FOREACH(iterator, &plugin_slist_head, plugin_slist) {
         struct plugin_t * plugin = iterator->plugin;
         debug("%s\n", plugin->name); 
     }
