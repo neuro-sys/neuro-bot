@@ -4,65 +4,47 @@ neurobot is an IRC (Internet Relay Chat) bot written in C extensible with plugin
 ###### Build status:
 [![Build Status](https://secure.travis-ci.org/neuro-sys/neuro-bot.png)](http://travis-ci.org/neuro-sys/neuro-bot)
 
-###### Dependencies:
-The bot core needs POSIX threads to run.
-
-But the contained plugins may have other dependencies.
-
-* python2
-  * BeautifulSoup
-  * urlgrabber
-* libxml2
-* libcurl
-
 ###### Plugins:
 
-* plugins/plugin_git.c
+* git
   * Tracks github repository commits history. 
-* plugins/plugin_gris.c
+* gris
   * Using google reverse image, tries to guess what the image is for a URL posted.
-* plugins/plugin_java_manager.c
-  * Fires up a JVM for plugins written in Java.
-* plugins/plugin_map.c
-  * Prints a small ASCII world map, and marks the designated place on it. 
-* plugins/plugin_mesai.c
-  * Displays the remaining time for when the work is over. 
-* plugins/plugin_python_manager.c
+* python_manager
   * Binds to Python interpreter for plugins written in Python. 
-* plugins/plugin_test.c
+* java_manager
+  * Fires up a JVM for plugins written in Java.
+* map
+  * Prints a small ASCII world map, and marks the designated place on it. 
+* mesai
+  * Displays the remaining time for when the work is over. 
+* test
   * Stub skeleton for new plugins to be written. 
-* plugins/plugin_title.c
+* title
   * Prints the title of a URL. 
-* plugins/plugin_weather.c
+* weather
   * Using openweathermap, prints weather data of a given location. 
-* plugins/plugin_wiki.c
+* wiki
   * Prints the description of a wiki article. 
-* plugins/plugin_youtube.c
+* youtube
   * Prints information on a youtube video. 
-* plugins/plugin_youtube_search.c
+* youtube_search
   * Searches youtube for videos. 
-* plugins/mod_eksi.py
+* eksi
   * Searches and prints Eksi Sozluk entries.
-* plugins/mod_example.py
-  * Stub skeleton for python plugins.
+* seen 
+  * Records the last sentence someone in a room said with a timestamp, and queries it.
 
 ###### How to build & run:
 To build the bot itself:
 ```bash
 $ make
 ```
-To build plugins:
-```bash
-$ make plugins
-```
-
 Edit config file:
 ```bash
 $ vim neurobot.conf
 ```
-
 Run:
-
 ```bash
 $ ./neurobot
 ```
