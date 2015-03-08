@@ -81,10 +81,10 @@ void config_load(struct session_t * session)
                 char * channel = strdup(token);
        
                 channels_v = realloc(channels_v, (channel_counter+1) * sizeof(char *));
-                *(channels_v + channel_counter++) = channel;
+                channels_v[channel_counter++] = channel;
             }
             channels_v = realloc(channels_v, (channel_counter+1) * sizeof(char *));
-            *(channels_v + channel_counter++) = NULL;
+            channels_v[channel_counter++] = NULL;
 
             session->channels_ajoin_v = channels_v;
 

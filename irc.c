@@ -113,10 +113,8 @@ static void process_command_join(struct irc_t * irc)
     }
 
     irc->channels_v = realloc(irc->channels_v, (channel_counter+1) * sizeof (char *)); 
-    *(irc->channels_v + channel_counter+1) = strdup(channel);
-
-    irc->channels_v = realloc(irc->channels_v, (channel_counter+1) * sizeof (char *)); 
-    *(irc->channels_v + channel_counter+1) = NULL;
+    irc->channels_v[channel_counter] = strdup(channel);
+    irc->channels_v[channel_counter+1] = NULL;
 
     for (iterator = irc->channels_v; *iterator != NULL; iterator++) {
         debug("In channel: %s\n", *iterator);
@@ -139,13 +137,17 @@ static void process_command_part(struct irc_t * irc)
         }
 
         new_channels_v = realloc(new_channels_v, (channels_counter+1) * sizeof (char *));
-        *(new_channels_v + channels_counter++) = temp_channel;
+        new_channels_v[channels_counter++] = temp_channel;
     } 
     new_channels_v = realloc(new_channels_v, (channels_counter+1) * sizeof (char *));
-    *(new_channels_v + channels_counter++) = NULL;
+    new_channels_v[channels_counter++] = NULL;
    
     free(irc->channels_v);
     irc->channels_v = new_channels_v; 
+
+    for (iterator = irc->channels_v; *iterator != NULL; iterator++) {
+        debug("In channel: %s\n", *iterator);
+    }
 }
 
 static void process_protocol_commands (struct irc_t * irc)
