@@ -36,15 +36,15 @@ neurobot is an IRC (Internet Relay Chat) bot written in C extensible with plugin
   * Records the last sentence someone in a room said with a timestamp, and queries it.
 
 ###### How to build & run:
-To build the bot itself:
+Build
 ```bash
 $ make
 ```
-Edit config file:
+Edit configuration
 ```bash
 $ vim neurobot.conf
 ```
-Run:
+Run
 ```bash
 $ ./neurobot
 ```
