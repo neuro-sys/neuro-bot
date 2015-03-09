@@ -195,7 +195,30 @@ static void process_command_privmsg (struct irc_t * irc)
     irc_plugin_handle_grep(irc);
 }
 
-static void process_command_join(struct irc_t * irc)
+static void process_command_join_new_user(struct irc_t * irc)
+{
+    struct channel_t * channel;
+    char * channel_name, * nickname;
+
+    channel_name = irc->message.params[0];
+    if (channel_name == NULL) {
+        return;
+    }
+
+    nickname = irc->message.prefix.nickname.nickname;
+    if (nickname == NULL) {
+        return;
+    }
+
+    channel = channel_find(irc->channels_v, channel_name);
+    if (channel == NULL) {
+        return;
+    }
+
+    channel_add_user(channel, nickname);
+}
+
+static void process_command_join_new_channel(struct irc_t * irc)
 {
     int channel_counter = 0;
     char * channel_name;
@@ -220,7 +243,30 @@ static void process_command_join(struct irc_t * irc)
     }
 }
 
-static void process_command_part(struct irc_t * irc)
+static void process_command_part_user(struct irc_t * irc)
+{
+    struct channel_t * channel;
+    char * channel_name, * nickname;
+
+    channel_name = irc->message.params[0];
+    if (channel_name == NULL) {
+        return;
+    }
+
+    nickname = irc->message.prefix.nickname.nickname;
+    if (nickname == NULL) {
+        return;
+    }
+
+    channel = channel_find(irc->channels_v, channel_name);
+    if (channel == NULL) {
+        return;
+    }
+
+    channel_remove_user(channel, nickname);
+}
+
+static void process_command_part_channel(struct irc_t * irc)
 {
     int channels_counter = 0;
     struct channel_t ** new_channels_v = NULL, ** iterator;
@@ -314,12 +360,23 @@ static void process_protocol_commands (struct irc_t * irc)
             }
         }
     } else if (strcmp(irc->message.command, "JOIN") == 0) {
-        if (!strcmp(irc->message.prefix.nickname.nickname, irc->nickname))
-            process_command_join(irc);
-
+        if (strcmp(irc->message.prefix.nickname.nickname, irc->nickname) == 0) {
+            process_command_join_new_channel(irc);
+        } else {
+            process_command_join_new_user(irc); 
+        }
     } else if (strcmp(irc->message.command, "PART") == 0) {
-        if (strcmp(irc->message.prefix.nickname.nickname, irc->nickname) == 0)
-            process_command_part(irc);
+        if (strcmp(irc->message.prefix.nickname.nickname, irc->nickname) == 0) {
+            process_command_part_channel(irc);
+        } else {
+            process_command_part_user(irc);
+        }
+    } else if (strcmp(irc->message.command, "QUIT") == 0) {
+        if (strcmp(irc->message.prefix.nickname.nickname, irc->nickname) == 0) {
+
+        } else {
+            process_command_part_user(irc);
+        }
     }
 }
 
