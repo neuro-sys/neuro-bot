@@ -68,6 +68,10 @@ void print_user_list(char * channel_name)
 
     channel_users_buf[0] = 0;
     for (iterator = channel->users; *iterator != NULL; iterator++) {
+        if (strlen(channel_users_buf) > MAX_IRC_MSG-50) {
+            snprintf(channel_users_buf + strlen(channel_users_buf), MAX_IRC_MSG, "... ");
+            break;
+        }
         snprintf(channel_users_buf + strlen(channel_users_buf), MAX_IRC_MSG, "%s ", *iterator);
     } 
 
