@@ -6,50 +6,6 @@
 
 struct plugin_t * plugin;
 
-struct argv_s {
-    int argc;
-    char ** argv;
-};
-
-struct argv_s * argv_parse(struct argv_s * param, char * str)
-{
-    char tokenize_buffer[MAX_IRC_MSG];
-    char * token;
-
-    memset(param, 0, sizeof(struct argv_s));
-
-    snprintf(tokenize_buffer, MAX_IRC_MSG, "%s", str);
-
-    token = strtok(tokenize_buffer, " ");
-    if (token == NULL) {
-        return NULL;
-    }
-
-    param->argv = realloc(param->argv, (param->argc + 1) * sizeof (char *));
-    param->argv[param->argc++] = strdup(token);
-
-    while ((token = strtok(NULL, " ")) != NULL) {
-        param->argv = realloc(param->argv, (param->argc + 1) * sizeof (char *));
-        param->argv[param->argc++] = strdup(token);
-    }
-
-    param->argv = realloc(param->argv, (param->argc + 1) * sizeof (char *));
-    param->argv[param->argc] = NULL;
-
-    return param;
-}
-
-void argv_free(struct argv_s * arg)
-{
-    char ** iterator;
-
-    for (iterator = arg->argv; *iterator != NULL; iterator++) {
-        free(*iterator);
-    }
-
-    free(arg->argv);
-}
-
 void print_user_list(char * channel_name)
 {
     struct channel_t * channel = channel_find(plugin->irc->channels_v, channel_name);
@@ -105,17 +61,20 @@ void print_channels(void)
 
 void run(void)
 {
-    struct argv_s arg = { 0 };
+    struct argv_s * arg;
 
-    argv_parse(&arg, plugin->irc->message.trailing);
+    arg = argv_parse(plugin->irc->message.trailing);
+    if (arg == NULL) {
+        return;
+    }
 
-    if (arg.argc == 1) {
+    if (arg->argc == 1) {
         print_channels();
-    } else if (arg.argc == 2) {
-        print_user_list(arg.argv[1]);
+    } else if (arg->argc == 2) {
+        print_user_list(arg->argv[1]);
     }
     
-    argv_free(&arg);
+    argv_free(arg);
 }
 
 struct plugin_t * init(void)

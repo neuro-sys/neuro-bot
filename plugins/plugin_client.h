@@ -3,6 +3,7 @@
 
 #include "../irc.h"
 #include "../global.h"
+#include "../argv.h"
 
 struct plugin_t {
     /* Attributes initialized by the plugin. */

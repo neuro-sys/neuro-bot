@@ -43,7 +43,7 @@ plugin_oktay_lol.so: plugin_oktay_lol.c
 	$(CC) plugin_oktay_lol.c $(CFLAGS) --shared -o$@
 
 plugin_channels.so: plugin_channels.c
-	$(CC) plugin_channels.c ../channel.c $(CFLAGS) --shared -o$@
+	$(CC) plugin_channels.c ../channel.c ../argv.c $(CFLAGS) --shared -o$@
 
 plugin_seen.so: plugin_seen.c
 	$(CC) plugin_seen.c $(CFLAGS) `pkg-config sqlite3 --cflags --libs` --shared -o$@
