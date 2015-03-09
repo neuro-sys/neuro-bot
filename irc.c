@@ -45,13 +45,13 @@ void irc_join_channel(struct irc_t * irc, char * channel)
 
 static void command_help(struct irc_t * irc)
 {
-    struct plugin_slist_t * iterator;
+    struct plugin_t * iterator;
     char message[500];
 
     sprintf(message, "PRIVMSG %s :Loaded plugins: ", irc->from);
 
     LIST_FOREACH(iterator, &plugin_slist_head, plugin_slist) {
-        struct plugin_t * plugin = iterator->plugin;
+        struct plugin_t * plugin = iterator;
    
         if (LIST_FIRST(&plugin_slist_head) != iterator) {
             sprintf(message + strlen(message), ", ");
@@ -112,10 +112,10 @@ static void irc_plugin_handle_command(struct irc_t * irc)
 
 static void irc_plugin_handle_grep(struct irc_t * irc)
 {
-    struct plugin_slist_t * iterator;
+    struct plugin_t * iterator;
 
     LIST_FOREACH(iterator, &plugin_slist_head, plugin_slist) {
-        struct plugin_t * plugin = iterator->plugin;
+        struct plugin_t * plugin = iterator;
         char ** keywords_v;
 
         if (!plugin->is_grep || plugin->is_manager)

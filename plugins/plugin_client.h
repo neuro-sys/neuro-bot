@@ -5,6 +5,8 @@
 #include "../global.h"
 #include "../argv.h"
 
+#include <sys/queue.h>
+
 struct plugin_t {
     /* Attributes initialized by the plugin. */
     char * name;                  /* Plugin name, and the command name for command plugins. */
@@ -23,6 +25,7 @@ struct plugin_t {
     void (*run)(void);            /* This is for the bot to start the plugin to run */
     int (*manager_find)(char *);  /* Used if is_manager = 1. */
 
+    LIST_ENTRY(plugin_t) plugin_slist;
 };
 
 /* Interface the plugin should implement. */

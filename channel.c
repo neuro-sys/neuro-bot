@@ -3,6 +3,7 @@
 #include <string.h>
 #include <stdlib.h>
 
+
 struct channel_t * channel_new(char * name)
 {
     struct channel_t * channel = malloc(sizeof (struct channel_t *));
@@ -46,6 +47,7 @@ void channel_remove_user(struct channel_t * channel, char * user)
 {
     char ** new_users_v, ** iterator;
     int user_counter = 0;
+
 
     for (iterator = channel->users; *iterator != NULL; iterator++) {
         if (strcmp(*iterator, user) == 0) {

@@ -29,11 +29,11 @@ static void *start_thread(void * pdata)
 
 void plugin_free()
 {
-    struct plugin_slist_t * iterator;
+    struct plugin_t * iterator;
 
     debug("Freeing plugin resources...\n");
     LIST_FOREACH(iterator, &plugin_slist_head, plugin_slist) {
-        struct plugin_t * plugin = iterator->plugin;
+        struct plugin_t * plugin = iterator;
 
         debug("Freeing plugin: %s\n", plugin->name);
         free(plugin);
@@ -53,12 +53,12 @@ void plugin_start_daemons(struct irc_t * irc)
 {
 
     int err;
-    struct plugin_slist_t * iterator;
+    struct plugin_t * iterator;
 
     LIST_INIT(&plugin_threads_head);
 
     LIST_FOREACH(iterator, &plugin_slist_head, plugin_slist) {
-        struct plugin_t * plugin = iterator->plugin;
+        struct plugin_t * plugin = iterator;
         struct plugin_threads_t * plugin_thread = malloc(sizeof(plugin_thread));
 
         memset(plugin_thread, 0, sizeof(struct plugin_threads_t));
@@ -78,11 +78,11 @@ void plugin_start_daemons(struct irc_t * irc)
 
 void plugin_attach_context(struct irc_t * irc)
 {
-    struct plugin_slist_t * iterator;
+    struct plugin_t * iterator;
 
     debug("Session preparing plugins before connecting to the server.\n");
     LIST_FOREACH(iterator, &plugin_slist_head, plugin_slist) {
-        struct plugin_t * plugin = iterator->plugin;
+        struct plugin_t * plugin = iterator;
         debug("Name: [%s]\n", plugin->name);
         plugin->irc = irc;
     }
@@ -90,14 +90,14 @@ void plugin_attach_context(struct irc_t * irc)
 
 struct plugin_t ** plugin_find_commands(char * name, struct plugin_t *** p_plugin_commands_v)
 {
-    struct plugin_slist_t * iterator;
+    struct plugin_t * iterator;
     int command_counter = 0;
     struct plugin_t ** plugin_commands_v;
 
     plugin_commands_v = *p_plugin_commands_v;
 
     LIST_FOREACH(iterator, &plugin_slist_head, plugin_slist) {
-        struct plugin_t * plugin = iterator->plugin;
+        struct plugin_t * plugin = iterator;
 
         if (!plugin->is_command)
             continue;
@@ -119,13 +119,6 @@ struct plugin_t ** plugin_find_commands(char * name, struct plugin_t *** p_plugi
     *p_plugin_commands_v = plugin_commands_v;
 
     return plugin_commands_v;
-}
-
-void plugin_insert(struct plugin_t * p)
-{
-    struct plugin_slist_t * node = malloc(sizeof(node));
-    node->plugin = p;
-    LIST_INSERT_HEAD(&plugin_slist_head, node, plugin_slist);
 }
 
 void send_message(struct irc_t * irc, char * response)
@@ -175,7 +168,7 @@ void plugin_load_file(char * file)
         }
     }
 
-    plugin_insert(plugin);
+    LIST_INSERT_HEAD(&plugin_slist_head, plugin, plugin_slist);
 }
 
 void plugin_init()

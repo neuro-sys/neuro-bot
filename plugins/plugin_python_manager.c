@@ -24,21 +24,18 @@ struct py_module_t {
     int is_daemon;
 
     PyObject * pModule, * pFunc;
+
+    LIST_ENTRY(py_module_t) py_modules;
 };
 
-LIST_HEAD(py_module_list_head, py_module_list_node_t) py_module_list_head; 
-struct py_module_list_node_t {
-    struct py_module_t * py_module;
-    LIST_ENTRY(py_module_list_node_t) py_modules;
-};
-
+LIST_HEAD(py_module_list_head, py_module_t) py_module_list_head; 
 
 static void plugin_python_free()
 {
-    struct py_module_list_node_t * iterator;
+    struct py_module_t * iterator;
 
     LIST_FOREACH(iterator, &py_module_list_head, py_modules) {
-        struct py_module_t * module = iterator->py_module;
+        struct py_module_t * module = iterator;
         
         free(module->name);
         free(iterator);
@@ -96,9 +93,7 @@ static void plugin_load_file(char * full_path)
         return;
     }
 
-    struct py_module_list_node_t * node = malloc(sizeof (struct py_module_list_node_t));
-    node->py_module = mod;
-    LIST_INSERT_HEAD(&py_module_list_head, node, py_modules);
+    LIST_INSERT_HEAD(&py_module_list_head, mod, py_modules);
 
     debug("Python module loaded: [%s]\n", full_path);
 }
@@ -190,10 +185,10 @@ static void run(void)
         command_name[n] = 0;
     }
 
-    struct py_module_list_node_t * iterator;
+    struct py_module_t * iterator;
 
     LIST_FOREACH(iterator, &py_module_list_head, py_modules) {
-        struct py_module_t * module = iterator->py_module;
+        struct py_module_t * module = iterator;
 
         if (module->is_command && !strcmp(module->name, command_name)) {
             char response[512];
@@ -210,10 +205,10 @@ static void run(void)
 
 static int manager_find (char * name) 
 {
-    struct py_module_list_node_t * iterator;
+    struct py_module_t * iterator;
 
     LIST_FOREACH(iterator, &py_module_list_head, py_modules) {
-        struct py_module_t * module = iterator->py_module;
+        struct py_module_t * module = iterator;
 
         if (!strcmp(module->name, name))
             return 0;
