@@ -47,3 +47,4 @@ tags
 *.db
 neurobot
 *.log
+*.dSYM
