@@ -178,6 +178,30 @@ struct rss_entity_s * rss_parse_feed(struct rss_entity_s * rss_entity, xmlDocPtr
     return rss_entity;
 }
 
+void rss_del(char * code)
+{
+    char *zErrMsg = 0;
+    int sqliteStatus;
+    struct sqlite3 * db = get_db_connection();
+    char statement[250];
+
+    sprintf(statement, "DELETE FROM RSS WHERE CODE = '%s';", code);
+
+    sqliteStatus = sqlite3_exec(db, statement, NULL, NULL, &zErrMsg);
+    if (sqliteStatus != SQLITE_OK) {
+        char response[MAX_IRC_MSG];
+
+        sprintf(response, "PRIVMSG %s :Could not delete '%s'.", plugin->irc->from, code);
+        plugin->send_message(plugin->irc, response);
+        return;
+    }
+
+    char response[MAX_IRC_MSG];
+
+    sprintf(response, "PRIVMSG %s :'%s' has been deleted.", plugin->irc->from, code);
+    plugin->send_message(plugin->irc, response);
+}
+
 void rss_add(char * code, char * url)
 {
     struct http_req * http = NULL;
@@ -250,7 +274,7 @@ void rss_list(void)
         struct rss_entity_s * rss = iterator;
         char response[MAX_IRC_MSG];
        
-        snprintf(response, MAX_IRC_MSG, "PRIVMSG %s :%s - %s - %s - %s - %s",
+        snprintf(response, MAX_IRC_MSG, "PRIVMSG %s :* [%s] - %s - %s - %s - %s",
             plugin->irc->from,
             rss->code,
             rss->rss_url,
@@ -300,6 +324,9 @@ void decide_flow(char * trailing)
         return;
     } else if (strcmp(cmd, "add") == 0) {
         rss_add(param->argv[2], param->argv[3]); 
+        return;
+    } else if (strcmp(cmd, "del") == 0) {
+        rss_del(param->argv[2]);
         return;
     } else if (strcmp(cmd, "show") == 0) {
         return;
