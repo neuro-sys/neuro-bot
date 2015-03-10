@@ -72,6 +72,13 @@ static void greet(char *buffer, size_t size, const char *name)
         "gotunu esek siksin %s",
         "abin senin billigini yesin %s",
         "ben geldim %s",
+        "sik sok dose %s",
+        ":* :* :* %s",
+        "kernel derliyorum %s",
+        "nasilsin calikusum %s",
+        "cCC %s cCc",
+        "iyi dosemeler %s",
+        "senin canin sagolsun %s abin dasagini yesin",
     };
     const size_t num_greetings = (sizeof greetings) / (sizeof greetings[0]);
 
