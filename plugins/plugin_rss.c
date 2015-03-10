@@ -7,19 +7,20 @@
 #include <libxml/xpath.h>
 #include <libxml/xpathInternals.h>
 
+#include <sqlite3.h>
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sqlite3.h>
-
+#include <unistd.h>
 #include <sys/queue.h>
 
 
-const char * xp_channel_title = "/rss/channel/title";
-const char * xp_channel_link = "/rss/channel/link";
-const char * xp_channel_description = "/rss/channel/description";
-
-const char * xp_channel_items = "/rss/channel/item";
+const char * xp_channel = "//channel";
+const char * xp_title = "./title";
+const char * xp_link = "./link";
+const char * xp_description = "./description";
+const char * xp_items = "./item";
 
 struct plugin_t * plugin;
 
@@ -31,6 +32,8 @@ struct rss_entity_s {
     char * description;
     char * updated;
         
+    LIST_HEAD(rss_list_head, rss_entity_s) items;
+
     LIST_ENTRY(rss_entity_s) rss_entity_list;
 };
 
@@ -50,6 +53,28 @@ static struct sqlite3 * get_db_connection(void)
 static void close_db_connection(struct sqlite3 * db)
 {
     sqlite3_close(db);
+}
+
+
+void rss_entity_free_item(struct rss_entity_s * rss)
+{
+    if (rss->code)          free(rss->code);
+    if (rss->title)         free(rss->title);
+    if (rss->rss_url)       free(rss->rss_url);
+    if (rss->url)           free(rss->url);
+    if (rss->description)   free(rss->description);
+    if (rss->updated)       free(rss->updated);
+}
+
+void rss_entity_free(struct rss_entity_s * rss)
+{
+    struct rss_entity_s * iterator;
+
+    rss_entity_free_item(rss);
+
+    LIST_FOREACH(iterator, &rss->items, rss_entity_list) {
+        rss_entity_free_item(rss);
+    }
 }
 
 int db_cb_create_rss_entity(void * param, int argc, char ** argv, char ** column_names)
@@ -140,10 +165,42 @@ void rss_entity_insert(struct rss_entity_s * entity, char * code, char * rss_url
     close_db_connection(db);
 }
 
-struct rss_entity_s * rss_parse_feed(struct rss_entity_s * rss_entity, xmlDocPtr doc)
+struct rss_entity_s * rss_parse_feed_item(xmlXPathContextPtr xpathCtx)
 {
-    memset(rss_entity, 0, sizeof(struct rss_entity_s));
-    
+    xmlXPathObjectPtr xpathObj;
+    struct rss_entity_s * rss_entity = malloc(sizeof (struct rss_entity_s));
+
+    memset(rss_entity, 0, sizeof (struct rss_entity_s));
+
+    xpathObj = xmlXPathEvalExpression((xmlChar *) xp_title, xpathCtx);
+    if (xpathObj == NULL) {
+        debug("Unable to evaluate XPath expression: %s\n", xp_title);
+        return NULL;
+    }
+    rss_entity->title = (char *) xmlNodeGetContent(xpathObj->nodesetval->nodeTab[0]);
+
+    xpathObj = xmlXPathEvalExpression((xmlChar *) xp_link, xpathCtx);
+    if (xpathObj == NULL) {
+        debug("Unable to evaluate XPath expression: %s\n", xp_link);
+        return NULL;
+    }
+    rss_entity->url = (char *) xmlNodeGetContent(xpathObj->nodesetval->nodeTab[0]);
+
+
+    xpathObj = xmlXPathEvalExpression((xmlChar *) xp_description, xpathCtx);
+    if (xpathObj == NULL) {
+        debug("Unable to evaluate XPath expression: %s\n", xp_description);
+        return NULL;
+    }
+    rss_entity->description = (char *) xmlNodeGetContent(xpathObj->nodesetval->nodeTab[0]);
+
+    return rss_entity;
+}
+
+struct rss_entity_s * rss_parse_feed_head(xmlDocPtr doc)
+{
+    struct rss_entity_s * rss_entity;
+
     xmlXPathContextPtr xpathCtx;
     xmlXPathObjectPtr xpathObj;
 
@@ -153,28 +210,68 @@ struct rss_entity_s * rss_parse_feed(struct rss_entity_s * rss_entity, xmlDocPtr
         return NULL;
     }
 
-    xpathObj = xmlXPathEvalExpression((xmlChar *) xp_channel_title, xpathCtx);
+    xpathObj = xmlXPathEvalExpression((xmlChar *) xp_channel, xpathCtx);
     if (xpathObj == NULL) {
-        debug("Unable to evaluate XPath expression.\n");
+        debug("Unable to evaluate XPath expression: %s\n", xp_channel);
         return NULL;
     }
-    rss_entity->title = (char *) xmlNodeGetContent(xpathObj->nodesetval->nodeTab[0]);
 
-    xpathObj = xmlXPathEvalExpression((xmlChar *) xp_channel_link, xpathCtx);
-    if (xpathObj == NULL) {
-        debug("Unable to evaluate XPath expression.\n");
+    xpathCtx->node = xpathObj->nodesetval->nodeTab[0];
+
+    rss_entity = rss_parse_feed_item(xpathCtx);
+    if (rss_entity == NULL) {
         return NULL;
     }
-    rss_entity->url = (char *) xmlNodeGetContent(xpathObj->nodesetval->nodeTab[0]);
 
+    return rss_entity;
+}
 
-    xpathObj = xmlXPathEvalExpression((xmlChar *) xp_channel_description, xpathCtx);
-    if (xpathObj == NULL) {
-        debug("Unable to evaluate XPath expression.\n");
+struct rss_entity_s * rss_parse_feed(xmlDocPtr doc)
+{
+    struct rss_entity_s * rss_entity;
+
+    xmlXPathContextPtr xpathCtx;
+    xmlXPathObjectPtr xpathObj;
+
+    xpathCtx = xmlXPathNewContext(doc);
+    if (xpathCtx == NULL) {
+        debug("Unable to create XPath context\n");
         return NULL;
     }
-    rss_entity->description = (char *) xmlNodeGetContent(xpathObj->nodesetval->nodeTab[0]);
-   
+
+    xpathObj = xmlXPathEvalExpression((xmlChar *) xp_channel, xpathCtx);
+    if (xpathObj == NULL) {
+        debug("Unable to evaluate XPath expression: %s\n", xp_channel);
+        return NULL;
+    }
+
+    xpathCtx->node = xpathObj->nodesetval->nodeTab[0];
+
+    rss_entity = rss_parse_feed_item(xpathCtx);
+    if (rss_entity == NULL) {
+        return NULL;
+    }
+
+    LIST_INIT(&rss_entity->items);
+
+    xpathObj = xmlXPathEvalExpression((xmlChar *) xp_items, xpathCtx);
+    if (xpathObj == NULL) {
+        debug("Unable to evaluate XPath expression: %s\n", xp_items);
+        return NULL;
+    }
+    size_t num_items = xpathObj->nodesetval->nodeNr;
+    int i;
+
+    for (i = 0; i < num_items; i++) {
+        struct rss_entity_s * item;
+        xmlNodePtr cur = xpathObj->nodesetval->nodeTab[i];
+
+        xpathCtx->node = cur;
+
+        item = rss_parse_feed_item(xpathCtx);
+        LIST_INSERT_HEAD(&rss_entity->items, item, rss_entity_list);
+    }
+
     return rss_entity;
 }
 
@@ -205,7 +302,7 @@ void rss_del(char * code)
 void rss_add(char * code, char * url)
 {
     struct http_req * http = NULL;
-    struct rss_entity_s rss_entity;
+    struct rss_entity_s * rss_entity;
 
     xmlDocPtr doc;
 
@@ -214,32 +311,31 @@ void rss_add(char * code, char * url)
     if (http == NULL || http->body == NULL)
         return;
 
-#ifdef TEST_PLUGIN_RSS
-    debug("%s\n", http->body);
-#endif
-
     doc = xmlReadMemory(http->body, strlen(http->body), NULL, NULL, 0);
     if (doc == NULL) {
         char response[MAX_IRC_MSG];
 
         sprintf(response, "PRIVMSG %s :RSS %s is not valid.", plugin->irc->from, url);
         plugin->send_message(plugin->irc, response);
-        return;
+        goto CLEAN_HTTP;
     }
 
-    if (rss_parse_feed(&rss_entity, doc) == NULL) {
-        goto CLEAN;
+    if ((rss_entity = rss_parse_feed_head(doc)) == NULL) {
+        goto CLEAN_XML;
     }
 
-    rss_entity_insert(&rss_entity, code, url);
+    rss_entity_insert(rss_entity, code, url);
 
-CLEAN:
+    rss_entity_free_item(rss_entity);
+
+CLEAN_XML:
+    xmlFreeDoc(doc);
+    xmlCleanupParser();
+
+CLEAN_HTTP:
     free(http->body);
     free(http->header);
     free(http);
-
-    xmlFreeDoc(doc);
-    xmlCleanupParser();
 }
 
 void rss_list(void)
@@ -288,16 +384,103 @@ void rss_list(void)
 
 }
 
-void rss_show(void)
+void rss_show(char * tag)
 {
+    struct http_req * http = NULL;
+    struct rss_entity_s * rss_entity, * iterator;
+    xmlDocPtr doc;
+    char *zErrMsg = 0;
+    int sqliteStatus;
+    struct sqlite3 * db = get_db_connection();
+    char statement[1024];
+    LIST_HEAD(rss_list_head, rss_entity_s) rss_list_head; 
+    char * url;
 
+    LIST_INIT(&rss_list_head);
+
+    sprintf(statement, "SELECT * FROM RSS WHERE CODE = '%s'", tag);
+
+    sqliteStatus = sqlite3_exec(db, statement, db_cb_create_rss_entity, &rss_list_head, &zErrMsg);
+    if (sqliteStatus != SQLITE_OK) {
+        char response[MAX_IRC_MSG];
+
+        sprintf(response, "PRIVMSG %s :Could not query database.", plugin->irc->from);
+        plugin->send_message(plugin->irc, response);
+        goto CLEAN_ENTITY_LIST;
+    }
+
+    if (rss_list_head.lh_first == NULL || rss_list_head.lh_first->code == NULL) {
+        char response[MAX_IRC_MSG];
+
+        sprintf(response, "PRIVMSG %s :Could not find url for tag.", plugin->irc->from);
+        plugin->send_message(plugin->irc, response);
+        goto CLEAN_ENTITY_LIST;
+    }
+
+    url = rss_list_head.lh_first->rss_url;
+    
+    http = curl_perform(url, NULL);
+
+    if (http == NULL || http->body == NULL) {
+        char response[MAX_IRC_MSG];
+
+        sprintf(response, "PRIVMSG %s :'%s' didn't return content.", plugin->irc->from, url);
+        plugin->send_message(plugin->irc, response);
+        goto CLEAN_ENTITY_LIST;
+    }
+
+    doc = xmlReadMemory(http->body, strlen(http->body), NULL, NULL, 0);
+    if (doc == NULL) {
+        char response[MAX_IRC_MSG];
+
+        sprintf(response, "PRIVMSG %s :RSS %s is not valid.", plugin->irc->from, url);
+        plugin->send_message(plugin->irc, response);
+        goto CLEAN_HTTP;
+    }
+
+    if ((rss_entity = rss_parse_feed(doc)) == NULL) {
+        goto CLEAN_XML;
+    }
+
+    int i = 0;
+    LIST_FOREACH(iterator, &rss_entity->items, rss_entity_list) {
+        struct rss_entity_s * rss = iterator;
+
+        char response[MAX_IRC_MSG];
+       
+        snprintf(response, MAX_IRC_MSG, "PRIVMSG %s :* [%s] - %s",
+            plugin->irc->from,
+            rss->title,
+            rss->url
+        );
+        plugin->send_message(plugin->irc, response);
+
+        usleep(500*1000);
+        if (i++ >= 3) {
+            break;
+        }
+    }
+
+    rss_entity_free_item(rss_entity);
+
+CLEAN_XML:
+    xmlFreeDoc(doc);
+    xmlCleanupParser();
+
+CLEAN_HTTP:
+    free(http->body);
+    free(http->header);
+    free(http);
+
+CLEAN_ENTITY_LIST:
+    LIST_FOREACH(iterator, &rss_list_head, rss_entity_list) free(iterator);
 }
 
 void invalid_selection(void)
 {
     char response[512];
 
-    sprintf(response, "PRIVMSG %s :.rss add|list|show", plugin->irc->from);
+    sprintf(response, "PRIVMSG %s :.rss add|del|list|show", plugin->irc->from);
     plugin->send_message(plugin->irc, response);
 }
 
@@ -323,12 +506,38 @@ void decide_flow(char * trailing)
         rss_list();
         return;
     } else if (strcmp(cmd, "add") == 0) {
+        if (param->argc != 4) {
+            char response[512];
+
+            sprintf(response, "PRIVMSG %s :.rss add <tag> <url>", plugin->irc->from);
+            plugin->send_message(plugin->irc, response);
+
+            return;
+        }
+
         rss_add(param->argv[2], param->argv[3]); 
         return;
     } else if (strcmp(cmd, "del") == 0) {
+        if (param->argc != 3) {
+            char response[512];
+
+            sprintf(response, "PRIVMSG %s :.rss del <tag>", plugin->irc->from);
+            plugin->send_message(plugin->irc, response);
+
+            return;
+        }
         rss_del(param->argv[2]);
         return;
     } else if (strcmp(cmd, "show") == 0) {
+        if (param->argc != 3) {
+            char response[512];
+
+            sprintf(response, "PRIVMSG %s :.rss show <tag>", plugin->irc->from);
+            plugin->send_message(plugin->irc, response);
+
+            return;
+        }
+        rss_show(param->argv[2]);
         return;
     }
 
@@ -336,8 +545,18 @@ void decide_flow(char * trailing)
     argv_free(param);
 }
 
+static char * escape_quotes(char * str)
+{
+    for (; *str != 0; str++) {
+        if (*str == '\'') *str = '\"';
+    } 
+
+    return str;
+}
+
 void run(void)
 {
+    escape_quotes(plugin->irc->message.trailing);
     decide_flow(plugin->irc->message.trailing);
 }
 
