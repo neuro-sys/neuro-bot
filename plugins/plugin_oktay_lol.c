@@ -55,10 +55,13 @@ static void highlight_channel(char *buffer, size_t size, struct channel_t *chann
     size_t written = 0;
 
     while (written < size && *nick) {
-        size_t s = snprintf(buf, size - written, "%s ", *nick);
-        written += s;
+        char *n = *nick;
         nick++;
-        buf += written;
+        if (!strcmp(plugin->irc->nickname, n))
+            continue;
+        int s = snprintf(buf, size - written, "%s ", n);
+        written += s;
+        buf += s;
     }
 }
 
