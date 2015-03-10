@@ -80,6 +80,9 @@ static void greet(char *buffer, size_t size, const char *name)
     snprintf(buffer, size, greetings[index], name);
 }
 
+static time_t s_last_highlight = 0;
+#define HIGHLIGHT_MIN_INTERVAL (60*30)
+
 void run(void)
 {
     char response[512], request[512], buffer[512];
@@ -101,8 +104,10 @@ void run(void)
         sprintf(response, "PRIVMSG %s :%s", plugin->irc->from, buffer);
 
         plugin->send_message(plugin->irc, response);
-    } else if (plugin->irc->from[0] == '#') {
+    } else if (plugin->irc->from[0] == '#' &&
+               time(NULL) - s_last_highlight > HIGHLIGHT_MIN_INTERVAL ) {
         struct channel_t **c = plugin->irc->channels_v;
+        s_last_highlight = time(NULL);
         while (*c) {
             if (!strcmp((*c)->name, plugin->irc->from)) {
                 channel = *c;
