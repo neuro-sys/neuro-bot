@@ -49,7 +49,7 @@ plugin_seen.so: plugin_seen.c
 	$(CC) plugin_seen.c $(CFLAGS) `pkg-config sqlite3 --cflags --libs` --shared -o$@
 
 plugin_rss.so: plugin_rss.c
-	$(CC) plugin_rss.c utils/curl_wrapper.c $(CFLAGS) `pkg-config sqlite3 libxml-2.0 libcurl --cflags --libs` --shared -o$@
+	$(CC) plugin_rss.c utils/curl_wrapper.c ../argv.c $(CFLAGS) `pkg-config sqlite3 libxml-2.0 libcurl --cflags --libs` --shared -o$@
 
 plugin_mesai.so: plugin_mesai.c
 	$(CC) plugin_mesai.c $(CFLAGS) --shared -o$@

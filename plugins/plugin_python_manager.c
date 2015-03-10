@@ -196,7 +196,7 @@ static void run(void)
 
             py_call_module(module, plugin->irc, response);
 
-            snprintf(raw_response, 512, "PRIVMSG %s :%s\r\n", plugin->irc->from, response);
+            snprintf(raw_response, 512, "%s", plugin->irc->from, response);
 
             plugin->send_message(plugin->irc, raw_response);
         }
