@@ -88,7 +88,7 @@ static void greet(char *buffer, size_t size, const char *name)
 }
 
 static time_t s_last_highlight = 0;
-#define HIGHLIGHT_MIN_INTERVAL (60*30)
+#define HIGHLIGHT_MIN_INTERVAL (60*60*2)
 
 void run(void)
 {

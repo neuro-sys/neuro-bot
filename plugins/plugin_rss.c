@@ -380,11 +380,34 @@ void rss_list(void)
         );
         plugin->send_message(plugin->irc, response);
         free(rss);
+
+        usleep(500*1000);
     }
 
 }
 
-void rss_show(char * tag)
+int rss_show_validate_range(char * range, int * from, int * to)
+{
+    if (strlen(range) > 20) {
+        return -1;
+    }
+
+    int res = sscanf(range, "%u-%u", from, to);
+    debug("res = %d\n", res);
+    if (res != 2) {
+        return -1;
+    }
+
+    debug("%d-%d\n", *from, *to);
+
+    if (*from > *to) {
+        return -1;
+    }
+
+    return 0;
+}
+
+void rss_show(char * tag, int from, int to)
 {
     struct http_req * http = NULL;
     struct rss_entity_s * rss_entity, * iterator;
@@ -443,21 +466,31 @@ void rss_show(char * tag)
     }
 
     int i = 0;
+    int print_counter = 0;
+    int is_no_range = from == 0 && to == 0;
+
     LIST_FOREACH(iterator, &rss_entity->items, rss_entity_list) {
-        struct rss_entity_s * rss = iterator;
+        i++;
+        if (is_no_range || (i >= from && i <= to)) {
+            struct rss_entity_s * rss = iterator;
 
-        char response[MAX_IRC_MSG];
-       
-        snprintf(response, MAX_IRC_MSG, "PRIVMSG %s :* [%s] - %s",
-            plugin->irc->from,
-            rss->title,
-            rss->url
-        );
-        plugin->send_message(plugin->irc, response);
+            char response[MAX_IRC_MSG];
+           
+            snprintf(response, MAX_IRC_MSG, "PRIVMSG %s :* [%s] - %s",
+                plugin->irc->from,
+                rss->title,
+                rss->url
+            );
+            plugin->send_message(plugin->irc, response);
 
-        usleep(500*1000);
-        if (i++ >= 3) {
-            break;
+            usleep(500*1000);
+            if (is_no_range && ++print_counter >= 5) {
+                char response[MAX_IRC_MSG];
+               
+                snprintf(response, MAX_IRC_MSG, "PRIVMSG %s :Showing only first 5 items. Specify a range if you like.", plugin->irc->from);
+                plugin->send_message(plugin->irc, response);
+                break;
+            }
         }
     }
 
@@ -529,15 +562,29 @@ void decide_flow(char * trailing)
         rss_del(param->argv[2]);
         return;
     } else if (strcmp(cmd, "show") == 0) {
-        if (param->argc != 3) {
+        if (param->argc < 3 || param->argc > 4) {
             char response[512];
 
-            sprintf(response, "PRIVMSG %s :.rss show <tag>", plugin->irc->from);
+            sprintf(response, "PRIVMSG %s :.rss show <tag> [<range>] (range format 5-10)", plugin->irc->from);
             plugin->send_message(plugin->irc, response);
 
             return;
         }
-        rss_show(param->argv[2]);
+
+        int from = 0, to = 0;
+
+        if (param->argc == 4) {
+            if (rss_show_validate_range(param->argv[3], &from, &to) < 0) {
+                char response[512];
+
+                sprintf(response, "PRIVMSG %s :.rss show <tag> [<range>] (range format 5-10)", plugin->irc->from);
+                plugin->send_message(plugin->irc, response);
+                return;
+            }
+        }
+        
+        debug("%d-%d\n", from, to);
+        rss_show(param->argv[2], from, to);
         return;
     }
 
