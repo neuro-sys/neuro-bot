@@ -81,6 +81,7 @@ static void plugin_load_file(char * full_path)
 
     if (!mod->pModule) {
         debug("Can't load module: %s at %s\n", mod_name, full_path);
+        PyErr_Print();
         free(mod);
         return;
     }
@@ -194,9 +195,11 @@ static void run(void)
             char response[512];
             char raw_response[512];
 
+            response[0] = 0;
+
             py_call_module(module, plugin->irc, response);
 
-            snprintf(raw_response, 512, "%s", plugin->irc->from, response);
+            snprintf(raw_response, 512, "PRIVMSG %s :%s", plugin->irc->from, response);
 
             plugin->send_message(plugin->irc, raw_response);
         }

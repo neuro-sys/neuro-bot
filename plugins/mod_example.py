@@ -1,6 +1,6 @@
 
 def mod_example(_from, _line):
-    return "PRIVMSG " + _from + " :Hello!" 
+    return ":Hello!" 
 
 def is_command():
     return true 
