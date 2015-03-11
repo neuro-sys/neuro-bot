@@ -167,9 +167,8 @@ static void py_call_module(struct py_module_t * mod, struct irc_t * irc, char * 
     if (p_val) {
         t = PyString_AsString(p_val);                     
         strcpy(res, t);
-    } else {
-        sprintf(res, "PRIVMSG %s :Python module returned null.", irc->from);
-    }
+        PyErr_Print();
+    } 
 }
 
 static struct plugin_t * plugin;
@@ -199,6 +198,9 @@ static void run(void)
 
             py_call_module(module, plugin->irc, response);
 
+            if (strcmp(response, "") == 0) {
+                continue;
+            }
             snprintf(raw_response, 512, "PRIVMSG %s :%s", plugin->irc->from, response);
 
             plugin->send_message(plugin->irc, raw_response);
