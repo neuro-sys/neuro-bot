@@ -29,11 +29,13 @@ static size_t body_callback(void * contents, size_t size, size_t nmemb, void * u
     memcpy(http->body + http->body_len, contents, size * nmemb);
     http->body_len += size * nmemb;
     http->body[http->body_len] = 0;
- 
-    if (http->body_len > 100000) {
+
+#define MAX_FETCH_BYTES 1 * 1024 * 1024  
+    if (http->body_len > MAX_FETCH_BYTES) {
         fprintf(stderr, "Passed the body size limit\n");
         return -1;
     }
+#undef MAX_FETCH_BYTES
     return size * nmemb;
 }
 
