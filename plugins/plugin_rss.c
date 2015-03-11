@@ -308,8 +308,13 @@ void rss_add(char * code, char * url)
 
     http = curl_perform(url, NULL);
 
-    if (http == NULL || http->body == NULL)
+    if (http == NULL || http->body == NULL) {
+        char response[MAX_IRC_MSG];
+
+        sprintf(response, "PRIVMSG %s :'%s' didn't return content.", plugin->irc->from, url);
+        plugin->send_message(plugin->irc, response);
         return;
+    }
 
     doc = xmlReadMemory(http->body, strlen(http->body), NULL, NULL, 0);
     if (doc == NULL) {
