@@ -16,11 +16,11 @@
 #include <sys/queue.h>
 
 
-const char * xp_channel = "//channel";
-const char * xp_title = "./title";
-const char * xp_link = "./link";
-const char * xp_description = "./description";
-const char * xp_items = "./item";
+const char * xp_channel = "//*[name()='channel']";
+const char * xp_title = "./*[name()='title']";
+const char * xp_link = "./*[name()='link']";
+const char * xp_description = "./*[name()='description']";
+const char * xp_items = "//*[name()='item']";
 
 struct plugin_t * plugin;
 
