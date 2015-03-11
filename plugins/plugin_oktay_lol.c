@@ -121,7 +121,7 @@ void run(void)
                 break;
             }
         }
-        int count = 3 + (rand() % 5);
+        int count = 2 + (rand() % 2);
         int i;
         highlight_channel(buffer, 450, channel);
         for (i = 0; i < count; ++i) {
