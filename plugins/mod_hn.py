@@ -1,5 +1,5 @@
 from BeautifulSoup import BeautifulSoup as soup
-import urllib2
+import requests
 import re
 from random import randint
 
@@ -19,10 +19,8 @@ def is_command():
     return True
 
 def top_ten():
-    httpreq = urllib2.urlopen('https://news.ycombinator.com')
-    rawhtml = httpreq.read()
-
-    dom = soup(rawhtml)
+    httpreq = requests.get('https://news.ycombinator.com')
+    dom = soup(httpreq.text)
 
     outer = dom.find("table")
     inner = outer.findAll("table")[1]
@@ -58,10 +56,8 @@ def get_th(_num):
     else:
         num = randint(0,29)
 
-    httpreq = urllib2.urlopen('https://news.ycombinator.com')
-    rawhtml = httpreq.read()
-
-    dom = soup(rawhtml)
+    httpreq = requests.get('https://news.ycombinator.com')
+    dom = soup(httpreq.text)
 
     outer = dom.find("table")
     inner = outer.findAll("table")[1]
