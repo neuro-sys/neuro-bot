@@ -15,7 +15,7 @@
 #include <unistd.h>
 #include <sys/queue.h>
 
-
+/* XPath expressions for RSS format. */
 const char * xp_channel = "//*[name()='channel']";
 const char * xp_title = "./*[name()='title']";
 const char * xp_link = "./*[name()='link']";
@@ -24,6 +24,7 @@ const char * xp_items = "//*[name()='item']";
 
 struct plugin_t * plugin;
 
+/* RSS database and XML model */
 struct rss_entity_s {
     char * code;
     char * title;
@@ -62,19 +63,20 @@ void rss_entity_free_item(struct rss_entity_s * rss)
     if (rss->title)         free(rss->title);
     if (rss->rss_url)       free(rss->rss_url);
     if (rss->url)           free(rss->url);
-    if (rss->description)   free(rss->description);
+//    if (rss->description)   free(rss->description);
     if (rss->updated)       free(rss->updated);
+    
+    free(rss);
 }
 
 void rss_entity_free(struct rss_entity_s * rss)
 {
     struct rss_entity_s * iterator;
 
-    rss_entity_free_item(rss);
-
     LIST_FOREACH(iterator, &rss->items, rss_entity_list) {
         rss_entity_free_item(rss);
     }
+    rss_entity_free_item(rss);
 }
 
 int db_cb_create_rss_entity(void * param, int argc, char ** argv, char ** column_names)
@@ -132,6 +134,7 @@ void rss_entity_insert(struct rss_entity_s * entity, char * code, char * rss_url
         plugin->send_message(plugin->irc, response);
         struct rss_entity_s * iterator;
         LIST_FOREACH(iterator, &rss_list_head, rss_entity_list) free(iterator);
+        close_db_connection(db);
         return;
     }
 
@@ -140,11 +143,12 @@ void rss_entity_insert(struct rss_entity_s * entity, char * code, char * rss_url
 
         sprintf(response, "PRIVMSG %s :'%s' already exists with the code '%s'", plugin->irc->from, rss_url, rss_list_head.lh_first->code);
         plugin->send_message(plugin->irc, response);
+        close_db_connection(db);
         return;
     }
 
     struct rss_entity_s * iterator;
-    LIST_FOREACH(iterator, &rss_list_head, rss_entity_list) free(iterator);
+    LIST_FOREACH(iterator, &rss_list_head, rss_entity_list) rss_entity_free_item(iterator);
 
     sprintf(statement, "INSERT INTO RSS (CODE, RSS_URL, TITLE, URL) VALUES( '%s', '%s', '%s', '%s');", code, rss_url, entity->title, entity->url);
 
@@ -154,6 +158,7 @@ void rss_entity_insert(struct rss_entity_s * entity, char * code, char * rss_url
 
         sprintf(response, "PRIVMSG %s :Could not insert '%s' into database.", plugin->irc->from, code);
         plugin->send_message(plugin->irc, response);
+        close_db_connection(db);
         return;
     }
 
@@ -290,6 +295,7 @@ void rss_del(char * code)
 
         sprintf(response, "PRIVMSG %s :Could not delete '%s'.", plugin->irc->from, code);
         plugin->send_message(plugin->irc, response);
+        close_db_connection(db);
         return;
     }
 
@@ -297,6 +303,8 @@ void rss_del(char * code)
 
     sprintf(response, "PRIVMSG %s :'%s' has been deleted.", plugin->irc->from, code);
     plugin->send_message(plugin->irc, response);
+
+    close_db_connection(db);
 }
 
 void rss_add(char * code, char * url)
@@ -359,6 +367,7 @@ void rss_list(void)
     sqliteStatus = sqlite3_exec(db, statement, db_cb_create_rss_entity, &rss_list_head, &zErrMsg);
     if (sqliteStatus != SQLITE_OK) {
         debug("error");
+        close_db_connection(db);
         return;
     }
 
@@ -368,6 +377,7 @@ void rss_list(void)
         snprintf(response, MAX_IRC_MSG, "PRIVMSG %s :No RSS record found.", plugin->irc->from);
         plugin->send_message(plugin->irc, response);
 
+        close_db_connection(db);
         return;
     }
 
@@ -376,19 +386,19 @@ void rss_list(void)
         char response[MAX_IRC_MSG];
        
         snprintf(response, MAX_IRC_MSG, "PRIVMSG %s :* [%s] - %s - %s - %s - %s",
-            plugin->irc->from,
+            plugin->irc->message.prefix.nickname.nickname,
             rss->code,
-            rss->rss_url,
             rss->title,
             rss->url,
+            rss->rss_url,
             rss->updated
         );
         plugin->send_message(plugin->irc, response);
-        free(rss);
-
+        rss_entity_free_item(rss);
         usleep(500*1000);
     }
 
+    close_db_connection(db);
 }
 
 int rss_show_validate_range(char * range, int * from, int * to)
@@ -398,12 +408,9 @@ int rss_show_validate_range(char * range, int * from, int * to)
     }
 
     int res = sscanf(range, "%u-%u", from, to);
-    debug("res = %d\n", res);
     if (res != 2) {
         return -1;
     }
-
-    debug("%d-%d\n", *from, *to);
 
     if (*from > *to) {
         return -1;
@@ -415,7 +422,7 @@ int rss_show_validate_range(char * range, int * from, int * to)
 void rss_show(char * tag, int from, int to)
 {
     struct http_req * http = NULL;
-    struct rss_entity_s * rss_entity, * iterator;
+    struct rss_entity_s * rss_entity = NULL, * iterator;
     xmlDocPtr doc;
     char *zErrMsg = 0;
     int sqliteStatus;
@@ -445,7 +452,7 @@ void rss_show(char * tag, int from, int to)
         goto CLEAN_ENTITY_LIST;
     }
 
-    url = rss_list_head.lh_first->rss_url;
+    url = LIST_FIRST(&rss_list_head)->rss_url;
     
     http = curl_perform(url, NULL);
 
@@ -482,7 +489,7 @@ void rss_show(char * tag, int from, int to)
             char response[MAX_IRC_MSG];
            
             snprintf(response, MAX_IRC_MSG, "PRIVMSG %s :* [%s] - %s",
-                plugin->irc->from,
+                plugin->irc->message.prefix.nickname.nickname,
                 rss->title,
                 rss->url
             );
@@ -499,7 +506,6 @@ void rss_show(char * tag, int from, int to)
         }
     }
 
-    rss_entity_free_item(rss_entity);
 
 CLEAN_XML:
     xmlFreeDoc(doc);
@@ -511,7 +517,9 @@ CLEAN_HTTP:
     free(http);
 
 CLEAN_ENTITY_LIST:
-    LIST_FOREACH(iterator, &rss_list_head, rss_entity_list) free(iterator);
+    rss_entity_free(LIST_FIRST(&rss_list_head));
+    if (rss_entity) rss_entity_free(LIST_FIRST(&rss_entity->items));
+    close_db_connection(db);
 }
 
 void invalid_selection(void)
