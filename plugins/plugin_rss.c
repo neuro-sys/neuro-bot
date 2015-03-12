@@ -386,7 +386,7 @@ void rss_list(void)
         char response[MAX_IRC_MSG];
        
         snprintf(response, MAX_IRC_MSG, "PRIVMSG %s :* [%s] - %s - %s - %s - %s",
-            plugin->irc->from,
+            plugin->irc->message.prefix.nickname.nickname,
             rss->code,
             rss->title,
             rss->url,
@@ -489,7 +489,7 @@ void rss_show(char * tag, int from, int to)
             char response[MAX_IRC_MSG];
            
             snprintf(response, MAX_IRC_MSG, "PRIVMSG %s :* [%s] - %s",
-                plugin->irc->from,
+                plugin->irc->message.prefix.nickname.nickname,
                 rss->title,
                 rss->url
             );

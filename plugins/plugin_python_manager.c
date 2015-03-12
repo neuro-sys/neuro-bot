@@ -167,8 +167,9 @@ static void py_call_module(struct py_module_t * mod, struct irc_t * irc, char * 
     if (p_val) {
         t = PyString_AsString(p_val);                     
         strcpy(res, t);
+    } else { 
         PyErr_Print();
-    } 
+    }
 }
 
 static struct plugin_t * plugin;

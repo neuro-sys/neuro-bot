@@ -33,7 +33,7 @@ void print_user_list(char * channel_name)
 
     char response[512];
 
-    sprintf(response, "PRIVMSG %s :Users: %s", plugin->irc->from, channel_users_buf);
+    sprintf(response, "PRIVMSG %s :Users: %s", plugin->irc->message.prefix.nickname.nickname, channel_users_buf);
 
     plugin->send_message(plugin->irc, response);
 }
