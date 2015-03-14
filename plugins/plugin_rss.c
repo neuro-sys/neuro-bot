@@ -386,7 +386,7 @@ void rss_list(void)
         char response[MAX_IRC_MSG];
        
         snprintf(response, MAX_IRC_MSG, "PRIVMSG %s :* [%s] - %s - %s - %s - %s",
-            plugin->irc->message.prefix.nickname.nickname,
+            plugin->irc->from,
             rss->code,
             rss->title,
             rss->url,
@@ -449,7 +449,7 @@ void rss_show(char * tag, int from, int to)
 
         sprintf(response, "PRIVMSG %s :Could not find url for tag.", plugin->irc->from);
         plugin->send_message(plugin->irc, response);
-        goto CLEAN_ENTITY_LIST;
+        goto CLEAN_DB;
     }
 
     url = LIST_FIRST(&rss_list_head)->rss_url;
@@ -489,17 +489,17 @@ void rss_show(char * tag, int from, int to)
             char response[MAX_IRC_MSG];
            
             snprintf(response, MAX_IRC_MSG, "PRIVMSG %s :* [%s] - %s",
-                plugin->irc->message.prefix.nickname.nickname,
+                plugin->irc->from,
                 rss->title,
                 rss->url
             );
             plugin->send_message(plugin->irc, response);
 
             usleep(500*1000);
-            if (is_no_range && ++print_counter >= 5) {
+            if (is_no_range && ++print_counter >= 3) {
                 char response[MAX_IRC_MSG];
                
-                snprintf(response, MAX_IRC_MSG, "PRIVMSG %s :Showing only first 5 items. Specify a range if you like.", plugin->irc->from);
+                snprintf(response, MAX_IRC_MSG, "PRIVMSG %s :Showing only first 3 items. Specify a range if you like.", plugin->irc->from);
                 plugin->send_message(plugin->irc, response);
                 break;
             }
@@ -519,6 +519,8 @@ CLEAN_HTTP:
 CLEAN_ENTITY_LIST:
     rss_entity_free(LIST_FIRST(&rss_list_head));
     if (rss_entity) rss_entity_free(LIST_FIRST(&rss_entity->items));
+
+CLEAN_DB:
     close_db_connection(db);
 }
 
