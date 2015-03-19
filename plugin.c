@@ -59,7 +59,7 @@ void plugin_start_daemons(struct irc_t * irc)
 
     LIST_FOREACH(iterator, &plugin_slist_head, plugin_slist) {
         struct plugin_t * plugin = iterator;
-        struct plugin_threads_t * plugin_thread = malloc(sizeof(plugin_thread));
+        struct plugin_threads_t * plugin_thread = malloc(sizeof(struct plugin_threads_t));
 
         memset(plugin_thread, 0, sizeof(struct plugin_threads_t));
 

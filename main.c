@@ -44,7 +44,7 @@ int main(int argc, char *argv[])
 
     memset(&irc, 0, sizeof(irc));
 
-    set_signal_handlers();
+//    set_signal_handlers();
 
     setlocale(LC_CTYPE, "");
 
