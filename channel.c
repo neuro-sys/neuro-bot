@@ -45,7 +45,7 @@ void channel_add_user(struct channel_t * channel, char * user)
 
 void channel_remove_user(struct channel_t * channel, char * user)
 {
-    char ** new_users_v, ** iterator;
+    char ** new_users_v = NULL, ** iterator;
     int user_counter = 0;
 
 

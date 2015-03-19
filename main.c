@@ -42,7 +42,7 @@ set_signal_handlers(void)
 int main(int argc, char *argv[])
 {
 
-    memset(&irc, 0, sizeof(irc));
+    memset(&irc, 0, sizeof(struct irc_t));
 
 //    set_signal_handlers();
 
