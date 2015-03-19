@@ -6,9 +6,9 @@
 
 struct channel_t * channel_new(char * name)
 {
-    struct channel_t * channel = malloc(sizeof (struct channel_t *));
+    struct channel_t * channel = malloc(sizeof (struct channel_t));
 
-    memset(channel, 0, sizeof (*channel));
+    memset(channel, 0, sizeof (struct channel_t));
     channel->name = strdup(name);
 
     return channel;
