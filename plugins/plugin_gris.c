@@ -91,6 +91,8 @@ struct plugin_t * init(void)
     plugin->is_command = 0;
     plugin->is_grep    = 1;
 
+    int ret = system("java -jar plugins/gris.jar &");
+    debug("gris.jar status: %d\n", ret);
     return plugin;
 }
 
