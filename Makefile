@@ -1,4 +1,3 @@
-CC         = clang
 CFLAGS	   = -I. -Wall -g -O0 
 LDFLAGS	   = -ldl -g -O0  -lpthread
 OBJS	   =config.o \
