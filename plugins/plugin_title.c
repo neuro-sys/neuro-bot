@@ -138,9 +138,9 @@ void run(void)
 
     is_spotify_hotlink = adapt_spotify_hotlink(trailing_str);
 
-    if (strstr(trailing_str, "youtube.com") != NULL) {
+    /* if (strstr(trailing_str, "youtube.com") != NULL) {
         return;
-    }
+    }*/
 
     memset(&saxHandler, 0, sizeof (htmlSAXHandler));
 

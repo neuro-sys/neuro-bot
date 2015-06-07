@@ -56,11 +56,6 @@ static struct youtube_t * parse_json_youtube(char * data)
     node = n_json_find_object(val, "viewCount");
     strcpy(youtube->viewCount, node->u.string.ptr);
 
-	node = n_json_find_object(val, "average");
-	youtube->rating = node->u.dbl;
-
-	node = n_json_find_object(val, "numRaters");
-	youtube->numRaters = node->u.integer;
 
     json_value_free(root);
 
@@ -144,14 +139,11 @@ void run(void)
 
     sprintf(
 			response,
-			"PRIVMSG %s :%s | %s | l: %s | c: %s | r: %.2f/%u", 
+			"PRIVMSG %s :[%s] | %s | length: %s", 
 			plugin->irc->from, 
 			youtube->title, 
 			youtube->url, 
-			youtube->category, 
-			youtube->viewCount, 
-			youtube->rating, 
-			youtube->numRaters
+			youtube->category
 	);
 
     free(youtube);

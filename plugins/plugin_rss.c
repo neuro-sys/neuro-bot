@@ -66,7 +66,7 @@ void rss_entity_free_item(struct rss_entity_s * rss)
 //    if (rss->description)   free(rss->description);
     if (rss->updated)       free(rss->updated);
     
-    free(rss);
+    if (rss)                free(rss);
 }
 
 void rss_entity_free(struct rss_entity_s * rss)

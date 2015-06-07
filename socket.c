@@ -77,7 +77,6 @@ int getchar_fd(int sockfd)
 
     if (n == 0) {
         if ( (n = recv(sockfd, buf, 1024, 0)) <= 0 ) { 
-            errno = -1;
             return '\n';
         }
         bufp = buf;
@@ -109,8 +108,10 @@ int socket_read_line(struct socket_t * socket, char * buf)
     while( (ret = getchar_fd(socket->sockfd)) != '\n' )
         *buf++ = ret;
 
-    if (errno < 0)
+    if (errno < 0) {
+        debug("Socket failed: ERRNO: %d\n", errno);
         return -1;
+    }
 
     *buf = '\0';
 

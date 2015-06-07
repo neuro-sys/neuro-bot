@@ -433,8 +433,10 @@ int irc_run(struct irc_t * irc)
     {
         char line[MAX_IRC_MSG];
 
-        if (socket_read_line(&irc->socket, line) < 0) /* blocking io */
+        if (socket_read_line(&irc->socket, line) < 0) { /* blocking io */
+            debug("Socked failed.\n");
             return -1;
+        }
             
         irc_process_line(irc, line);
     }

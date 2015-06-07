@@ -52,10 +52,11 @@ void channel_remove_user(struct channel_t * channel, char * user)
     for (iterator = channel->users; *iterator != NULL; iterator++) {
         if (strcmp(*iterator, user) == 0) {
             free(*iterator);
+            continue;
         }
 
         new_users_v = realloc(new_users_v, (user_counter+1) * sizeof (char *));
-        new_users_v[user_counter++] = user;
+        new_users_v[user_counter++] = *iterator;
     }
 
     new_users_v = realloc(new_users_v, (user_counter+1) * sizeof (char *));
@@ -79,4 +80,43 @@ void channel_free(struct channel_t * channel)
     free(channel->name);
     free(channel);
 }
+
+#ifdef TEST_CHANNEL
+
+void channel_print(struct channel_t * channel)
+{
+    char ** iterator;
+
+    printf("Channel name: %s\n", channel->name);
+    printf("Channel users:\n");
+    for (iterator = channel->users; *iterator != NULL; iterator++) {
+        printf("%s\n", *iterator);
+    }
+
+    return;
+}
+
+int main(int argc, char *argv[])
+{
+    struct channel_t * channel = channel_new("#archlinux-tr");
+
+    channel_add_user(channel, "firat");
+    channel_add_user(channel, "ahmet");
+    channel_add_user(channel, "mehmet");
+    channel_add_user(channel, "murat");
+
+    channel_remove_user(channel, "mehmet");
+    channel_remove_user(channel, "murat");
+    channel_remove_user(channel, "firat");
+    channel_remove_user(channel, "firat2");
+    channel_remove_user(channel, "ahmet");
+
+    channel_print(channel);
+
+    channel_free(channel);
+ 
+    return 0;
+}
+#endif
+
 
