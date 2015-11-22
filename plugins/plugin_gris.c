@@ -16,17 +16,14 @@ struct plugin_t * plugin;
 static void gris_search(char * url, char * dest, size_t max)
 {
     char gris_response[512];
-    struct socket_t socket;
+    int sockfd;
 
     gris_response[0] = 0;
 
-    socket.host_name = GRIS_HOST;
-    socket.port = GRIS_PORT;
-
-    socket_connect(&socket);
-    socket_send_message(&socket, url);
-    socket_read_line(&socket, gris_response);
-    socket_close(&socket);
+    sockfd = socket_connect(GRIS_HOST, atoi(GRIS_PORT));
+    socket_write(sockfd, url, strlen(url));
+    socket_readline(sockfd, gris_response, sizeof gris_response);
+    socket_close(sockfd);
 
     if (strlen(gris_response) == 0) {
         return;

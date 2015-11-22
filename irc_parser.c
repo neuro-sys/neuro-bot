@@ -27,7 +27,7 @@ static void parse_prefix_nickname(struct nickname_t * nickname, const char * src
             strncpy(nickname->user, k+1, len);
             nickname->user[len] = '\0';
         }
-    } 
+    }
     len = strcspn(src, "!@ ");
     strncpy(nickname->nickname, src, len);
 }
@@ -57,7 +57,7 @@ static void parse_params(char params[][50], char * trailing, const char * src)
 
     strncpy(buf, src, 510); /* Copy the line in a buffer to tokenize it. */
     /* Get the `trailing' first, which marks the ending of params, if there is. */
-    if ((t = strstr(buf, " :"))) { /* It starts with a SPACE preceding a ':'. */ 
+    if ((t = strstr(buf, " :"))) { /* It starts with a SPACE preceding a ':'. */
         char * end = strchr(t, '\r');
         *end = '\0';
         strcpy(trailing, t+2); /* Skip " :" character by two. */
@@ -73,10 +73,10 @@ static void parse_params(char params[][50], char * trailing, const char * src)
     }
 }
 
-/** 
+/**
  * Parses a raw IRC server message in the following format into
  * a message_t struct.
- * message    =  [ ":" prefix SPACE ] command [ params ] crlf 
+ * message    =  [ ":" prefix SPACE ] command [ params ] crlf
  *
  */
 void irc_parser(struct message_t * message, const char * line)
@@ -96,7 +96,7 @@ void irc_parser(struct message_t * message, const char * line)
         buffer[pos] = '\0';
         parse_prefix(&message->prefix, buffer+1);
         line += pos + 1;
-    } 
+    }
 
     /* Then get the obligatory command field. */
     pos = strcspn(line, " \r\n"); /* It ends with a SPACE or/with CRLF */
@@ -110,14 +110,15 @@ void irc_parser(struct message_t * message, const char * line)
 }
 
 /**
- * Pretty print a struct message_t 
+ * Pretty print a struct message_t
  */
 
 static FILE * server_output_f;
 void print_message_t(struct message_t * message)
 {
     if (server_output_f == NULL) {
-        server_output_f = fopen("server_output.log", "w+");
+        //server_output_f = fopen("server_output.log", "w+");
+        server_output_f = stdout;
     }
 
     if (message->prefix.servername[0])

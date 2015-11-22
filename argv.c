@@ -9,11 +9,11 @@ struct argv_s * argv_parse(char * str)
     struct argv_s * param;
     char tokenize_buffer[1024];
     char * token;
-    
+
     param = malloc(sizeof (struct argv_s));
     memset(param, 0, sizeof(struct argv_s));
 
-    snprintf(tokenize_buffer, 1024, "%s", str);
+    snprintf(tokenize_buffer, sizeof tokenize_buffer, "%s", str);
 
     token = strtok(tokenize_buffer, " ");
     if (token == NULL) {

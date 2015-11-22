@@ -2,21 +2,22 @@
 #include "plugins/plugin_client.h"
 
 #include "global.h"
+#include "thread.h"
 
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 
-#include <pthread.h>
+
 #include <signal.h>
 #include <dirent.h>
-#include <dlfcn.h>
+#include "dl.h"
 
 #define PLUGIN_DIR "plugins"
 
-LIST_HEAD(plugin_threads_head, plugin_threads_t) plugin_threads_head; 
+LIST_HEAD(plugin_threads_head, plugin_threads_t) plugin_threads_head;
 struct plugin_threads_t {
-    pthread_t thread;
+    thread_t thread;
     LIST_ENTRY(plugin_threads_t) plugin_threads;
 };
 
@@ -44,7 +45,7 @@ void plugin_free()
 
     debug("Killing threads...\n");
     LIST_FOREACH(iterator_threads, &plugin_threads_head, plugin_threads) {
-        pthread_kill(iterator_threads->thread, 9);
+        thread_kill(iterator_threads->thread);
         free(iterator_threads);
     }
 }
@@ -67,8 +68,8 @@ void plugin_start_daemons(struct irc_t * irc)
             continue;
 
         debug("Looper plugin [%s] is started\n", plugin->name);
-        
-        if ((err = pthread_create(&plugin_thread->thread, NULL, start_thread, plugin)) != 0) {
+
+        if ((err = thread_create(&plugin_thread->thread, start_thread, plugin)) != 0) {
             debug("Thread could not be started. pthread_create, errno = %d\n", err);
         }
 
@@ -115,7 +116,7 @@ struct plugin_t ** plugin_find_commands(char * name, struct plugin_t *** p_plugi
 
     plugin_commands_v = realloc(plugin_commands_v, (command_counter+1) * sizeof (struct plugin_t *));
     plugin_commands_v[command_counter++] = NULL;
-    
+
     *p_plugin_commands_v = plugin_commands_v;
 
     return plugin_commands_v;
@@ -123,8 +124,10 @@ struct plugin_t ** plugin_find_commands(char * name, struct plugin_t *** p_plugi
 
 void send_message(struct irc_t * irc, char * response)
 {
-    debug("%s\n", response);
-    socket_send_message(&irc->socket, response);
+    char buffer[4096];
+    buffer[0] = 0;
+    sprintf(buffer, "%s\r\n", response);
+    socket_write(irc->sockfd, buffer, strlen(buffer));
 }
 
 struct plugin_t plugin_list[100];
@@ -136,12 +139,12 @@ void plugin_load_file(char * file)
     struct plugin_t * plugin;
 
     debug("Loading native plugin \"%s\"\n", file);
-    if ((plugin_file = dlopen(file, RTLD_LAZY)) == NULL) {
+    if ((plugin_file = dl_open(file)) == NULL) {
         debug("The plugin file \"%s\" could not be opened.\n", file);
         return;
     }
 
-    if ((init = dlsym(plugin_file, "init")) == NULL) { 
+    if ((init = dl_sym(plugin_file, "init")) == NULL) {
         debug("The plugin \"%s\" has no exported init function symbol.\n", file);
     }
 
@@ -159,9 +162,9 @@ void plugin_load_file(char * file)
     if (!plugin->is_manager && plugin->is_grep) {
         char ** keywords;
 
-        if ((keywords = dlsym(plugin_file, "keywords"))) {
+        if ((keywords = dl_sym(plugin_file, "keywords"))) {
             plugin->keywords = keywords;
-        } else { 
+        } else {
             debug("The plugin \"%s\" is of type `grep', but has no "
                   "exported grep keywords symbols found. Discarding.\n", file);
             return;
@@ -182,10 +185,10 @@ void plugin_init()
 
 	if (!dir)
 	{
-		debug("no modules found, skipping.\n");
+		debug("No modules directory found. No plugins will be loaded.\n");
 		return;
 	}
-    
+
     while ((dirent = readdir(dir)) != NULL)
     {
         if (strstr(dirent->d_name, ".so")) {
@@ -214,7 +217,7 @@ int main()
     puts("Iterating the plugins...");
     LIST_FOREACH(iterator, &plugin_slist_head, plugin_slist) {
         struct plugin_t * plugin = iterator->plugin;
-        debug("%s\n", plugin->name); 
+        debug("%s\n", plugin->name);
     }
     puts("Finished.");
 

@@ -140,7 +140,7 @@ void run(void)
     }
    
     snprintf(response, 512, 
-        "PRIVMSG %s :%s (%s), Temp: %.2f \u00b0C, Wind speed: %.2f km/h, Cloud ratio: %d%%, Humidity: %d%%, Pressure: %.2f hPa", 
+        "PRIVMSG %s :%s (%s), Temp: %.2f C, Wind speed: %.2f km/h, Cloud ratio: %d%%, Humidity: %d%%, Pressure: %.2f hPa", 
         plugin->irc->from, 
         weather->name, 
         weather->main, 

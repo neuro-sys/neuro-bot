@@ -12,7 +12,9 @@ struct irc_t {
     struct message_t    message;               /* Holds the server response as parsed. */
     char                from[100];             /* A shortcut for by whom the msg is received. */
     struct channel_t    ** channels_v;
-    struct socket_t     socket;
+    int                 sockfd;
+    char                * hostname;
+    char                * port;
     char                * nickname;
     char                * password;
     char                * admin;

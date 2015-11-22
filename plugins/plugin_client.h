@@ -5,7 +5,7 @@
 #include "../global.h"
 #include "../argv.h"
 
-#include <sys/queue.h>
+#include "../queue.h"
 
 struct plugin_t {
     /* Attributes initialized by the plugin. */

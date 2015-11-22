@@ -85,7 +85,6 @@ static const char * get_command_parameter(char * trailing)
 void handle_command(void)
 {
     char *zErrMsg = 0;
-    int sqliteStatus;
     struct seen_t seen;
     char sql[512];
     struct sqlite3 * seendb = get_db_connection();
@@ -117,7 +116,7 @@ void handle_command(void)
         "select a.name, a.lastmsg, datetime(a.lasttime, '+2 hours') as lasttime from seen as a where name = '%s';",
         who
     );
-    sqliteStatus = sqlite3_exec(seendb, sql, db_read_seen, &seen, &zErrMsg);
+    sqlite3_exec(seendb, sql, db_read_seen, &seen, &zErrMsg);
 
     if (strcmp(seen.lasttime, "") == 0) {
         snprintf(response, 512, "PRIVMSG %s :I haven't seen %s around.",
@@ -140,7 +139,6 @@ void handle_command(void)
 void handle_grep(void)
 {
     char *zErrMsg = 0;
-    int sqliteStatus;
     int exists = 0;
     char sql[512];
     struct sqlite3 * seendb = get_db_connection();
@@ -150,7 +148,7 @@ void handle_grep(void)
         "SELECT * FROM SEEN WHERE NAME = '%s';",
         plugin->irc->message.prefix.nickname.nickname
     );
-    sqliteStatus = sqlite3_exec(seendb,sql,db_does_name_exist, &exists , &zErrMsg);
+    sqlite3_exec(seendb,sql,db_does_name_exist, &exists , &zErrMsg);
 
     if (exists) {
         sprintf(
@@ -159,7 +157,7 @@ void handle_grep(void)
                 plugin->irc->message.trailing,
                 plugin->irc->message.prefix.nickname.nickname
                );
-        sqliteStatus = sqlite3_exec(seendb,sql,0,0,NULL);
+        sqlite3_exec(seendb,sql,0,0,NULL);
     } else {
         sprintf(
                 sql,
@@ -167,7 +165,7 @@ void handle_grep(void)
                 plugin->irc->message.prefix.nickname.nickname,
                 plugin->irc->message.trailing
                );
-        sqliteStatus = sqlite3_exec(seendb,sql,0,0,NULL);
+        sqlite3_exec(seendb,sql,0,0,NULL);
     }
 
     close_db_connection(seendb);

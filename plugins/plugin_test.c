@@ -10,7 +10,7 @@ void run(void)
 {
     char response[512];
 
-    sprintf(response, "PRIVMSG %s :Hello!", plugin->irc->from);
+    sprintf(response, "PRIVMSG %s :Hello!\r\n", plugin->irc->from);
 
     plugin->send_message(plugin->irc, response);
 }

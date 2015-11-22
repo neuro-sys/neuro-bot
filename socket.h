@@ -1,24 +1,16 @@
 #ifndef __SOCKET_H_
 #define __SOCKET_H_
 
-#if defined (_WIN32)
-  #include <ws2tcpip.h>
-  #define t_connect t_connect_win
-  extern int t_connect_win(char *host, char *port);
-#elif defined (unix)
-  #define t_connect t_connect_unix
-  extern int t_connect_unix(char *host, char *port);
-#endif
+#define O_RDONLY	0x0000
+#define O_WRONLY	0x0001
+#define O_RDWR		0x0002
+#define O_ACCMODE	0x0003
 
-struct socket_t {
-    char        * host_name;
-    char        * port;
-    int         sockfd;
-};
+int socket_open (const char*, int);
+int socket_read (int, void*, unsigned int);
+int socket_connect(char * host_name, int port);
+int socket_readline(int sockfd, char * buf, int buf_len);
+int socket_write(int sockfd, char * buf, int buf_len);
+int socket_close(int sockfd);
 
-extern int      socket_connect         (struct socket_t * socket);
-extern int      socket_close           (struct socket_t * socket);
-extern int      socket_read_line       (struct socket_t * socket, char * buf);
-extern void     socket_send_message    (struct socket_t * socket, char * message);
-
-#endif
+#endif // __SOCKET_H_

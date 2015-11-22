@@ -1,82 +1,47 @@
 #include "socket.h"
 
-#include "global.h"
+#include <errno.h>
 
+#include <fcntl.h>
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 
-#include <errno.h>
-#include <sys/types.h>
-
-#if defined(unix) || defined(__MACH__)
+#ifdef __WIN32__
+    #include <winsock2.h>
+    #include <WS2tcpip.h>
+#else
     #include <sys/socket.h>
     #include <netdb.h>
     #include <unistd.h>
-#elif defined(_WIN32)
-    #include <io.h>
-    #include <WS2tcpip.h>
-#endif
+#endif // __WIN32__
 
-int errno;
-
-#if defined(_WIN32)
-static void initWinSock(void)
+int socket_open (const char * path, int oflag)
 {
-    WSADATA wsa_data;
-
-    if (WSAStartup(MAKEWORD(2, 1), &wsa_data) != 0)
-        return;
+#ifdef __WIN32__
+    return _open(path, oflag);
+#else
+    return open(path, oflag);
+#endif // __WIN32__
 }
-#endif
 
-int socket_internal_connect(char *host, char *port)
+int socket_read (int handle, void * buffer, unsigned int nbyte)
 {
-    struct addrinfo hints, *res;
-    int sockfd;
-#if defined(_WIN32)
-    initWinSock();
-#endif
-    memset(&hints, 0, sizeof(hints));
-    hints.ai_family   = AF_UNSPEC;
-    hints.ai_socktype = SOCK_STREAM;
-
-    if (getaddrinfo(host, port, &hints, &res) != 0) {
-#if defined(_WIN32)
-        MessageBox(NULL, "getaddrinfo failed.", "Error", MB_OK);
-#endif
-        debug("getaddrinfo failed.\n");
-        return -1;
-    }
-    if ((sockfd = socket(res->ai_family, res->ai_socktype, res->ai_protocol)) < 0) {
-#if defined(_WIN32)
-        MessageBox(NULL, "socket failed.", "Error", MB_OK);
-#endif
-        debug("socket call failed.\n");
-        return -1;
-    }
-    if (connect(sockfd, res->ai_addr, res->ai_addrlen) < 0) {
-#if defined(_WIN32)
-        MessageBox(NULL, "connect failed.", "Error", MB_OK);
-#endif
-        debug("connect call failed.\n");
-        return -1;
-    }
-
-    freeaddrinfo(res);
-
-    return sockfd;
+#ifdef __WIN32__
+    return _read(handle, buffer, nbyte);
+#else
+    return read(handle, buffer, nbyte);
+#endif // __WIN32__
 }
 
 /* K&R 8.2 */
-int getchar_fd(int sockfd)
+static int getchar_fd(int sockfd)
 {
     static char buf[1024];
     static char * bufp;
     static int n;
 
     if (n == 0) {
-        if ( (n = recv(sockfd, buf, 1024, 0)) <= 0 ) { 
+        if ( (n = recv(sockfd, buf, 1024, 0)) <= 0 ) {
             return '\n';
         }
         bufp = buf;
@@ -84,32 +49,75 @@ int getchar_fd(int sockfd)
     return (--n >= 0) ? (unsigned char) *bufp++ : EOF;
 }
 
-int socket_close(struct socket_t * socket)
-{
-    return close(socket->sockfd);
-}
 
-int socket_connect(struct socket_t * socket)
+#ifdef __WIN32__
+static void initWinSock(void)
+{
+    WSADATA wsa_data;
+    int n;
+
+    if ((n = WSAStartup(MAKEWORD(2, 2), &wsa_data)) != 0) {
+        fprintf(stderr, "WSAStartup failed: %d, %s\n", n, strerror(errno));
+        return;
+    }
+}
+#endif
+
+int socket_connect(char * host_name, int port)
 {
     int sockfd;
+    struct sockaddr_in serv_addr;
+    struct hostent * server;
+    struct in_addr addr;
 
-    sockfd = socket_internal_connect(socket->host_name, socket->port);
-    socket->sockfd = sockfd;
+    memset(&serv_addr, 0, sizeof (serv_addr));
+    memset(&addr, 0, sizeof (addr));
 
-    errno = 0;
+#ifdef __WIN32__
+    initWinSock();
+#endif // __WIN32__
+
+    server = gethostbyname(host_name);
+    if (server == NULL) {
+        fprintf(stderr, "Failed to resolve hostname: %s\n", host_name);
+        return -1;
+    }
+
+    memcpy(&serv_addr.sin_addr.s_addr, server->h_addr, server->h_length);
+    serv_addr.sin_port = htons(port);
+    serv_addr.sin_family = AF_INET;
+
+    if ((sockfd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)) < 0) {
+        fprintf(stderr, "Failed to get socket fd. Errno: (%s)\n", strerror(errno));
+        return -1;
+    }
+
+    if ((connect(sockfd, (struct sockaddr *) &serv_addr, sizeof(serv_addr))) < 0) {
+        fprintf(stderr, "Error connecting to hostname: %s, Errno: (%s)\n", host_name, strerror(errno));
+        return -1;
+    }
 
     return sockfd;
 }
 
-int socket_read_line(struct socket_t * socket, char * buf)
+int socket_write(int sockfd, char * buf, int buf_len)
 {
-    int ret;
+    int n = send(sockfd, buf, buf_len, 0);
+    if (n < 0 || errno != 0) {
+        fprintf(stderr, "Write error: %s (bytes written: %d)\n", strerror(errno), n);
+    }
+    return n;
+}
 
-    while( (ret = getchar_fd(socket->sockfd)) != '\n' )
+int socket_readline(int sockfd, char * buf, int buf_len)
+{
+    int ret, i = 0;
+
+    while( (ret = getchar_fd(sockfd)) != '\n' || ++i == buf_len - 1)
         *buf++ = ret;
 
-    if (errno < 0) {
-        debug("Socket failed: ERRNO: %d\n", errno);
+    if (errno != 0) {
+        fprintf(stderr, "Socket failed: ERRNO: %s\n", strerror(errno));
         return -1;
     }
 
@@ -118,17 +126,7 @@ int socket_read_line(struct socket_t * socket, char * buf)
     return 0;
 }
 
-void socket_send_message(struct socket_t * socket, char * message)
+int socket_close(int sockfd)
 {
-    char * payload;
-    int len;
-
-    /* Make sure the line ends with cr-lf */
-    len = strlen(message);
-    payload = malloc(len+2);
-    snprintf(payload, len+2, "%s\r\n", message);
-
-    len = send(socket->sockfd, payload, strlen(payload), 0);
-    free(payload);
+    return close(sockfd);
 }
-

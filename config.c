@@ -18,9 +18,9 @@ void config_free(struct irc_t * irc)
     free(irc->nickname);
     free(irc->password);
     free(irc->admin);
-    
-    free(irc->socket.host_name);
-    free(irc->socket.port);
+
+    free(irc->hostname);
+    free(irc->port);
 }
 
 void config_load(struct irc_t * irc)
@@ -30,14 +30,14 @@ void config_load(struct irc_t * irc)
     char * token;
 
     file = fopen(CONFIG_FILE, "r");
-    if (!file) 
-    {	
+    if (!file)
+    {
         debug("No config file found, using defaults.\n");
         irc->nickname = NICKNAME;
         irc->password = PASSWORD;
         irc->admin = ADMIN;
-        irc->socket.host_name = HOST;
-        irc->socket.port = PORT;
+        irc->hostname = HOST;
+        irc->port = PORT;
 
         return;
     }
@@ -75,16 +75,16 @@ void config_load(struct irc_t * irc)
         else if (!strcmp(token, "server"))
         {
             token = strtok(NULL, " \r\n");
-            if (token) irc->socket.host_name = strdup(token);
-            else irc->socket.host_name = HOST;
-            debug("host_name        : %s\n", irc->socket.host_name);
+            if (token) irc->hostname = strdup(token);
+            else irc->hostname = HOST;
+            debug("host_name        : %s\n", irc->hostname);
         }
         else if (!strcmp(token, "port"))
         {
             token = strtok(NULL, " \r\n");
-            if (token) irc->socket.port = strdup(token); 
-            else irc->socket.port = PORT;
-            debug("port             : %s\n", irc->socket.port);
+            if (token) irc->port = strdup(token);
+            else irc->port = PORT;
+            debug("port             : %s\n", irc->port);
         }
         else if (!strcmp(token, "channels"))
         {
@@ -97,7 +97,7 @@ void config_load(struct irc_t * irc)
             while ((token = strtok(NULL, ",\n")) != NULL)
             {
                 char * channel = strdup(token);
-       
+
                 channels_v = realloc(channels_v, (channel_counter+1) * sizeof(char *));
                 channels_v[channel_counter++] = channel;
             }
