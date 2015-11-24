@@ -14,45 +14,48 @@
 
 #define PLUGIN_DIR "plugins"
 
+LIST_HEAD(plugin_threads_list_t, plugin_threads_t);
 struct plugin_threads_t {
     thread_t thread;
     LIST_ENTRY(plugin_threads_t) list;
 };
 
-static LIST_HEAD(, plugin_threads_t) plugin_threads_head;
+static struct plugin_threads_list_t plugin_threads_head;
 
 static void *start_thread(void * pdata)
 {
     ((struct plugin_t *)pdata)->run(0);
-
     return NULL;
 }
 
 void plugin_free()
 {
-    struct plugin_t * iterator;
+    struct plugin_t * iterator, * temp;
 
-    debug("Freeing plugin resources...\n");
+    debug("Freeing plugin resources.\n");
+    temp = NULL;
     LIST_FOREACH(iterator, &plugin_slist_head, plugin_slist) {
-        struct plugin_t * plugin = iterator;
-
-        debug("Freeing plugin: %s\n", plugin->name);
-        free(plugin);
-        free(iterator);
+        free(temp);
+        temp = NULL;
+        debug("Freeing plugin: %s\n", iterator->name);
+        temp = iterator;
     }
+    free(temp);
 
-    struct plugin_threads_t * iterator_threads;
+    struct plugin_threads_t * iterator_threads, * t_temp;
 
-    debug("Killing threads...\n");
+    debug("Killing threads.\n");
+    t_temp = NULL;
     LIST_FOREACH(iterator_threads, &plugin_threads_head, list) {
+        free(t_temp);
         thread_kill(iterator_threads->thread);
-        free(iterator_threads);
+        t_temp = iterator_threads;
     }
+    free(t_temp);
 }
 
 void plugin_start_daemons(struct irc_t * irc)
 {
-
     int err;
     struct plugin_t * iterator;
 
@@ -77,17 +80,6 @@ void plugin_start_daemons(struct irc_t * irc)
     }
 }
 
-void plugin_attach_context(struct irc_t * irc)
-{
-    struct plugin_t * iterator;
-
-    LIST_FOREACH(iterator, &plugin_slist_head, plugin_slist) {
-        struct plugin_t * plugin = iterator;
-        debug("Name: [%s]\n", plugin->name);
-        plugin->irc = irc;
-    }
-}
-
 struct plugin_list_t * plugin_find_commands(char * name, struct plugin_list_t * plugin_list_head)
 {
     struct plugin_t * iterator;
@@ -109,14 +101,11 @@ struct plugin_list_t * plugin_find_commands(char * name, struct plugin_list_t * 
 void send_message(struct irc_t * irc, char * response)
 {
     char buffer[4096];
-    buffer[0] = 0;
-    sprintf(buffer, "%s\r\n", response);
+    snprintf(buffer, sizeof buffer, "%s\r\n", response);
     socket_write(irc->sockfd, buffer, strlen(buffer));
 }
 
-struct plugin_t plugin_list[100];
-
-void plugin_load_file(char * file)
+static void plugin_load_file(char * file, struct irc_t * irc)
 {
     void * plugin_file;
     struct plugin_t * (*init)(void);
@@ -141,6 +130,7 @@ void plugin_load_file(char * file)
 
     /* Attach callbacks to be used by plugin. */
     plugin->send_message = send_message;
+    plugin->irc = irc;
 
     /* If plugin is of type grep, acquire grep keywords. */
     if (plugin->type & PLUGIN_TYPE_GREP) {
@@ -158,7 +148,7 @@ void plugin_load_file(char * file)
     LIST_INSERT_HEAD(&plugin_slist_head, plugin, plugin_slist);
 }
 
-void plugin_init()
+void plugin_init(struct irc_t * irc)
 {
     DIR * dir;
     struct dirent * dirent;
@@ -168,7 +158,7 @@ void plugin_init()
     dir = opendir(PLUGIN_DIR);
 
 	if (!dir) {
-		debug("No modules directory found. No plugins will be loaded.\n");
+		debug("No plugins directory found. No plugins will be loaded.\n");
 		return;
 	}
 
@@ -179,8 +169,8 @@ void plugin_init()
         if (strstr(dirent->d_name, ".so")) {
 #endif // __WIN32__
             char plugin_path[200];
-            sprintf(plugin_path, "%s/%s", PLUGIN_DIR, dirent->d_name);
-            plugin_load_file(plugin_path);
+            snprintf(plugin_path, sizeof plugin_path, "%s/%s", PLUGIN_DIR, dirent->d_name);
+            plugin_load_file(plugin_path, irc);
         }
     }
 

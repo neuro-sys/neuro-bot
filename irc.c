@@ -74,22 +74,18 @@ static void command_help(struct irc_t * irc)
         sprintf(message + strlen(message), "%s", plugin->name);
 
         if (plugin->type & PLUGIN_TYPE_DAEMON) {
-            sprintf(message + strlen(message),  " (d)" );
+            sprintf(message + strlen(message),  " (daemon)" );
         }
         if (plugin->type & PLUGIN_TYPE_GREP) {
-            sprintf(message + strlen(message),  " (g)" );
+            sprintf(message + strlen(message),  " (grep)" );
         }
         if (plugin->type & PLUGIN_TYPE_COMMAND) {
-            sprintf(message + strlen(message),  " (c)" );
+            sprintf(message + strlen(message),  " (command)" );
         }
 
     }
     sprintf(message + strlen(message), ".\r\n");
 
-    socket_write(irc->sockfd, message, strlen(message));
-
-    message[0] = 0;
-    sprintf(message, "PRIVMSG %s :(d) is daemon, (g) is grep, (c) is command type of plugins. you can run command plugins with prefix `.'\r\n", irc->from);
     socket_write(irc->sockfd, message, strlen(message));
 }
 
@@ -329,6 +325,7 @@ static void process_protocol_commands (struct irc_t * irc)
         process_command_353(irc);
     } else if (strcmp("NOTICE", irc->message.command) == 0) {
         if (strstr(irc->message.trailing, "registered" ) ) {
+            // A NOTICE that contains the word "registered" has been received.
             static int retry_count = 0;
 
             if (retry_count > 3) {
@@ -389,6 +386,7 @@ static void irc_init(struct irc_t * irc)
 void irc_free(struct irc_t * irc)
 {
     struct channel_t * iterator, * temp;
+    struct ajoin_channel_t * ajoin_iterator, * a_temp;
 
     if (&irc->channel_list_head == NULL) {
         return;
@@ -397,16 +395,29 @@ void irc_free(struct irc_t * irc)
     temp = NULL;
     LIST_FOREACH(iterator, &irc->channel_list_head, list) {
         channel_free(temp);
-        temp = NULL;
         temp = iterator;
     }
     channel_free(temp);
+
+    a_temp = NULL;
+    LIST_FOREACH(ajoin_iterator, &irc->ajoin_channels_head, list) {
+        free(a_temp);
+        a_temp = ajoin_iterator;
+        debug("Removing ajoin channel: %s\n", ajoin_iterator->channel_name);
+        free(ajoin_iterator->channel_name);
+    }
+    free(a_temp);
+
+    free(irc->admin);
+    free(irc->hostname);
+    free(irc->nickname);
+    free(irc->password);
+    free(irc->port);
+    socket_close(irc->sockfd);
 }
 
 int irc_run(struct irc_t * irc)
 {
-    plugin_attach_context(irc);
-
     /* Conect to the server specified in socket_t struct. */
     if ( (irc->sockfd = socket_connect(irc->hostname, atoi(irc->port))) < 0 ) {
         debug("Unable to connect to %s:%s\n", irc->hostname, irc->port);
@@ -419,8 +430,7 @@ int irc_run(struct irc_t * irc)
     for (;;)
     {
         char line[MAX_IRC_MSG];
-        if (socket_readline(irc->sockfd, line, sizeof(line)) < 0) { /* blocking io */
-            debug("Socked failed.\n");
+        if (socket_readline(irc->sockfd, line, sizeof(line)) < 0) {
             return -1;
         }
         irc_process_line(irc, line);

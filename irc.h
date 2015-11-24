@@ -6,7 +6,7 @@
 #include "socket.h"
 #include "queue.h"
 
-#define MAX_IRC_MSG 510
+LIST_HEAD(ajoin_channel_list_t, ajoin_channel_t);
 
 struct ajoin_channel_t {
     char * channel_name;
@@ -24,7 +24,7 @@ struct irc_t {
     char                * password;
     char                * admin;
 
-    LIST_HEAD(,ajoin_channel_t) ajoin_channels_head;
+    struct ajoin_channel_list_t ajoin_channels_head;
 };
 
 int     irc_run                 (struct irc_t * irc);

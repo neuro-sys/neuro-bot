@@ -25,6 +25,7 @@ const char * xp_items = "//*[name()='item']";
 struct plugin_t * plugin;
 
 /* RSS database and XML model */
+LIST_HEAD(rss_list_head, rss_entity_s);
 struct rss_entity_s {
     char * code;
     char * title;
@@ -32,8 +33,8 @@ struct rss_entity_s {
     char * url;
     char * description;
     char * updated;
-        
-    LIST_HEAD(rss_list_head, rss_entity_s) items;
+
+    struct rss_list_head items;
 
     LIST_ENTRY(rss_entity_s) rss_entity_list;
 };
@@ -65,7 +66,7 @@ void rss_entity_free_item(struct rss_entity_s * rss)
     if (rss->url)           free(rss->url);
 //    if (rss->description)   free(rss->description);
     if (rss->updated)       free(rss->updated);
-    
+
     if (rss)                free(rss);
 }
 
@@ -92,7 +93,7 @@ int db_cb_create_rss_entity(void * param, int argc, char ** argv, char ** column
         if (strcmp(col_name, "CODE") == 0) {
             rss->code = strdup(argv[i]);
         }
-	
+
         if (strcmp(col_name, "RSS_URL") == 0) {
             rss->rss_url = strdup(argv[i]);
         }
@@ -100,7 +101,7 @@ int db_cb_create_rss_entity(void * param, int argc, char ** argv, char ** column
         if (strcmp(col_name, "TITLE") == 0) {
             rss->title = strdup(argv[i]);
         }
-    
+
         if (strcmp(col_name, "URL") == 0) {
             rss->url = strdup(argv[i]);
         }
@@ -121,7 +122,7 @@ void rss_entity_insert(struct rss_entity_s * entity, char * code, char * rss_url
     int sqliteStatus;
     struct sqlite3 * db = get_db_connection();
     char statement[1024];
-    LIST_HEAD(rss_list_head, rss_entity_s) rss_list_head; 
+    LIST_HEAD(rss_list_head, rss_entity_s) rss_list_head;
     LIST_INIT(&rss_list_head);
 
     sprintf(statement, "SELECT * FROM RSS WHERE RSS_URL = '%s'", rss_url);
@@ -359,7 +360,7 @@ void rss_list(void)
     char statement[250];
     struct rss_entity_s * iterator;
 
-    LIST_HEAD(rss_list_head, rss_entity_s) rss_list_head; 
+    LIST_HEAD(rss_list_head, rss_entity_s) rss_list_head;
     LIST_INIT(&rss_list_head);
 
     sprintf(statement, "SELECT R.CODE, R.RSS_URL, R.TITLE, R.URL, R.UPDATED FROM RSS R;");
@@ -384,7 +385,7 @@ void rss_list(void)
     LIST_FOREACH(iterator, &rss_list_head, rss_entity_list) {
         struct rss_entity_s * rss = iterator;
         char response[MAX_IRC_MSG];
-       
+
         snprintf(response, MAX_IRC_MSG, "PRIVMSG %s :* [%s] - %s - %s - %s - %s",
             plugin->irc->from,
             rss->code,
@@ -428,7 +429,7 @@ void rss_show(char * tag, int from, int to)
     int sqliteStatus;
     struct sqlite3 * db = get_db_connection();
     char statement[1024];
-    LIST_HEAD(rss_list_head, rss_entity_s) rss_list_head; 
+    LIST_HEAD(rss_list_head, rss_entity_s) rss_list_head;
     char * url;
 
     LIST_INIT(&rss_list_head);
@@ -453,7 +454,7 @@ void rss_show(char * tag, int from, int to)
     }
 
     url = LIST_FIRST(&rss_list_head)->rss_url;
-    
+
     http = curl_perform(url, NULL);
 
     if (http == NULL || http->body == NULL) {
@@ -487,7 +488,7 @@ void rss_show(char * tag, int from, int to)
             struct rss_entity_s * rss = iterator;
 
             char response[MAX_IRC_MSG];
-           
+
             snprintf(response, MAX_IRC_MSG, "PRIVMSG %s :* [%s] - %s",
                 plugin->irc->from,
                 rss->title,
@@ -498,7 +499,7 @@ void rss_show(char * tag, int from, int to)
             usleep(500*1000);
             if (is_no_range && ++print_counter >= 3) {
                 char response[MAX_IRC_MSG];
-               
+
                 snprintf(response, MAX_IRC_MSG, "PRIVMSG %s :Showing only first 3 items. Specify a range if you like.", plugin->irc->from);
                 plugin->send_message(plugin->irc, response);
                 break;
@@ -535,7 +536,10 @@ void invalid_selection(void)
 void decide_flow(char * trailing)
 {
     struct argv_s * param;
-    char * cmd;
+    struct argv_t * iterator;
+    char * cmd, * arg1 = NULL, * arg2 = NULL, * arg3 = NULL;
+    int i;
+
 
     param = argv_parse(trailing);
     if (param == NULL) {
@@ -548,7 +552,22 @@ void decide_flow(char * trailing)
         return;
     }
 
-    cmd = param->argv[1];
+    i = 0;
+    TAILQ_FOREACH(iterator, &param->argv_list, list) {
+        if (i == 1) {
+            cmd = iterator->value;
+        }
+        if (i == 2) {
+            arg1 = iterator->value;
+        }
+        if (i == 3) {
+            arg2 = iterator->value;
+        }
+        if (i == 4) {
+            arg3 = iterator->value;
+        }
+        i++;
+    }
 
     if (strcmp(cmd, "list") == 0) {
         rss_list();
@@ -562,8 +581,7 @@ void decide_flow(char * trailing)
 
             return;
         }
-
-        rss_add(param->argv[2], param->argv[3]); 
+		rss_add(arg1, arg2);
         return;
     } else if (strcmp(cmd, "del") == 0) {
         if (param->argc != 3) {
@@ -574,7 +592,7 @@ void decide_flow(char * trailing)
 
             return;
         }
-        rss_del(param->argv[2]);
+        rss_del(arg1);
         return;
     } else if (strcmp(cmd, "show") == 0) {
         if (param->argc < 3 || param->argc > 4) {
@@ -589,7 +607,7 @@ void decide_flow(char * trailing)
         int from = 0, to = 0;
 
         if (param->argc == 4) {
-            if (rss_show_validate_range(param->argv[3], &from, &to) < 0) {
+            if (rss_show_validate_range(arg3, &from, &to) < 0) {
                 char response[512];
 
                 sprintf(response, "PRIVMSG %s :.rss show <tag> [<range>] (range format 5-10)", plugin->irc->from);
@@ -597,9 +615,10 @@ void decide_flow(char * trailing)
                 return;
             }
         }
-        
+
         debug("%d-%d\n", from, to);
-        rss_show(param->argv[2], from, to);
+
+        rss_show(arg1, from, to);
         return;
     }
 
@@ -611,7 +630,7 @@ static char * escape_quotes(char * str)
 {
     for (; *str != 0; str++) {
         if (*str == '\'') *str = '\"';
-    } 
+    }
 
     return str;
 }
@@ -622,7 +641,7 @@ void run(int type)
     decide_flow(plugin->irc->message.trailing);
 }
 
-static void create_tables(void) 
+static void create_tables(void)
 {
     char *zErrMsg = 0;
     int sqliteStatus;
@@ -661,7 +680,7 @@ void send_message(struct irc_t * irc, char * message) {
 int main(int argc, char *argv[])
 {
     struct irc_t irc;
-    
+
     init();
 
     memset(&irc, 0, sizeof(irc));

@@ -88,7 +88,7 @@ void config_load(struct irc_t * irc)
         }
         else if (!strcmp(token, "channels"))
         {
-            char print_buffer[2048];
+            char print_buffer[4096];
 
             LIST_INIT(&irc->ajoin_channels_head);
 

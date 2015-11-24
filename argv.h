@@ -3,10 +3,10 @@
 
 #include "queue.h"
 
-LIST_HEAD(argv_list_t, argv_t);
+TAILQ_HEAD(argv_list_t, argv_t);
 struct argv_t {
     char * value;
-    LIST_ENTRY(argv_t) list;
+    TAILQ_ENTRY(argv_t) list;
 };
 
 struct argv_s {

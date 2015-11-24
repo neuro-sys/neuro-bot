@@ -21,16 +21,16 @@ struct argv_s * argv_parse(char * str)
         return NULL;
     }
 
-    LIST_INIT(&param->argv_list);
+    TAILQ_INIT(&param->argv_list);
 
     argv = malloc(sizeof *argv);
     argv->value = strdup(token);
-    LIST_INSERT_HEAD(&param->argv_list, argv, list);
+    TAILQ_INSERT_TAIL(&param->argv_list, argv, list);
 
     while ((token = strtok(NULL, " ")) != NULL) {
         argv = malloc(sizeof *argv);
         argv->value = strdup(token);
-        LIST_INSERT_HEAD(&param->argv_list, argv, list);
+        TAILQ_INSERT_TAIL(&param->argv_list, argv, list);
     }
 
     return param;
@@ -41,9 +41,8 @@ void argv_free(struct argv_s * arg)
     struct argv_t * iterator, * temp;
 
     temp = NULL;
-    LIST_FOREACH(iterator, &arg->argv_list, list) {
+    TAILQ_FOREACH(iterator, &arg->argv_list, list) {
         free(temp);
-        temp = NULL;
         free(iterator->value);
         temp = iterator;
     }

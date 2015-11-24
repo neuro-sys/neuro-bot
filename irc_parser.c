@@ -55,7 +55,7 @@ static void parse_params(char params[][50], char * trailing, const char * src)
     char buf[510];
     char * t;
 
-    strncpy(buf, src, 510); /* Copy the line in a buffer to tokenize it. */
+    strncpy(buf, src, sizeof buf); /* Copy the line in a buffer to tokenize it. */
     /* Get the `trailing' first, which marks the ending of params, if there is. */
     if ((t = strstr(buf, " :"))) { /* It starts with a SPACE preceding a ':'. */
         char * end = strchr(t, '\r');
