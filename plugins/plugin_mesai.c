@@ -20,7 +20,7 @@ static void format_message(double diff, char * dest, size_t len)
     strncpy(dest, buffer, len);
 }
 
-void run(void)
+void run(int type)
 {
     time_t current_time, mesai_time;
     struct tm * mesai_time_tm;
@@ -54,9 +54,7 @@ struct plugin_t * init(void)
 
     plugin->run        = run;
     plugin->name       = "mesai";
-    plugin->is_daemon  = 0;
-    plugin->is_command = 1;
-    plugin->is_grep    = 0;
+    plugin->type       = PLUGIN_TYPE_COMMAND;
 
     return plugin;
 }

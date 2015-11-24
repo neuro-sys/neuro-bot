@@ -9,6 +9,21 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <unistd.h>
+#include <setjmp.h>
+#include <signal.h>
+
+#ifdef __WIN32__
+#include <windows.h>
+#endif // __WIN32__
+
+jmp_buf jmp_buf_recover_plugin;
+
+void plugin_sigsegv_handler(int s)
+{
+    if (s == SIGSEGV) {
+        longjmp(jmp_buf_recover_plugin, 1);
+    }
+}
 
 /* Send misc user commands. */
 void irc_set_nick(struct irc_t * irc, char * nickname)
@@ -58,18 +73,18 @@ static void command_help(struct irc_t * irc)
         }
         sprintf(message + strlen(message), "%s", plugin->name);
 
-        if (plugin->is_daemon) {
+        if (plugin->type & PLUGIN_TYPE_DAEMON) {
             sprintf(message + strlen(message),  " (d)" );
         }
-        if (plugin->is_grep) {
+        if (plugin->type & PLUGIN_TYPE_GREP) {
             sprintf(message + strlen(message),  " (g)" );
         }
-        if (plugin->is_command) {
+        if (plugin->type & PLUGIN_TYPE_COMMAND) {
             sprintf(message + strlen(message),  " (c)" );
         }
 
     }
-    sprintf(message + strlen(message), ".");
+    sprintf(message + strlen(message), ".\r\n");
 
     socket_write(irc->sockfd, message, strlen(message));
 
@@ -97,9 +112,7 @@ static void irc_plugin_handle_command(struct irc_t * irc)
 
         debug("Handling plugin command: %s\n", plugin->name);
 
-        BIT_ON(plugin->is_command, 2);
-        plugin->run();
-        BIT_OFF(plugin->is_command, 2);
+        plugin->run(PLUGIN_TYPE_COMMAND);
     }
 
     free(plugin_commands_v);
@@ -118,7 +131,7 @@ static void irc_plugin_handle_grep(struct irc_t * irc)
         struct plugin_t * plugin = iterator;
         char ** keywords_v;
 
-        if (!plugin->is_grep || plugin->is_manager)
+        if (!(plugin->type & PLUGIN_TYPE_GREP))
             continue;
 
         for (keywords_v = plugin->keywords; *keywords_v != NULL; keywords_v++) {
@@ -127,9 +140,7 @@ static void irc_plugin_handle_grep(struct irc_t * irc)
             if (strstr(irc->message.trailing, keyword) || strcmp("*", keyword) == 0) {
                 debug("Handling grep command: %s\n", plugin->name);
 
-                BIT_ON(plugin->is_grep, 2);
-                plugin->run();
-                BIT_OFF(plugin->is_grep, 2);
+                plugin->run(PLUGIN_TYPE_GREP);
                 break;
             }
         }
@@ -188,11 +199,17 @@ static void process_command_privmsg (struct irc_t * irc)
     if (!strcmp(irc->message.params[0], irc->nickname))
         strcpy(irc->from, irc->message.prefix.nickname.nickname);
 
-    /* If it the trailing message starts with a period, it's a bot command */
-    if ( irc->message.trailing[0] == '.' )
-        process_bot_command_user (irc);
+    signal(SIGSEGV, plugin_sigsegv_handler);
 
-    irc_plugin_handle_grep(irc);
+    if (!setjmp(jmp_buf_recover_plugin)) {
+        /* If it the trailing message starts with a period, it's a bot command */
+        if ( irc->message.trailing[0] == '.' )
+            process_bot_command_user (irc);
+
+        irc_plugin_handle_grep(irc);
+    } else {
+        debug("Recovered from fatal error.\n");
+    }
 }
 
 static void process_command_join_new_user(struct irc_t * irc)
@@ -210,7 +227,7 @@ static void process_command_join_new_user(struct irc_t * irc)
         return;
     }
 
-    channel = channel_find(irc->channels_v, channel_name);
+    channel = channel_find(&irc->channel_list_head, channel_name);
     if (channel == NULL) {
         return;
     }
@@ -220,27 +237,13 @@ static void process_command_join_new_user(struct irc_t * irc)
 
 static void process_command_join_new_channel(struct irc_t * irc)
 {
-    int channel_counter = 0;
     char * channel_name;
-    struct channel_t * channel, ** iterator;
+    struct channel_t * channel;
 
     channel_name = irc->message.params[0];
-    debug("%s\n", irc->message.trailing);
-
-    if (irc->channels_v != NULL) {
-        for (iterator = irc->channels_v; *iterator != NULL; iterator++, channel_counter++) {}
-    }
-
-    irc->channels_v = realloc(irc->channels_v, (channel_counter+1) * sizeof (struct channel_t *));
     channel = channel_new(channel_name);
-    irc->channels_v[channel_counter++] = channel;
 
-    irc->channels_v = realloc(irc->channels_v, (channel_counter+1) * sizeof (struct channel_t *));
-    irc->channels_v[channel_counter++] = NULL;
-
-    for (iterator = irc->channels_v; *iterator != NULL; iterator++) {
-        debug("In channel: %s\n", (*iterator)->name);
-    }
+    LIST_INSERT_HEAD(&irc->channel_list_head, channel, list);
 }
 
 static void process_command_part_user(struct irc_t * irc)
@@ -258,7 +261,7 @@ static void process_command_part_user(struct irc_t * irc)
         return;
     }
 
-    channel = channel_find(irc->channels_v, channel_name);
+    channel = channel_find(&irc->channel_list_head, channel_name);
     if (channel == NULL) {
         return;
     }
@@ -268,31 +271,16 @@ static void process_command_part_user(struct irc_t * irc)
 
 static void process_command_part_channel(struct irc_t * irc)
 {
-    int channels_counter = 0;
-    struct channel_t ** new_channels_v = NULL, ** iterator;
+    struct channel_t * iterator;
     char * channel_name;
 
     channel_name = irc->message.params[0];
 
-    for (iterator = irc->channels_v; *iterator != NULL; iterator++) {
-        struct channel_t * temp_channel = *iterator;
-
-        if (strcmp(temp_channel->name, channel_name) == 0) {
-            free(temp_channel);
-            continue;
+    LIST_FOREACH(iterator, &irc->channel_list_head, list) {
+        if (strcmp(iterator->name, channel_name) == 0) {
+            channel_free(iterator);
+            LIST_REMOVE(iterator, list);
         }
-
-        new_channels_v = realloc(new_channels_v, (channels_counter+1) * sizeof (struct channel_t *));
-        new_channels_v[channels_counter++] = temp_channel;
-    }
-    new_channels_v = realloc(new_channels_v, (channels_counter+1) * sizeof (struct channel_t *));
-    new_channels_v[channels_counter++] = NULL;
-
-    free(irc->channels_v);
-    irc->channels_v = new_channels_v;
-
-    for (iterator = irc->channels_v; *iterator != NULL; iterator++) {
-        debug("In channel: %s\n", (*iterator)->name);
     }
 }
 
@@ -308,7 +296,7 @@ static void process_command_353(struct irc_t * irc)
         }
     }
 
-    channel = channel_find(irc->channels_v, channel_name);
+    channel = channel_find(&irc->channel_list_head, channel_name);
     if (channel == NULL) {
         return;
     }
@@ -323,7 +311,6 @@ static void process_command_353(struct irc_t * irc)
 
     while ((token = strtok(NULL, " ")) != NULL) {
         channel_add_user(channel, token);
-        debug("%s\n", token);
     }
 }
 
@@ -337,10 +324,10 @@ static void process_protocol_commands (struct irc_t * irc)
         snprintf (response, MAX_IRC_MSG, "PONG %s\r\n", irc->message.trailing);
         socket_write(irc->sockfd, response, strlen(response));
     } else if (strcmp("001", irc->message.command) == 0) {
-        char ** channels_v;
+        struct ajoin_channel_t * iterator;
 
-        for (channels_v = irc->channels_ajoin_v; *channels_v != NULL; channels_v++) {
-            irc_join_channel(irc, *channels_v);
+        LIST_FOREACH(iterator, &irc->ajoin_channels_head, list) {
+            irc_join_channel(irc, iterator->channel_name);
         }
     } else if (strcmp("353", irc->message.command) == 0) {
             process_command_353(irc);
@@ -400,24 +387,23 @@ static void irc_init(struct irc_t * irc)
 
     irc_set_user(irc, "ircbot", "github.com/neuro-sys/neuro-bot");
 
+    LIST_INIT(&irc->channel_list_head);
+
     plugin_start_daemons(irc);
 }
 
 
 void irc_free(struct irc_t * irc)
 {
-    struct channel_t ** iterator;
+    struct channel_t * iterator;
 
-    if (irc->channels_v == NULL) {
+    if (&irc->channel_list_head == NULL) {
         return;
     }
 
-    for (iterator = irc->channels_v; *iterator != NULL; iterator++) {
-        channel_free(*iterator);
+    LIST_FOREACH(iterator, &irc->channel_list_head, list) {
+        channel_free(iterator);
     }
-
-    free(irc->channels_v);
-
 }
 
 int irc_run(struct irc_t * irc)
@@ -433,7 +419,7 @@ int irc_run(struct irc_t * irc)
     /* Do one time initialization work after connecting to the server. */
     irc_init(irc);
 
-    while (666)
+    for (;;)
     {
         char line[MAX_IRC_MSG];
         if (socket_readline(irc->sockfd, line, sizeof(line)) < 0) { /* blocking io */
@@ -443,4 +429,3 @@ int irc_run(struct irc_t * irc)
         irc_process_line(irc, line);
     }
 }
-

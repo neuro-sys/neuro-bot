@@ -41,9 +41,7 @@ static int getchar_fd(int sockfd)
     static int n;
 
     if (n == 0) {
-        if ( (n = recv(sockfd, buf, 1024, 0)) <= 0 ) {
-            return '\n';
-        }
+        n = recv(sockfd, buf, 1024, 0);
         bufp = buf;
     }
     return (--n >= 0) ? (unsigned char) *bufp++ : EOF;
@@ -113,11 +111,11 @@ int socket_readline(int sockfd, char * buf, int buf_len)
 {
     int ret, i = 0;
 
-    while( (ret = getchar_fd(sockfd)) != '\n' || ++i == buf_len - 1)
+    while( (ret = getchar_fd(sockfd)) != '\n' || ++i == buf_len)
         *buf++ = ret;
 
     if (errno != 0) {
-        fprintf(stderr, "Socket failed: ERRNO: %s\n", strerror(errno));
+        fprintf(stderr, "Socket failed, strerror: %s\n", strerror(errno));
         return -1;
     }
 

@@ -117,7 +117,7 @@ int adapt_spotify_hotlink(char * trailing)
     return 1;
 }
 
-void run(void)
+void run(int type)
 {
     struct http_req * http;
     char reply_msg[MAX_IRC_MSG];
@@ -203,9 +203,7 @@ struct plugin_t * init(void)
 
     plugin->run        = run;
     plugin->name       = "title";
-    plugin->is_daemon  = 0;
-    plugin->is_command = 0;
-    plugin->is_grep    = 1;
+    plugin->type       = PLUGIN_TYPE_GREP;
 
     return plugin;
 }

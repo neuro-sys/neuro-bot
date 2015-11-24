@@ -48,3 +48,6 @@ tags
 neurobot
 *.log
 *.dSYM
+*~
+*.stackdump
+

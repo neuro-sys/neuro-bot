@@ -56,7 +56,7 @@ static char * parse_json_wiki(char * data)
 
 struct plugin_t * plugin;
 
-void run(void)
+void run(int type)
 {
     char * p, * t, reply_message[MAX_IRC_MSG];
     struct http_req * http;
@@ -120,9 +120,7 @@ struct plugin_t * init(void)
 
     plugin->run        = run;
     plugin->name       = "wiki";
-    plugin->is_daemon  = 0;
-    plugin->is_command = 1;
-    plugin->is_grep    = 0;
+    plugin->type       = PLUGIN_TYPE_COMMAND;
 
     return plugin;
 }

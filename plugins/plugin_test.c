@@ -6,7 +6,7 @@
 
 struct plugin_t * plugin;
 
-void run(void)
+void run(int type)
 {
     char response[512];
 
@@ -22,9 +22,7 @@ struct plugin_t * init(void)
 
     plugin->run        = run;
     plugin->name       = "command";
-    plugin->is_daemon  = 0;
-    plugin->is_command = 1;
-    plugin->is_grep    = 0;
+    plugin->type       = PLUGIN_TYPE_COMMAND;
 
     return plugin;
 }

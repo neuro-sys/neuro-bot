@@ -616,7 +616,7 @@ static char * escape_quotes(char * str)
     return str;
 }
 
-void run(void)
+void run(int type)
 {
     escape_quotes(plugin->irc->message.trailing);
     decide_flow(plugin->irc->message.trailing);
@@ -645,9 +645,7 @@ struct plugin_t * init(void)
 
     plugin->run        = run;
     plugin->name       = "rss";
-    plugin->is_daemon  = 0;
-    plugin->is_command = 1;
-    plugin->is_grep    = 0;
+    plugin->type       = PLUGIN_TYPE_COMMAND;
 
     create_tables();
 

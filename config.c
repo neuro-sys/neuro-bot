@@ -7,13 +7,12 @@
 
 void config_free(struct irc_t * irc)
 {
-    char ** iterator;
+    struct ajoin_channel_t * iterator;
 
-    for (iterator = irc->channels_ajoin_v; *iterator != NULL; iterator++) {
-        free(*iterator);
+    LIST_FOREACH(iterator, &irc->ajoin_channels_head, list) {
+        free(iterator->channel_name);
+        free (iterator);
     }
-
-    free(irc->channels_ajoin_v);
 
     free(irc->nickname);
     free(irc->password);
@@ -88,27 +87,20 @@ void config_load(struct irc_t * irc)
         }
         else if (!strcmp(token, "channels"))
         {
-            int channel_counter = 0;
             char print_buffer[2048];
-            char ** channels_v = NULL;
 
-            print_buffer[0] = 0;
+            LIST_INIT(&irc->ajoin_channels_head);
 
-            while ((token = strtok(NULL, ",\n")) != NULL)
-            {
-                char * channel = strdup(token);
-
-                channels_v = realloc(channels_v, (channel_counter+1) * sizeof(char *));
-                channels_v[channel_counter++] = channel;
+            while ((token = strtok(NULL, ",\n")) != NULL) {
+                struct ajoin_channel_t * ajoin_channel = malloc(sizeof *ajoin_channel);
+                ajoin_channel->channel_name = strdup(token);
+                LIST_INSERT_HEAD(&irc->ajoin_channels_head, ajoin_channel, list);
             }
-            channels_v = realloc(channels_v, (channel_counter+1) * sizeof(char *));
-            channels_v[channel_counter++] = NULL;
-
-            irc->channels_ajoin_v = channels_v;
 
             sprintf(print_buffer, "Autojoin channels: ");
-            for(; *channels_v != NULL; channels_v++) {
-                sprintf(print_buffer + strlen(print_buffer), "%s ", *channels_v);
+            struct ajoin_channel_t * iterator;
+            LIST_FOREACH(iterator, &irc->ajoin_channels_head, list) {
+                sprintf(print_buffer + strlen(print_buffer), "%s ", iterator->channel_name);
             }
             sprintf(print_buffer + strlen(print_buffer), "\n");
             debug("%s", print_buffer);

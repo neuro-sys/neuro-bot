@@ -66,7 +66,7 @@ static void proc_info_youtube(struct irc_t * irc, struct youtube_t * youtube)
 
 struct plugin_t * plugin;
 
-void run(void)
+void run(int type)
 {
     struct youtube_t * youtube;
 
@@ -92,9 +92,7 @@ struct plugin_t * init(void)
 
     plugin->run        = run;
     plugin->name       = "youtube";
-    plugin->is_daemon  = 0;
-    plugin->is_command = 0;
-    plugin->is_grep    = 1;
+    plugin->type       = PLUGIN_TYPE_GREP;
 
     return plugin;
 }

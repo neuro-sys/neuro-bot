@@ -171,12 +171,12 @@ void handle_grep(void)
     close_db_connection(seendb);
 }
 
-void run(void)
+void run(int type)
 {
     escape_quotes(plugin->irc->message.trailing);
-    if (IS_BIT_ON(plugin->is_command, 2)) {
+    if (type == PLUGIN_TYPE_COMMAND) {
         handle_command();
-    } else if (IS_BIT_ON(plugin->is_grep, 2)) {
+    } else if (type == PLUGIN_TYPE_GREP) {
         handle_grep();
     }
 }
@@ -207,9 +207,7 @@ struct plugin_t * init(void)
 
     plugin->run        = run;
     plugin->name       = "seen";
-    plugin->is_daemon  = 0;
-    plugin->is_command = 1;
-    plugin->is_grep    = 1;
+    plugin->type       = PLUGIN_TYPE_COMMAND | PLUGIN_TYPE_GREP;
 
     create_tables();
 

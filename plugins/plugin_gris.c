@@ -50,7 +50,7 @@ static void extract_url(char * trailing, char * dest, size_t max)
     snprintf(dest, max, "%s", url);
 }
 
-void run(void)
+void run(int type)
 {
     char response[512];
     char url[512];
@@ -84,9 +84,7 @@ struct plugin_t * init(void)
 
     plugin->run        = run;
     plugin->name       = "gris";
-    plugin->is_daemon  = 0;
-    plugin->is_command = 0;
-    plugin->is_grep    = 1;
+    plugin->type       = PLUGIN_TYPE_GREP;
 
     int ret = system("java -jar plugins/gris.jar &");
     debug("gris.jar status: %d\n", ret);

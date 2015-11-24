@@ -1,7 +1,9 @@
+#include "global.h"
 #include "channel.h"
 
 #include <string.h>
 #include <stdlib.h>
+#include <stdio.h>
 
 
 struct channel_t * channel_new(char * name)
@@ -11,72 +13,51 @@ struct channel_t * channel_new(char * name)
     memset(channel, 0, sizeof (struct channel_t));
     channel->name = strdup(name);
 
+    LIST_INIT(&channel->user_list_head);
+
     return channel;
 }
 
-struct channel_t * channel_find(struct channel_t ** head, char * name)
+struct channel_t * channel_find(struct channel_list_t * head, char * name)
 {
-    struct channel_t ** iterator;
+    struct channel_t * iterator;
 
-    for (iterator = head; *iterator != NULL; iterator++) {
-        if (strcmp((*iterator)->name, name) == 0) {
-            return *iterator;
+    LIST_FOREACH(iterator, head, list) {
+        if (strcmp(iterator->name, name) == 0) {
+            return iterator;
         }
     }
-
     return NULL;
 }
 
 void channel_add_user(struct channel_t * channel, char * user)
 {
-    char ** iterator;
-    int user_counter = 0;
-
-    if (channel->users != NULL) {
-        for (iterator = channel->users; *iterator != NULL; iterator++, user_counter++) {}
-    }
-
-    channel->users = realloc(channel->users, (user_counter+1) * sizeof (char *));
-    channel->users[user_counter++] = strdup(user);
-
-    channel->users = realloc(channel->users, (user_counter+1) * sizeof (char *));
-    channel->users[user_counter] = NULL;
+    struct user_t * user_obj = malloc(sizeof *user_obj);
+    user_obj->name = strdup(user);
+     LIST_INSERT_HEAD(&channel->user_list_head, user_obj, list);
 }
 
 void channel_remove_user(struct channel_t * channel, char * user)
 {
-    char ** new_users_v = NULL, ** iterator;
-    int user_counter = 0;
+    struct user_t * iterator;
 
-
-    for (iterator = channel->users; *iterator != NULL; iterator++) {
-        if (strcmp(*iterator, user) == 0) {
-            free(*iterator);
-            continue;
+    LIST_FOREACH(iterator, &channel->user_list_head, list) {
+        if (strcmp(iterator->name, user) == 0) {
+            LIST_REMOVE(iterator, list);
+            free(iterator->name);
+            free(iterator);
         }
-
-        new_users_v = realloc(new_users_v, (user_counter+1) * sizeof (char *));
-        new_users_v[user_counter++] = *iterator;
     }
-
-    new_users_v = realloc(new_users_v, (user_counter+1) * sizeof (char *));
-    new_users_v[user_counter] = NULL;
-
-    free(channel->users);
-    channel->users = new_users_v;
 }
 
 void channel_free(struct channel_t * channel)
 {
-    char ** iterator;
+    struct user_t * iterator;
 
-    if (channel->users != NULL) {
-        for (iterator = channel->users; *iterator != NULL; iterator++) {
-            free(*iterator);
-        } 
+    LIST_FOREACH(iterator, &channel->user_list_head, list) {
+        channel_remove_user(channel, iterator->name);
     }
 
-    free(channel->users); 
     free(channel->name);
     free(channel);
 }
@@ -114,7 +95,7 @@ int main(int argc, char *argv[])
     channel_print(channel);
 
     channel_free(channel);
- 
+
     return 0;
 }
 #endif

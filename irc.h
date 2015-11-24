@@ -4,21 +4,27 @@
 #include "irc_parser.h"
 #include "channel.h"
 #include "socket.h"
+#include "queue.h"
 
 #define MAX_IRC_MSG 510
 
+struct ajoin_channel_t {
+    char * channel_name;
+    LIST_ENTRY(ajoin_channel_t) list;
+};
 
 struct irc_t {
     struct message_t    message;               /* Holds the server response as parsed. */
     char                from[100];             /* A shortcut for by whom the msg is received. */
-    struct channel_t    ** channels_v;
+    struct channel_list_t channel_list_head;
     int                 sockfd;
     char                * hostname;
     char                * port;
     char                * nickname;
     char                * password;
     char                * admin;
-    char                ** channels_ajoin_v;
+
+    LIST_HEAD(,ajoin_channel_t) ajoin_channels_head;
 };
 
 int     irc_run                 (struct irc_t * irc);

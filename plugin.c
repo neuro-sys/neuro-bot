@@ -15,15 +15,16 @@
 
 #define PLUGIN_DIR "plugins"
 
-LIST_HEAD(plugin_threads_head, plugin_threads_t) plugin_threads_head;
 struct plugin_threads_t {
     thread_t thread;
-    LIST_ENTRY(plugin_threads_t) plugin_threads;
+    LIST_ENTRY(plugin_threads_t) list;
 };
+
+static LIST_HEAD(, plugin_threads_t) plugin_threads_head;
 
 static void *start_thread(void * pdata)
 {
-    ((struct plugin_t *)pdata)->run();
+    ((struct plugin_t *)pdata)->run(0);
 
     return NULL;
 }
@@ -44,7 +45,7 @@ void plugin_free()
     struct plugin_threads_t * iterator_threads;
 
     debug("Killing threads...\n");
-    LIST_FOREACH(iterator_threads, &plugin_threads_head, plugin_threads) {
+    LIST_FOREACH(iterator_threads, &plugin_threads_head, list) {
         thread_kill(iterator_threads->thread);
         free(iterator_threads);
     }
@@ -64,7 +65,7 @@ void plugin_start_daemons(struct irc_t * irc)
 
         memset(plugin_thread, 0, sizeof(struct plugin_threads_t));
 
-        if (!plugin->is_daemon || plugin->is_manager)
+        if (!(plugin->type & PLUGIN_TYPE_DAEMON))
             continue;
 
         debug("Looper plugin [%s] is started\n", plugin->name);
@@ -73,7 +74,7 @@ void plugin_start_daemons(struct irc_t * irc)
             debug("Thread could not be started. pthread_create, errno = %d\n", err);
         }
 
-        LIST_INSERT_HEAD(&plugin_threads_head, plugin_thread, plugin_threads);
+        LIST_INSERT_HEAD(&plugin_threads_head, plugin_thread, list);
     }
 }
 
@@ -100,13 +101,8 @@ struct plugin_t ** plugin_find_commands(char * name, struct plugin_t *** p_plugi
     LIST_FOREACH(iterator, &plugin_slist_head, plugin_slist) {
         struct plugin_t * plugin = iterator;
 
-        if (!plugin->is_command)
+        if (!(plugin->type & PLUGIN_TYPE_COMMAND))
             continue;
-
-        if (plugin->is_manager && !plugin->manager_find(name)) {
-            plugin_commands_v = realloc(plugin_commands_v, (command_counter+1) * sizeof (struct plugin_t *));
-            plugin_commands_v[command_counter++] = plugin;
-        }
 
         if (!strcmp(plugin->name, name)) {
             plugin_commands_v = realloc(plugin_commands_v, (command_counter+1) * sizeof (struct plugin_t *));
@@ -159,7 +155,7 @@ void plugin_load_file(char * file)
     plugin->send_message = send_message;
 
     /* If plugin is of type grep, acquire grep keywords. */
-    if (!plugin->is_manager && plugin->is_grep) {
+    if (plugin->type & PLUGIN_TYPE_GREP) {
         char ** keywords;
 
         if ((keywords = dl_sym(plugin_file, "keywords"))) {
