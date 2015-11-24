@@ -3,15 +3,14 @@
 
 #include "global.h"
 #include "thread.h"
+#include "dl.h"
 
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 
-
 #include <signal.h>
 #include <dirent.h>
-#include "dl.h"
 
 #define PLUGIN_DIR "plugins"
 
@@ -82,7 +81,6 @@ void plugin_attach_context(struct irc_t * irc)
 {
     struct plugin_t * iterator;
 
-    debug("Session preparing plugins before connecting to the server.\n");
     LIST_FOREACH(iterator, &plugin_slist_head, plugin_slist) {
         struct plugin_t * plugin = iterator;
         debug("Name: [%s]\n", plugin->name);
@@ -90,13 +88,9 @@ void plugin_attach_context(struct irc_t * irc)
     }
 }
 
-struct plugin_t ** plugin_find_commands(char * name, struct plugin_t *** p_plugin_commands_v)
+struct plugin_list_t * plugin_find_commands(char * name, struct plugin_list_t * plugin_list_head)
 {
     struct plugin_t * iterator;
-    int command_counter = 0;
-    struct plugin_t ** plugin_commands_v;
-
-    plugin_commands_v = *p_plugin_commands_v;
 
     LIST_FOREACH(iterator, &plugin_slist_head, plugin_slist) {
         struct plugin_t * plugin = iterator;
@@ -105,17 +99,11 @@ struct plugin_t ** plugin_find_commands(char * name, struct plugin_t *** p_plugi
             continue;
 
         if (!strcmp(plugin->name, name)) {
-            plugin_commands_v = realloc(plugin_commands_v, (command_counter+1) * sizeof (struct plugin_t *));
-            plugin_commands_v[command_counter++] = plugin;
+            LIST_INSERT_HEAD(plugin_list_head, plugin, plugin_slist);
         }
     }
 
-    plugin_commands_v = realloc(plugin_commands_v, (command_counter+1) * sizeof (struct plugin_t *));
-    plugin_commands_v[command_counter++] = NULL;
-
-    *p_plugin_commands_v = plugin_commands_v;
-
-    return plugin_commands_v;
+    return plugin_list_head;
 }
 
 void send_message(struct irc_t * irc, char * response)
@@ -179,20 +167,19 @@ void plugin_init()
 
     dir = opendir(PLUGIN_DIR);
 
-	if (!dir)
-	{
+	if (!dir) {
 		debug("No modules directory found. No plugins will be loaded.\n");
 		return;
 	}
 
-    while ((dirent = readdir(dir)) != NULL)
-    {
+    while ((dirent = readdir(dir)) != NULL) {
+#ifdef __WIN32__
+        if (strstr(dirent->d_name, ".dll")) {
+#else
         if (strstr(dirent->d_name, ".so")) {
+#endif // __WIN32__
             char plugin_path[200];
-            plugin_path[0] = 0;
-            strcpy(plugin_path, PLUGIN_DIR);
-            strcat(plugin_path, "/");
-            strcat(plugin_path, dirent->d_name);
+            sprintf(plugin_path, "%s/%s", PLUGIN_DIR, dirent->d_name);
             plugin_load_file(plugin_path);
         }
     }

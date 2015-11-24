@@ -28,6 +28,7 @@ void config_load(struct irc_t * irc)
     char buf[1024];
     char * token;
 
+    debug("Reading configuration file\n");
     file = fopen(CONFIG_FILE, "r");
     if (!file)
     {

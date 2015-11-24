@@ -97,25 +97,20 @@ static void irc_plugin_handle_command(struct irc_t * irc)
 {
 #define MAX_COMMAND_NAME_SIZE 50
     char command_name[50];
-    struct plugin_t ** plugin_commands_v = NULL, ** iterator;
+    struct plugin_t * iterator;
+    struct plugin_list_t plugin_list_head;
 
     size_t n = strcspn(irc->message.trailing+1, " \r\n"); // substring(1, " \r\n")
     snprintf(command_name, n+1, "%s", irc->message.trailing+1);
 
-    plugin_find_commands(command_name, &plugin_commands_v);
+    plugin_find_commands(command_name, &plugin_list_head);
 
-    if (plugin_commands_v == NULL)
+    if (LIST_EMPTY(&plugin_list_head))
         return;
 
-    for (iterator = plugin_commands_v; *iterator != NULL; iterator++) {
-        struct plugin_t * plugin = *iterator;
-
-        debug("Handling plugin command: %s\n", plugin->name);
-
-        plugin->run(PLUGIN_TYPE_COMMAND);
+    LIST_FOREACH(iterator, &plugin_list_head, plugin_slist) {
+        iterator->run(PLUGIN_TYPE_COMMAND);
     }
-
-    free(plugin_commands_v);
 
     if (strcmp(command_name, "help") == 0) {
         command_help(irc);
@@ -138,8 +133,6 @@ static void irc_plugin_handle_grep(struct irc_t * irc)
             char * keyword = *keywords_v;
 
             if (strstr(irc->message.trailing, keyword) || strcmp("*", keyword) == 0) {
-                debug("Handling grep command: %s\n", plugin->name);
-
                 plugin->run(PLUGIN_TYPE_GREP);
                 break;
             }
@@ -176,8 +169,7 @@ static void process_bot_command_admin (struct irc_t * irc)
     } else if (strcmp(".raw", command) == 0) {
         sprintf(response, "%s\r\n", argument);
         socket_write(irc->sockfd, response, strlen(response));
-    }
-    else if (strcmp(".reload", command) == 0) {
+    } else if (strcmp(".reload", command) == 0) {
         //module_load();
     }
 }
@@ -271,17 +263,21 @@ static void process_command_part_user(struct irc_t * irc)
 
 static void process_command_part_channel(struct irc_t * irc)
 {
-    struct channel_t * iterator;
+    struct channel_t * iterator, * temp;
     char * channel_name;
 
     channel_name = irc->message.params[0];
 
+    temp = NULL;
     LIST_FOREACH(iterator, &irc->channel_list_head, list) {
+        channel_free(temp);
+        temp = NULL;
         if (strcmp(iterator->name, channel_name) == 0) {
-            channel_free(iterator);
             LIST_REMOVE(iterator, list);
+            temp = iterator;
         }
     }
+    channel_free(temp);
 }
 
 static void process_command_353(struct irc_t * irc)
@@ -330,7 +326,7 @@ static void process_protocol_commands (struct irc_t * irc)
             irc_join_channel(irc, iterator->channel_name);
         }
     } else if (strcmp("353", irc->message.command) == 0) {
-            process_command_353(irc);
+        process_command_353(irc);
     } else if (strcmp("NOTICE", irc->message.command) == 0) {
         if (strstr(irc->message.trailing, "registered" ) ) {
             static int retry_count = 0;
@@ -384,26 +380,27 @@ static void irc_process_line(struct irc_t * irc, const char * line)
 static void irc_init(struct irc_t * irc)
 {
     irc_set_nick(irc, irc->nickname);
-
     irc_set_user(irc, "ircbot", "github.com/neuro-sys/neuro-bot");
-
     LIST_INIT(&irc->channel_list_head);
-
     plugin_start_daemons(irc);
 }
 
 
 void irc_free(struct irc_t * irc)
 {
-    struct channel_t * iterator;
+    struct channel_t * iterator, * temp;
 
     if (&irc->channel_list_head == NULL) {
         return;
     }
 
+    temp = NULL;
     LIST_FOREACH(iterator, &irc->channel_list_head, list) {
-        channel_free(iterator);
+        channel_free(temp);
+        temp = NULL;
+        temp = iterator;
     }
+    channel_free(temp);
 }
 
 int irc_run(struct irc_t * irc)

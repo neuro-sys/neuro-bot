@@ -9,6 +9,7 @@ struct argv_s * argv_parse(char * str)
     struct argv_s * param;
     char tokenize_buffer[1024];
     char * token;
+    struct argv_t * argv;
 
     param = malloc(sizeof (struct argv_s));
     memset(param, 0, sizeof(struct argv_s));
@@ -20,28 +21,32 @@ struct argv_s * argv_parse(char * str)
         return NULL;
     }
 
-    param->argv = realloc(param->argv, (param->argc + 1) * sizeof (char *));
-    param->argv[param->argc++] = strdup(token);
+    LIST_INIT(&param->argv_list);
+
+    argv = malloc(sizeof *argv);
+    argv->value = strdup(token);
+    LIST_INSERT_HEAD(&param->argv_list, argv, list);
 
     while ((token = strtok(NULL, " ")) != NULL) {
-        param->argv = realloc(param->argv, (param->argc + 1) * sizeof (char *));
-        param->argv[param->argc++] = strdup(token);
+        argv = malloc(sizeof *argv);
+        argv->value = strdup(token);
+        LIST_INSERT_HEAD(&param->argv_list, argv, list);
     }
-
-    param->argv = realloc(param->argv, (param->argc + 1) * sizeof (char *));
-    param->argv[param->argc] = NULL;
 
     return param;
 }
 
 void argv_free(struct argv_s * arg)
 {
-    char ** iterator;
+    struct argv_t * iterator, * temp;
 
-    for (iterator = arg->argv; *iterator != NULL; iterator++) {
-        free(*iterator);
+    temp = NULL;
+    LIST_FOREACH(iterator, &arg->argv_list, list) {
+        free(temp);
+        temp = NULL;
+        free(iterator->value);
+        temp = iterator;
     }
-
-    free(arg->argv);
+    free(temp);
     free(arg);
 }

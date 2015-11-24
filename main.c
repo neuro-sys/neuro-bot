@@ -52,9 +52,7 @@ int main(int argc, char *argv[])
 
     plugin_init();
 
-    while ( irc_run(&irc) > 0 ) {
-        /* loop until exit */
-    }
+    while ( irc_run(&irc) > 0 ) { }
 
     return 0;
 }

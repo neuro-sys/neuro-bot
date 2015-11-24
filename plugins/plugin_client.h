@@ -7,6 +7,8 @@
 
 #include "../queue.h"
 
+LIST_HEAD(plugin_list_t, plugin_t);
+
 struct plugin_t {
     char * name;                  /* Plugin name, and the command name for command plugins. */
     char ** keywords;             /* Used if is_grep is 1. */

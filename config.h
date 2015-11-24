@@ -2,7 +2,6 @@
 #define __CONFIG_H
 
 #include "global.h"
-
 #include "irc.h"
 
 void config_load();
