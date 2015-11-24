@@ -16,7 +16,7 @@ struct plugin_t * plugin;
 static void gris_search(char * url, char * dest, size_t max)
 {
     char gris_response[512];
-    int sockfd;
+    socket_t sockfd;
 
     gris_response[0] = 0;
 

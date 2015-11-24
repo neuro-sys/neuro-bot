@@ -6,11 +6,13 @@
 #define O_RDWR		0x0002
 #define O_ACCMODE	0x0003
 
-int socket_open (const char*, int);
-int socket_read (int, void*, unsigned int);
-int socket_connect(char * host_name, int port);
-int socket_readline(int sockfd, char * buf, int buf_len);
-int socket_write(int sockfd, char * buf, int buf_len);
-int socket_close(int sockfd);
+typedef void * socket_t;
+
+//int socket_open (const char*, int);
+//int socket_read (int, void*, unsigned int);
+socket_t socket_connect(char * host_name, int port);
+int socket_readline(socket_t sock, char * buf, int buf_len);
+int socket_write(socket_t sock, char * buf, int buf_len);
+int socket_close(socket_t sock);
 
 #endif // __SOCKET_H_

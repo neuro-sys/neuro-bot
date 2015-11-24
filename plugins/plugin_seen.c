@@ -208,6 +208,7 @@ struct plugin_t * init(void)
     plugin->run        = run;
     plugin->name       = "seen";
     plugin->type       = PLUGIN_TYPE_COMMAND | PLUGIN_TYPE_GREP;
+    plugin->keywords   = keywords;
 
     create_tables();
 

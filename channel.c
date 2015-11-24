@@ -40,7 +40,6 @@ void channel_add_user(struct channel_t * channel, char * user)
 void channel_remove_user(struct channel_t * channel, char * user)
 {
     struct user_t * iterator, * temp;
-
     temp = NULL;
     LIST_FOREACH(iterator, &channel->user_list_head, list) {
         free(temp);
@@ -56,15 +55,19 @@ void channel_remove_user(struct channel_t * channel, char * user)
 
 void channel_free(struct channel_t * channel)
 {
-    struct user_t * iterator;
+    struct user_t * iterator, * temp;
 
     if (!channel) {
         return;
     }
-
+    temp = NULL;
     LIST_FOREACH(iterator, &channel->user_list_head, list) {
-        channel_remove_user(channel, iterator->name);
+        if (temp)
+            channel_remove_user(channel, temp->name);
+        temp = iterator;
     }
+    if (temp)
+        channel_remove_user(channel, temp->name);
 
     free(channel->name);
     free(channel);

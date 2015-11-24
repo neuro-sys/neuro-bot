@@ -92,6 +92,7 @@ struct plugin_list_t * plugin_find_commands(char * name, struct plugin_list_t * 
 
         if (!strcmp(plugin->name, name)) {
             LIST_INSERT_HEAD(plugin_list_head, plugin, plugin_slist);
+            debug("Found plugin %s\n", name);
         }
     }
 

@@ -5,6 +5,7 @@
 #include <fcntl.h>
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 
 #ifdef __WIN32__
     #include <winsock2.h>
@@ -14,6 +15,14 @@
     #include <netdb.h>
     #include <unistd.h>
 #endif // __WIN32__
+
+struct socket_t {
+    char buf[1024];
+    char * bufp;
+    int n;
+
+    int sockfd;
+};
 
 int socket_open (const char * path, int oflag)
 {
@@ -33,18 +42,16 @@ int socket_read (int handle, void * buffer, unsigned int nbyte)
 #endif // __WIN32__
 }
 
-/* K&R 8.2 */
-static int getchar_fd(int sockfd)
+/* K&R 8.2 NOT THREAD-SAFE */
+static int getchar_fd(socket_t sock)
 {
-    static char buf[1024];
-    static char * bufp;
-    static int n;
+    struct socket_t * socket = sock;
 
-    if (n == 0) {
-        n = recv(sockfd, buf, 1024, 0);
-        bufp = buf;
+    if (socket->n == 0) {
+        socket->n = recv(socket->sockfd, socket->buf, 1024, 0);
+        socket->bufp = socket->buf;
     }
-    return (--n >= 0) ? (unsigned char) *bufp++ : EOF;
+    return (--socket->n >= 0) ? (unsigned char) *socket->bufp++ : EOF;
 }
 
 
@@ -61,12 +68,16 @@ static void initWinSock(void)
 }
 #endif
 
-int socket_connect(char * host_name, int port)
+socket_t socket_connect(char * host_name, int port)
 {
     int sockfd;
     struct sockaddr_in serv_addr;
     struct hostent * server;
     struct in_addr addr;
+
+    struct socket_t * sockets = malloc(sizeof *sockets);
+    sockets->bufp = sockets->buf;
+    memset(sockets, 0, sizeof (*sockets));
 
     memset(&serv_addr, 0, sizeof (serv_addr));
     memset(&addr, 0, sizeof (addr));
@@ -78,7 +89,7 @@ int socket_connect(char * host_name, int port)
     server = gethostbyname(host_name);
     if (server == NULL) {
         fprintf(stderr, "Failed to resolve hostname: %s\n", host_name);
-        return -1;
+        return NULL;
     }
 
     memcpy(&serv_addr.sin_addr.s_addr, server->h_addr, server->h_length);
@@ -87,44 +98,41 @@ int socket_connect(char * host_name, int port)
 
     if ((sockfd = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP)) < 0) {
         fprintf(stderr, "Failed to get socket fd. Errno: (%s)\n", strerror(errno));
-        return -1;
+        return NULL;
     }
 
     if ((connect(sockfd, (struct sockaddr *) &serv_addr, sizeof(serv_addr))) < 0) {
         fprintf(stderr, "Error connecting to hostname: %s, Errno: (%s)\n", host_name, strerror(errno));
-        return -1;
+        return NULL;
     }
 
-    return sockfd;
+    sockets->sockfd = sockfd;
+
+    return sockets;
 }
 
-int socket_write(int sockfd, char * buf, int buf_len)
+int socket_write(socket_t sock, char * buf, int buf_len)
 {
-    int n = send(sockfd, buf, buf_len, 0);
-    if (n < 0 || errno != 0) {
-        fprintf(stderr, "Write error: %s (bytes written: %d)\n", strerror(errno), n);
+    int n = send(((struct socket_t *) sock)->sockfd, buf, buf_len, 0);
+    if (n < 0) {
+        fprintf(stderr, "Send error: %s\n", strerror(errno));
     }
     return n;
 }
 
-int socket_readline(int sockfd, char * buf, int buf_len)
+int socket_readline(socket_t sock, char * buf, int buf_len)
 {
     int ret, i = 0;
 
-    while( (ret = getchar_fd(sockfd)) != '\n' || ++i == buf_len)
+    while( (ret = getchar_fd(sock)) != '\n' || ++i == buf_len)
         *buf++ = ret;
-
-    if (errno != 0) {
-        fprintf(stderr, "Socket failed, strerror: %s\n", strerror(errno));
-        return -1;
-    }
 
     *buf = '\0';
 
     return 0;
 }
 
-int socket_close(int sockfd)
+int socket_close(socket_t sock)
 {
-    return close(sockfd);
+    return close(((struct socket_t *) sock)->sockfd);
 }

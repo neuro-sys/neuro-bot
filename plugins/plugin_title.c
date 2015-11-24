@@ -72,7 +72,6 @@ characters_callback (void * ctx,
     while (*t) { if (*t == '\n' || *t == '\t') *t = ' '; t++; }
     offset = strspn((char *) ch, " \t\r\n");
     strcat(title_buffer, (char *) ch + offset);
-    fprintf(stderr, "%s", title_buffer);
 }
 
 static char * make_tinyurl(char * url)

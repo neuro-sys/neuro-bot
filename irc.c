@@ -91,18 +91,15 @@ static void command_help(struct irc_t * irc)
 
 static void irc_plugin_handle_command(struct irc_t * irc)
 {
-#define MAX_COMMAND_NAME_SIZE 50
     char command_name[50];
     struct plugin_t * iterator;
     struct plugin_list_t plugin_list_head;
 
+    LIST_INIT(&plugin_list_head);
     size_t n = strcspn(irc->message.trailing+1, " \r\n"); // substring(1, " \r\n")
     snprintf(command_name, n+1, "%s", irc->message.trailing+1);
 
     plugin_find_commands(command_name, &plugin_list_head);
-
-    if (LIST_EMPTY(&plugin_list_head))
-        return;
 
     LIST_FOREACH(iterator, &plugin_list_head, plugin_slist) {
         iterator->run(PLUGIN_TYPE_COMMAND);
@@ -111,7 +108,6 @@ static void irc_plugin_handle_command(struct irc_t * irc)
     if (strcmp(command_name, "help") == 0) {
         command_help(irc);
     }
-#undef MAX_COMMAND_NAME_SIZE
 }
 
 static void irc_plugin_handle_grep(struct irc_t * irc)
@@ -125,6 +121,7 @@ static void irc_plugin_handle_grep(struct irc_t * irc)
         if (!(plugin->type & PLUGIN_TYPE_GREP))
             continue;
 
+        debug("Grepping plugin for: %s\n", plugin->name)
         for (keywords_v = plugin->keywords; *keywords_v != NULL; keywords_v++) {
             char * keyword = *keywords_v;
 
@@ -135,7 +132,6 @@ static void irc_plugin_handle_grep(struct irc_t * irc)
         }
     }
 }
-
 
 /* Process bot user commands */
 static void process_bot_command_admin (struct irc_t * irc)
@@ -413,7 +409,9 @@ void irc_free(struct irc_t * irc)
     free(irc->nickname);
     free(irc->password);
     free(irc->port);
+    debug("Closing socket\n");
     socket_close(irc->sockfd);
+    debug("Closed socked.\n");
 }
 
 int irc_run(struct irc_t * irc)

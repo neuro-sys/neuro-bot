@@ -10,7 +10,7 @@ void run(int type)
 {
     char response[512];
 
-    sprintf(response, "PRIVMSG %s :Hello!\r\n", plugin->irc->from);
+    sprintf(response, "PRIVMSG %s :Hello!", plugin->irc->from);
 
     plugin->send_message(plugin->irc, response);
 }
@@ -23,6 +23,8 @@ struct plugin_t * init(void)
     plugin->run        = run;
     plugin->name       = "command";
     plugin->type       = PLUGIN_TYPE_COMMAND;
+
+    fprintf(stdout, "Plugin command initialized.\n");
 
     return plugin;
 }
