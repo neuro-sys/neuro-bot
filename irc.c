@@ -65,7 +65,7 @@ static void command_help(struct irc_t * irc)
 
     sprintf(message, "PRIVMSG %s :Loaded plugins: ", irc->from);
 
-    LIST_FOREACH(iterator, &plugin_slist_head, plugin_slist) {
+    LIST_FOREACH(iterator, &plugin_slist_head, list) {
         struct plugin_t * plugin = iterator;
 
         if (LIST_FIRST(&plugin_slist_head) != iterator) {
@@ -101,7 +101,7 @@ static void irc_plugin_handle_command(struct irc_t * irc)
 
     plugin_find_commands(command_name, &plugin_list_head);
 
-    LIST_FOREACH(iterator, &plugin_list_head, plugin_slist) {
+    LIST_FOREACH(iterator, &plugin_list_head, list) {
         iterator->run(PLUGIN_TYPE_COMMAND);
     }
 
@@ -114,7 +114,7 @@ static void irc_plugin_handle_grep(struct irc_t * irc)
 {
     struct plugin_t * iterator;
 
-    LIST_FOREACH(iterator, &plugin_slist_head, plugin_slist) {
+    LIST_FOREACH(iterator, &plugin_slist_head, list) {
         struct plugin_t * plugin = iterator;
         char ** keywords_v;
 

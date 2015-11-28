@@ -25,22 +25,9 @@
     #define BG_RED  ""
 #endif // NO_COLOR_TERM
 
-
-//    fprintf(stderr, MAGENTA "%25s" ":" "%4d" ":" "%25s" ":" CLEAR, __FILE__, __LINE__, __FUNCTION__);
-
 #define debug(args...) \
     fprintf(stderr, args);
 
 #define debug_ex(args...) fprintf(stderr, RED args CLEAR);
-
-#ifdef __WIN32__
-
-  #define __func__ __FUNCTION__
-
-  #define snprintf _snprintf
-  #define getcwd _getcwd
-  #define alloca _alloca
-
-#endif
 
 #endif

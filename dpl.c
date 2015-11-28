@@ -2,9 +2,9 @@
 
 #include <stdio.h>
 
-#include <windows.h>
+#include "dl.h"
 
-static HMODULE module;
+static void * module;
 
 int get_symbol_address(char * sym_name)
 {
@@ -13,7 +13,7 @@ int get_symbol_address(char * sym_name)
     snprintf(msg_buf, sizeof (msg_buf), "Getting address of symbol: %s", sym_name);
     fprintf(stdout, "%s", msg_buf);
 
-    if (!(Py_Initialize = (void *) GetProcAddress(module, sym_name))) {
+    if (!(Py_Initialize = (void *) dl_sym(module, sym_name))) {
         fprintf(stdout, " [FAIL]\n");
         return -1;
     }
@@ -29,7 +29,7 @@ int load_dynamic_library(char * lib_name)
     snprintf(msg_buf, sizeof (msg_buf), "Loading dynamic shared library: %s", lib_name);
     fprintf(stdout, "%s", msg_buf);
 
-    if (!(module = LoadLibrary(lib_name))) {
+    if (!(module = dl_open(lib_name))) {
         fprintf(stdout, " [FAIL]\n");
         return -1;
     };

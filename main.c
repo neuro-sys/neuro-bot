@@ -22,7 +22,7 @@ termination_handler (int signum)
 
 int main(int argc, char *argv[])
 {
-    signal(SIGINT, termination_handler);
+    //signal(SIGINT, termination_handler);
     setlocale(LC_CTYPE, "");
     memset(&irc, 0, sizeof(struct irc_t));
     config_load(&irc);

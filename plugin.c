@@ -34,7 +34,7 @@ void plugin_free()
 
     debug("Freeing plugin resources.\n");
     temp = NULL;
-    LIST_FOREACH(iterator, &plugin_slist_head, plugin_slist) {
+    LIST_FOREACH(iterator, &plugin_slist_head, list) {
         free(temp);
         temp = NULL;
         debug("Freeing plugin: %s\n", iterator->name);
@@ -61,7 +61,7 @@ void plugin_start_daemons(struct irc_t * irc)
 
     LIST_INIT(&plugin_threads_head);
 
-    LIST_FOREACH(iterator, &plugin_slist_head, plugin_slist) {
+    LIST_FOREACH(iterator, &plugin_slist_head, list) {
         struct plugin_t * plugin = iterator;
         struct plugin_threads_t * plugin_thread = malloc(sizeof(struct plugin_threads_t));
 
@@ -84,14 +84,14 @@ struct plugin_list_t * plugin_find_commands(char * name, struct plugin_list_t * 
 {
     struct plugin_t * iterator;
 
-    LIST_FOREACH(iterator, &plugin_slist_head, plugin_slist) {
+    LIST_FOREACH(iterator, &plugin_slist_head, list) {
         struct plugin_t * plugin = iterator;
 
         if (!(plugin->type & PLUGIN_TYPE_COMMAND))
             continue;
 
         if (!strcmp(plugin->name, name)) {
-            LIST_INSERT_HEAD(plugin_list_head, plugin, plugin_slist);
+            LIST_INSERT_HEAD(plugin_list_head, plugin, list);
             debug("Found plugin %s\n", name);
         }
     }
@@ -146,7 +146,7 @@ static void plugin_load_file(char * file, struct irc_t * irc)
         }
     }
 
-    LIST_INSERT_HEAD(&plugin_slist_head, plugin, plugin_slist);
+    LIST_INSERT_HEAD(&plugin_slist_head, plugin, list);
 }
 
 void plugin_init(struct irc_t * irc)
