@@ -9,6 +9,7 @@
 #include <locale.h>
 #include <signal.h>
 #include <string.h>
+#include <stdlib.h>
 
 struct irc_t irc;
 
@@ -18,11 +19,12 @@ termination_handler (int signum)
     fprintf(stdout, "Terminating application.\n");
     plugin_free();
     irc_free(&irc);
+    exit(0);
 }
 
 int main(int argc, char *argv[])
 {
-    //signal(SIGINT, termination_handler);
+    signal(SIGINT, termination_handler);
     setlocale(LC_CTYPE, "");
     memset(&irc, 0, sizeof(struct irc_t));
     config_load(&irc);

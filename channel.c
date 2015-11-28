@@ -35,22 +35,25 @@ void channel_add_user(struct channel_t * channel, char * user)
     struct user_t * user_obj = malloc(sizeof *user_obj);
     user_obj->name = strdup(user);
     LIST_INSERT_HEAD(&channel->user_list_head, user_obj, list);
+    fprintf(stdout, "Adding user:%s\n", user);
 }
 
 void channel_remove_user(struct channel_t * channel, char * user)
 {
     struct user_t * iterator, * temp;
+    int i = 0;
     temp = NULL;
     LIST_FOREACH(iterator, &channel->user_list_head, list) {
-        free(temp);
-        temp = NULL;
+        fprintf(stdout, "i: %d, iterator->name:%s, user:%s\n", i++, iterator->name, user);
         if (strcmp(iterator->name, user) == 0) {
-            LIST_REMOVE(iterator, list);
-            free(iterator->name);
             temp = iterator;
         }
     }
-    free(temp);
+    if (temp) { 
+        LIST_REMOVE(temp, list);
+        free(temp->name);
+        free(temp);
+    }
 }
 
 void channel_free(struct channel_t * channel)
@@ -62,13 +65,15 @@ void channel_free(struct channel_t * channel)
     }
     temp = NULL;
     LIST_FOREACH(iterator, &channel->user_list_head, list) {
-        if (temp)
+        fprintf(stdout, "removing user: %s\n", iterator->name); 
+        if (temp) {
             channel_remove_user(channel, temp->name);
+        }
         temp = iterator;
     }
-    if (temp)
+    if (temp) {
         channel_remove_user(channel, temp->name);
-
+    }
     free(channel->name);
     free(channel);
 }

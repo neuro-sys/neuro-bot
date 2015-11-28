@@ -6,7 +6,8 @@
     #include <dlfcn.h>
 #endif // __WIN32__
 
-void * dl_open(char * dl)
+
+dl_library_t dl_open(char * dl)
 {
 #ifdef __WIN32__
     return LoadLibrary(dl);
@@ -15,7 +16,16 @@ void * dl_open(char * dl)
 #endif // __WIN32__
 }
 
-void * dl_sym(void * library, char * sym)
+void dl_close(dl_library_t library)
+{
+#ifdef __WIN32__
+    FreeLibrary(library);
+#else
+    dlclose(library);
+#endif // __WIN32__
+}
+
+void * dl_sym(dl_library_t library, char * sym)
 {
 #ifdef __WIN32__
     return GetProcAddress(library, sym);

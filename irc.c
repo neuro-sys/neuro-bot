@@ -93,21 +93,20 @@ static void irc_plugin_handle_command(struct irc_t * irc)
 {
     char command_name[50];
     struct plugin_t * iterator;
-    struct plugin_list_t plugin_list_head;
 
-    LIST_INIT(&plugin_list_head);
     size_t n = strcspn(irc->message.trailing+1, " \r\n"); // substring(1, " \r\n")
     snprintf(command_name, n+1, "%s", irc->message.trailing+1);
 
-    plugin_find_commands(command_name, &plugin_list_head);
-
-    LIST_FOREACH(iterator, &plugin_list_head, list) {
-        iterator->run(PLUGIN_TYPE_COMMAND);
-    }
-
     if (strcmp(command_name, "help") == 0) {
         command_help(irc);
+    } else {
+        LIST_FOREACH(iterator, &plugin_slist_head, list) {
+            if (strcmp(iterator->name, command_name) == 0) {
+                iterator->run(PLUGIN_TYPE_COMMAND);
+            }
+        }
     }
+
 }
 
 static void irc_plugin_handle_grep(struct irc_t * irc)
@@ -249,7 +248,8 @@ static void process_command_part_user(struct irc_t * irc)
     if (channel == NULL) {
         return;
     }
-
+    
+    fprintf(stdout, "process_command_part_user, nickname: %s\n", nickname);
     channel_remove_user(channel, nickname);
 }
 
@@ -390,10 +390,10 @@ void irc_free(struct irc_t * irc)
 
     temp = NULL;
     LIST_FOREACH(iterator, &irc->channel_list_head, list) {
-        channel_free(temp);
+        if (temp) channel_free(temp);
         temp = iterator;
     }
-    channel_free(temp);
+    if (temp) channel_free(temp);
 
     a_temp = NULL;
     LIST_FOREACH(ajoin_iterator, &irc->ajoin_channels_head, list) {

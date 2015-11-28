@@ -7,6 +7,7 @@
 #else
     #include <pthread.h>
     #include <stdlib.h>
+    #include <signal.h>
 #endif // __WIN32__
 
 int thread_create(thread_t * thread, void *(*start_routine)(void *), void *arg)

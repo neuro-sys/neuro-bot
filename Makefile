@@ -1,5 +1,5 @@
 CFLAGS	   = -I. -Wall -g -O0 
-LDFLAGS	   = -ldl -g -O0  -lpthread
+LDFLAGS	   = -ldl -g -O0  -pthread
 OBJS	   =config.o irc.o socket.o irc_parser.o plugin.o channel.o argv.o main.o dl.o thread.o
 
 PLUGIN_DIR = ./plugins

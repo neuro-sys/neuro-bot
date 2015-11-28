@@ -33,11 +33,11 @@ void config_load(struct irc_t * irc)
     if (!file)
     {
         debug("No config file found, using defaults.\n");
-        irc->nickname = NICKNAME;
-        irc->password = PASSWORD;
-        irc->admin = ADMIN;
-        irc->hostname = HOST;
-        irc->port = PORT;
+        irc->nickname = strdup(NICKNAME);
+        irc->password = strdup(PASSWORD);
+        irc->admin = strdup(ADMIN);
+        irc->hostname = strdup(HOST);
+        irc->port = strdup(PORT);
 
         return;
     }
@@ -55,35 +55,35 @@ void config_load(struct irc_t * irc)
         {
             token = strtok(NULL, " \r\n");
             if (token) irc->nickname = strdup(token);
-            else irc->nickname = NICKNAME;
+            else irc->nickname = strdup(NICKNAME);
             debug("nickname         : %s\n", irc->nickname);
         }
         else if (!strcmp(token, "pass"))
         {
             token = strtok(NULL, " \r\n");
             if (token) irc->password = strdup(token);
-            else irc->password = PASSWORD;
+            else irc->password = strdup(PASSWORD);
             debug("password         : %s\n", irc->password);
         }
         else if (!strcmp(token, "admin"))
         {
             token = strtok(NULL, " \r\n");
             if (token) irc->admin = strdup(token);
-            else irc->admin = ADMIN;
+            else irc->admin = strdup(ADMIN);
             debug("admin            : %s\n", irc->admin);
         }
         else if (!strcmp(token, "server"))
         {
             token = strtok(NULL, " \r\n");
             if (token) irc->hostname = strdup(token);
-            else irc->hostname = HOST;
+            else irc->hostname = strdup(HOST);
             debug("host_name        : %s\n", irc->hostname);
         }
         else if (!strcmp(token, "port"))
         {
             token = strtok(NULL, " \r\n");
             if (token) irc->port = strdup(token);
-            else irc->port = PORT;
+            else irc->port = strdup(PORT);
             debug("port             : %s\n", irc->port);
         }
         else if (!strcmp(token, "channels"))

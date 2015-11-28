@@ -63,12 +63,13 @@ void plugin_start_daemons(struct irc_t * irc)
 
     LIST_FOREACH(iterator, &plugin_slist_head, list) {
         struct plugin_t * plugin = iterator;
-        struct plugin_threads_t * plugin_thread = malloc(sizeof(struct plugin_threads_t));
-
-        memset(plugin_thread, 0, sizeof(struct plugin_threads_t));
+        struct plugin_threads_t * plugin_thread;
 
         if (!(plugin->type & PLUGIN_TYPE_DAEMON))
             continue;
+
+        plugin_thread = malloc(sizeof(struct plugin_threads_t));
+        memset(plugin_thread, 0, sizeof(struct plugin_threads_t));
 
         debug("Looper plugin [%s] is started\n", plugin->name);
 
@@ -80,9 +81,11 @@ void plugin_start_daemons(struct irc_t * irc)
     }
 }
 
-struct plugin_list_t * plugin_find_commands(char * name, struct plugin_list_t * plugin_list_head)
+struct plugin_list_t * plugin_find_commands(char * name, struct plugin_list_t * temp_plugin_list)
 {
     struct plugin_t * iterator;
+
+    LIST_INIT(temp_plugin_list);
 
     LIST_FOREACH(iterator, &plugin_slist_head, list) {
         struct plugin_t * plugin = iterator;
@@ -90,13 +93,13 @@ struct plugin_list_t * plugin_find_commands(char * name, struct plugin_list_t * 
         if (!(plugin->type & PLUGIN_TYPE_COMMAND))
             continue;
 
-        if (!strcmp(plugin->name, name)) {
-            LIST_INSERT_HEAD(plugin_list_head, plugin, list);
+        if (strcmp(plugin->name, name) == 0) {
+            LIST_INSERT_HEAD(temp_plugin_list, plugin, list);
             debug("Found plugin %s\n", name);
         }
     }
 
-    return plugin_list_head;
+    return temp_plugin_list;
 }
 
 void send_message(struct irc_t * irc, char * response)
@@ -108,7 +111,7 @@ void send_message(struct irc_t * irc, char * response)
 
 static void plugin_load_file(char * file, struct irc_t * irc)
 {
-    void * plugin_file;
+    dl_library_t plugin_file;
     struct plugin_t * (*init)(void);
     struct plugin_t * plugin;
 
