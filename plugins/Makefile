@@ -5,7 +5,6 @@ ifneq ($(OS), Windows_NT)
 endif
 
 all: plugin_title.so \
-	plugin_test.so \
     plugin_seen.so \
 
 plugin_python_manager.so: plugin_python_manager.c

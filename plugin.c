@@ -14,6 +14,15 @@
 
 #define PLUGIN_DIR "plugins"
 
+LIST_HEAD(dl_library_holder_list_t, dl_library_holder_t);
+struct dl_library_holder_t {
+    dl_library_t plugin;
+
+    LIST_ENTRY(dl_library_holder_t) list;
+};
+
+static struct dl_library_holder_list_t dl_library_holder_head;
+
 LIST_HEAD(plugin_threads_list_t, plugin_threads_t);
 struct plugin_threads_t {
     thread_t thread;
@@ -31,6 +40,7 @@ static void *start_thread(void * pdata)
 void plugin_free()
 {
     struct plugin_t * iterator, * temp;
+    struct dl_library_holder_t * library_it, * temp_it;
 
     debug("Freeing plugin resources.\n");
     temp = NULL;
@@ -52,6 +62,15 @@ void plugin_free()
         t_temp = iterator_threads;
     }
     free(t_temp);
+
+    temp_it = NULL;
+    LIST_FOREACH(library_it, &dl_library_holder_head, list) {
+        if (temp_it) free(temp_it); 
+        dl_close(library_it->plugin);
+        temp_it = library_it;
+        
+    }
+    if (temp_it) free(temp_it);
 }
 
 void plugin_start_daemons(struct irc_t * irc)
@@ -111,6 +130,7 @@ void send_message(struct irc_t * irc, char * response)
 
 static void plugin_load_file(char * file, struct irc_t * irc)
 {
+    struct dl_library_holder_t * library_holder;
     dl_library_t plugin_file;
     struct plugin_t * (*init)(void);
     struct plugin_t * plugin;
@@ -150,6 +170,10 @@ static void plugin_load_file(char * file, struct irc_t * irc)
     }
 
     LIST_INSERT_HEAD(&plugin_slist_head, plugin, list);
+
+    library_holder = malloc (sizeof (*library_holder));
+    library_holder->plugin = plugin_file;
+    LIST_INSERT_HEAD(&dl_library_holder_head, library_holder, list);
 }
 
 void plugin_init(struct irc_t * irc)
@@ -187,6 +211,7 @@ int main()
 {
     struct plugin_slist_t * iterator;
 
+    LIST_INIT(&dl_library_holder_head);
     LIST_INIT(&plugin_threads_head);
 
     plugin_init();

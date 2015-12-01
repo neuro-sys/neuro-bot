@@ -113,7 +113,7 @@ static char * request_youtube_api(char * keyword)
     return response;
 }
 
-void run(void)
+void run(int type)
 {
     char response[512];
     char search_keyword[400];
@@ -161,9 +161,7 @@ void run(void)
 
     plugin->run        = run;
     plugin->name       = "yt";
-    plugin->is_daemon  = 0;
-    plugin->is_command = 1;
-    plugin->is_grep    = 0;
+    plugin->type       = PLUGIN_TYPE_COMMAND;
 
     return plugin;
 }
