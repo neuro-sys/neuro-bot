@@ -19,12 +19,11 @@ static void gris_search(char * url, char * dest, size_t max)
     socket_t sockfd;
 
     gris_response[0] = 0;
-
+    
     sockfd = socket_connect(GRIS_HOST, atoi(GRIS_PORT));
     socket_write(sockfd, url, strlen(url));
     socket_readline(sockfd, gris_response, sizeof gris_response);
     socket_close(sockfd);
-
     if (strlen(gris_response) == 0) {
         return;
     }
@@ -46,8 +45,8 @@ static void extract_url(char * trailing, char * dest, size_t max)
 
     strncpy(url, begin, len);
     url[len] = 0; 
-
-    snprintf(dest, max, "%s", url);
+    
+    snprintf(dest, max, "%s\n", url);
 }
 
 void run(int type)
@@ -73,7 +72,7 @@ void run(int type)
         return;
     }
 
-    sprintf(response, "PRIVMSG %s :(Image is likely: %s)", plugin->irc->from, image_description);
+    sprintf(response, "PRIVMSG %s :Guessing image: %s", plugin->irc->from, image_description);
     plugin->send_message(plugin->irc, response);
 }
 

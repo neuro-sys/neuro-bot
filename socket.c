@@ -124,7 +124,7 @@ int socket_readline(socket_t sock, char * buf, int buf_len)
 {
     int ret, i = 0;
 
-    while( (ret = getchar_fd(sock)) != '\n' && ++i < buf_len)
+    while( (ret = getchar_fd(sock)) != '\n' && ret != EOF && ++i < buf_len)
         *buf++ = ret;
 
     *buf = '\0';

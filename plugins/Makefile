@@ -6,6 +6,7 @@ endif
 
 all: plugin_title.so \
     plugin_seen.so \
+    plugin_gris.so
 
 plugin_python_manager.so: plugin_python_manager.c
 	$(CC) plugin_python_manager.c $(CFLAGS) $(shell pkg-config python-2.7 --cflags --libs) $(shell python-config --cflags --libs) --shared -o$@ -g -O0
