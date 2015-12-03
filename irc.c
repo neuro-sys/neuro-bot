@@ -126,6 +126,7 @@ static void irc_plugin_handle_grep(struct irc_t * irc)
 
             if (strstr(irc->message.trailing, keyword) || strcmp("*", keyword) == 0) {
                 plugin->run(PLUGIN_TYPE_GREP);
+                break;
             }
         }
     }
