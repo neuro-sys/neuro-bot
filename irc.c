@@ -58,6 +58,15 @@ void irc_join_channel(struct irc_t * irc, char * channel)
     socket_write(irc->sockfd, buffer, strlen(buffer));
 }
 
+void irc_quit_server(struct irc_t * irc)
+{
+
+    char buffer[MAX_IRC_MSG];
+
+    snprintf(buffer, sizeof buffer, "QUIT :The bot quit.\r\n");
+    socket_write(irc->sockfd, buffer, strlen(buffer));
+}
+
 static void command_help(struct irc_t * irc)
 {
     struct plugin_t * iterator;
@@ -248,7 +257,7 @@ static void process_command_part_user(struct irc_t * irc)
     if (channel == NULL) {
         return;
     }
-    
+
     fprintf(stdout, "process_command_part_user, nickname: %s\n", nickname);
     channel_remove_user(channel, nickname);
 }
@@ -388,6 +397,8 @@ void irc_free(struct irc_t * irc)
         return;
     }
 
+    irc_quit_server(irc);
+
     temp = NULL;
     LIST_FOREACH(iterator, &irc->channel_list_head, list) {
         if (temp) channel_free(temp);
@@ -409,9 +420,7 @@ void irc_free(struct irc_t * irc)
     free(irc->nickname);
     free(irc->password);
     free(irc->port);
-    debug("Closing socket\n");
     socket_close(irc->sockfd);
-    debug("Closed socked.\n");
 }
 
 int irc_run(struct irc_t * irc)

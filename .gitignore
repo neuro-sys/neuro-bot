@@ -45,9 +45,10 @@ tags
 *.class
 *.so
 *.db
-neurobot
 *.log
 *.dSYM
 *~
 *.stackdump
+*.depend
+codeblocks/neurobot/neurobot.conf
 
