@@ -7,7 +7,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define WEATHER_API "http://api.openweathermap.org/data/2.5/weather?q="
+#define WEATHER_API "http://api.openweathermap.org/data/2.5/weather?APPID=58574ae90c3e027c00b2e7a22268f6e9&q="
 
 #define MPS_TO_KMH(A) A*3.6
 

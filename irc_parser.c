@@ -116,13 +116,10 @@ void irc_parser(struct message_t * message, const char * line)
 static FILE * server_output_f;
 void print_message_t(struct message_t * message)
 {
-    if (server_output_f == NULL) {
-        //server_output_f = fopen("server_output.log", "w+");
-        server_output_f = stdout;
-    }
+    char buf[4096];
 
     if (message->prefix.servername[0])
-        fprintf(server_output_f, RED "Serv" CLEAR ": (" CYAN "%s" CLEAR " ) ", message->prefix.servername);
+        snprintf(buf, sizeof buf, RED "Serv" CLEAR ": (" CYAN "%s" CLEAR " ) ", message->prefix.servername);
     else if (message->prefix.nickname.nickname[0]) {
         fprintf(server_output_f, GREEN "Nick" CLEAR ": (" GREEN "%s" CLEAR, message->prefix.nickname.nickname);
         if (message->prefix.nickname.user[0])

@@ -193,15 +193,15 @@ static void process_command_privmsg (struct irc_t * irc)
 
     signal(SIGSEGV, plugin_sigsegv_handler);
 
-    if (!setjmp(jmp_buf_recover_plugin)) {
+//    if (!setjmp(jmp_buf_recover_plugin)) {
         /* If it the trailing message starts with a period, it's a bot command */
         if ( irc->message.trailing[0] == '.' )
             process_bot_command_user (irc);
 
         irc_plugin_handle_grep(irc);
-    } else {
-        debug("Recovered from fatal error.\n");
-    }
+//    } else {
+//        debug("Recovered from fatal error.\n");
+//    }
 }
 
 static void process_command_join_new_user(struct irc_t * irc)
