@@ -51,4 +51,6 @@ tags
 *.stackdump
 *.depend
 codeblocks/neurobot/neurobot.conf
+codeblocks/neurobot/neurobot.layout
+
 

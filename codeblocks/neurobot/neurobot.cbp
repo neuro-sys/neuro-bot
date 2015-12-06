@@ -31,6 +31,55 @@
 		<Compiler>
 			<Add option="-Wall" />
 		</Compiler>
+		<Linker>
+			<Add library="ws2_32" />
+		</Linker>
+		<Unit filename="../../argv.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../argv.h" />
+		<Unit filename="../../channel.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../channel.h" />
+		<Unit filename="../../config.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../config.h" />
+		<Unit filename="../../dl.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../dl.h" />
+		<Unit filename="../../dpl.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../dpl.h" />
+		<Unit filename="../../global.h" />
+		<Unit filename="../../irc.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../irc.h" />
+		<Unit filename="../../irc_parser.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../irc_parser.h" />
+		<Unit filename="../../main.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../neurobot.conf" />
+		<Unit filename="../../plugin.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../plugin.h" />
+		<Unit filename="../../queue.h" />
+		<Unit filename="../../socket.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../socket.h" />
+		<Unit filename="../../thread.c">
+			<Option compilerVar="CC" />
+		</Unit>
+		<Unit filename="../../thread.h" />
 		<Extensions>
 			<code_completion />
 			<envvars />
