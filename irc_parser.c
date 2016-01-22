@@ -113,7 +113,6 @@ void irc_parser(struct message_t * message, const char * line)
  * Pretty print a struct message_t
  */
 
-static FILE * server_output_f;
 void print_message_t(struct message_t * message)
 {
     char buf[4096];
@@ -121,33 +120,33 @@ void print_message_t(struct message_t * message)
     if (message->prefix.servername[0])
         snprintf(buf, sizeof buf, RED "Serv" CLEAR ": (" CYAN "%s" CLEAR " ) ", message->prefix.servername);
     else if (message->prefix.nickname.nickname[0]) {
-        fprintf(server_output_f, GREEN "Nick" CLEAR ": (" GREEN "%s" CLEAR, message->prefix.nickname.nickname);
+        fprintf(stdout, GREEN "Nick" CLEAR ": (" GREEN "%s" CLEAR, message->prefix.nickname.nickname);
         if (message->prefix.nickname.user[0])
-            fprintf(server_output_f, YELLOW "!%s" CLEAR, message->prefix.nickname.user);
+            fprintf(stdout, YELLOW "!%s" CLEAR, message->prefix.nickname.user);
         if (message->prefix.nickname.host[0])
-            fprintf(server_output_f, YELLOW "@%s " CLEAR, message->prefix.nickname.host);
-        fprintf(server_output_f, ") ");
+            fprintf(stdout, YELLOW "@%s " CLEAR, message->prefix.nickname.host);
+        fprintf(stdout, ") ");
     }
 
     if (message->command[0])
-        fprintf(server_output_f, "(" CYAN "%s" CLEAR ") ", message->command);
+        fprintf(stdout, "(" CYAN "%s" CLEAR ") ", message->command);
 
     if (message->params[0][0]) {
         int i = 0;
 
-        fprintf(server_output_f, "{");
+        fprintf(stdout, "{");
         while (message->params[i][0]) {
-            fprintf(server_output_f, MAGENTA "\"%s\"" CLEAR, message->params[i++]);
+            fprintf(stdout, MAGENTA "\"%s\"" CLEAR, message->params[i++]);
             if (message->params[i][0])
-                fprintf(server_output_f, ", ");
+                fprintf(stdout, ", ");
         }
-        fprintf(server_output_f, "}");
+        fprintf(stdout, "}");
     }
     if (message->trailing[0])
-        fprintf(server_output_f, " => %s", message->trailing);
+        fprintf(stdout, " => %s", message->trailing);
 
-    fprintf(server_output_f, "\n");
-    fflush(server_output_f);
+    fprintf(stdout, "\n");
+    fflush(stdout);
 }
 
 #ifdef TEST_IRC_PARSER
