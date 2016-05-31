@@ -14,6 +14,7 @@ struct argv_s * argv_parse(char * str)
     param = malloc(sizeof (struct argv_s));
     memset(param, 0, sizeof(struct argv_s));
 
+    param->argc = 1;
     snprintf(tokenize_buffer, sizeof tokenize_buffer, "%s", str);
 
     token = strtok(tokenize_buffer, " ");
@@ -30,9 +31,11 @@ struct argv_s * argv_parse(char * str)
     while ((token = strtok(NULL, " ")) != NULL) {
         argv = malloc(sizeof *argv);
         argv->value = strdup(token);
+        param->argc++;
         TAILQ_INSERT_TAIL(&param->argv_list, argv, list);
     }
 
+    printf("argc: %d\n", param->argc);
     return param;
 }
 
