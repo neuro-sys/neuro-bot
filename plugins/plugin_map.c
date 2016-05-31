@@ -9,7 +9,7 @@
 #include <unistd.h>
 #include <time.h>
 
-#define WEATHER_API "http://api.openweathermap.org/data/2.5/weather?q="
+#define WEATHER_API "http://api.openweathermap.org/data/2.5/weather?APPID=58574ae90c3e027c00b2e7a22268f6e9&q="
 
 #define WIDTH 	        36
 #define HEIGHT	        18
@@ -202,6 +202,7 @@ static struct gps_s * parse_json(char * json_payload)
 
 e_fail:
     free(gps);
+    puts(json_payload); // for error debugging
     return NULL;
 }
 
